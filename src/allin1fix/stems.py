@@ -144,6 +144,12 @@ class DemucsProvider(StemProvider):
 
         wav, sr = torchaudio.load(str(audio_path))
 
+        # Ensure stereo (demucs requires 2 channels)
+        if wav.shape[0] == 1:
+            wav = wav.repeat(2, 1)
+        elif wav.shape[0] > 2:
+            wav = wav[:2]
+
         # Add batch dimension and move to device
         wav_batch = wav.unsqueeze(0).to(self.device)
 
