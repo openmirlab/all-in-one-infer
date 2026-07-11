@@ -15,7 +15,25 @@ on:
         type: string
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies (CPU torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy pytest
+      - name: Run the neighborhood-attention golden-fixture suite
+        # This test file loads the module directly (no madmom/demucs needed)
+        # and its fixtures are tolerance-based, so it is environment-safe.
+        run: pytest tests/test_neighborhood_attention.py -q
+
   publish:
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       id-token: write  # Required for trusted publishing (OIDC)
