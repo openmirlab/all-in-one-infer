@@ -483,12 +483,3 @@ class ExampleCustomSeparator:
                 stem_path.touch()
         
         return stems_dir
-
-
-# Backward compatibility function
-def demix(paths: List[Path], demix_dir: Path, device: Union[str, torch.device]) -> List[Path]:
-    """
-    Legacy demix function for backward compatibility.
-    Uses default DemucsProvider.
-    """
-    return get_stems(paths, demix_dir, None, device)

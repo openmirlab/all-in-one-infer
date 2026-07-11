@@ -2,23 +2,21 @@
 # Copyright (c) 2025 Bo-Yu Chen (Integration modifications)
 # SPDX-License-Identifier: MIT
 
-"""Legacy `demix()`/`demix_with_provider()` compatibility shims.
+"""`demix()`: analyze()'s entry point into the default (disk-based, no custom
+provider) HTDemucs separation path.
 
-Both functions are thin pass-throughs to `stems.get_stems()`, kept only so
-older call sites (and any external code written against the pre-stems.py
-API) keep working. New code should call `stems.get_stems()` directly; nothing
-here does real separation work anymore.
+A thin pass-through to `stems.get_stems()` with `stem_provider=None`, kept as
+its own function/module because analyze.py calls it specifically for the
+keep_byproducts branch (see analyze._select_stems).
 
-Reads: .stems (get_stems, DemucsProvider, StemProvider)
+Reads: .stems (get_stems)
 """
 
-import sys
-import subprocess
 import torch
 
 from pathlib import Path
-from typing import List, Union, Optional
-from .stems import get_stems, DemucsProvider, StemProvider
+from typing import List, Union
+from .stems import get_stems
 
 
 def demix(
@@ -26,35 +24,6 @@ def demix(
     demucs_overlap: float = 0.25, demucs_fp16: bool = False,
 ):
   """
-  Legacy demix function for backward compatibility.
-  Now uses the new stems infrastructure.
+  Demix audio files using the default DemucsProvider.
   """
   return get_stems(paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
-
-
-def demix_with_provider(
-    paths: List[Path], 
-    demix_dir: Path, 
-    stem_provider: Optional[StemProvider] = None,
-    device: Union[str, torch.device] = 'cuda'
-) -> List[Path]:
-  """
-  Demix audio files using specified stem provider.
-  
-  Parameters
-  ----------
-  paths : List[Path]
-      List of audio file paths
-  demix_dir : Path
-      Directory to store stems
-  stem_provider : Optional[StemProvider]
-      Stem provider to use. If None, uses default DemucsProvider
-  device : Union[str, torch.device]
-      Device to use for separation
-  
-  Returns
-  -------
-  List[Path]
-      List of paths to directories containing stems
-  """
-  return get_stems(paths, demix_dir, stem_provider, device)

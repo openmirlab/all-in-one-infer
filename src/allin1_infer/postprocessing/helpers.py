@@ -2,11 +2,6 @@
 functional.py's decoders: frame<->time conversion, local-maxima/peak-picking,
 smoothing filters, and sub-frame quadratic interpolation.
 
-Note: this file also defines its own `estimate_tempo_from_beats` (near the
-bottom), but it is dead code -- the package's actual tempo estimate is
-`..postprocessing.tempo.estimate_tempo_from_beats`, re-exported via
-`postprocessing/__init__.py`. Don't confuse the two when editing tempo logic.
-
 Reads: ..config (Config), librosa, scipy.signal/interpolate, numpy
 """
 
@@ -167,20 +162,6 @@ def quad_interp(input_tensor: torch.FloatTensor):
   f = interp1d(arange, input_arr, kind='quadratic')
   output_arr = f(arange)
   return output_arr
-
-
-def estimate_tempo_from_beats(pred_beat_times):
-  beat_interval = np.diff(pred_beat_times)
-  bpm = 60. / beat_interval
-  # TODO: quadratic interpolation
-  bpm = bpm.round()
-  bincount = np.bincount(bpm.astype(int))
-  bpm_range = np.arange(len(bincount))
-  bpm_strength = bincount / bincount.sum()
-  bpm_est = np.stack([bpm_range, bpm_strength], axis=-1)
-  bpm_est = bpm_est[np.argsort(bpm_strength)[::-1]]
-  bpm_est = bpm_est[bpm_est[:, 1] > 0]
-  return bpm_est
 
 
 def peak_picking(boundary_activation, window_past=12, window_future=6):
