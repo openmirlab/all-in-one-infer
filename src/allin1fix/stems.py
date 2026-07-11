@@ -264,9 +264,11 @@ def separate_in_memory(
     arrays_by_path : Dict[Path, Dict[str, np.ndarray]]
         For the freshly-separated paths only: {'bass': arr, 'drums': arr,
         'other': arr, 'vocals': arr} mono int16 arrays.
-    sample_rate : Optional[int]
-        Sample rate shared by the freshly-separated tracks' arrays (None if
-        every path in `paths` was already cached).
+    sr_by_path : Dict[Path, int]
+        For the freshly-separated paths only: each track's native sample
+        rate. Per-track because the disk path preserves each file's own rate
+        (torchaudio.load -> save_audio(..., sr) with no resampling), so a
+        mixed-rate batch must carry a rate per file, not one shared value.
     """
     provider = DemucsProvider(device=device)
     required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
@@ -274,7 +276,7 @@ def separate_in_memory(
     cached_paths = []
     stems_dirs = {}
     arrays_by_path = {}
-    sample_rate = None
+    sr_by_path = {}
 
     for path in paths:
         stems_dir = demix_dir / provider.model_name / Path(path).stem
@@ -312,9 +314,9 @@ def separate_in_memory(
             name: quantize_stem_to_madmom_mono_int16(sources[i])
             for i, name in enumerate(provider.model.sources)
         }
-        sample_rate = sr
+        sr_by_path[path] = sr
 
-    return cached_paths, stems_dirs, arrays_by_path, sample_rate
+    return cached_paths, stems_dirs, arrays_by_path, sr_by_path
 
 
 class PrecomputedStemProvider(StemProvider):

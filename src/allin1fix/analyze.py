@@ -250,7 +250,7 @@ def analyze(
         # prior keep_byproducts=True run against this demix_dir) still go
         # through the ordinary path, so existing caching semantics for those
         # are unaffected.
-        cached_paths, stems_dirs, arrays_by_path, sample_rate = separate_in_memory(
+        cached_paths, stems_dirs, arrays_by_path, sr_by_path = separate_in_memory(
           todo_paths, demix_dir, device, demucs_overlap, demucs_fp16,
         )
         spec_paths_by_path = {}
@@ -260,7 +260,7 @@ def analyze(
           spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
         if arrays_by_path:
           spec_paths_by_path.update(
-            extract_spectrograms_from_arrays(arrays_by_path, spec_dir, sample_rate)
+            extract_spectrograms_from_arrays(arrays_by_path, spec_dir, sr_by_path)
           )
         demix_paths = [stems_dirs[path] for path in todo_paths]
         spec_paths = [spec_paths_by_path[path] for path in todo_paths]

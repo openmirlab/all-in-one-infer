@@ -107,12 +107,14 @@ def compute_spectrogram_from_stem_arrays(
 def extract_spectrograms_from_arrays(
     arrays_by_path: Dict[Path, Dict[str, np.ndarray]],
     spec_dir: Path,
-    sample_rate: int,
+    sr_by_path: Dict[Path, int],
 ) -> Dict[Path, Path]:
   """In-memory counterpart to extract_spectrograms(): skips reading stem wavs
-  from disk. Always sequential -- routing these already-in-memory arrays
-  through a multiprocessing.Pool would reintroduce most of the pickling/IPC
-  cost that this path exists to avoid.
+  from disk. `sr_by_path` carries each track's own native sample rate --
+  tracks in one batch can have different rates, and the disk path preserves
+  each wav's own rate, so this path must too. Always sequential -- routing
+  these already-in-memory arrays through a multiprocessing.Pool would
+  reintroduce most of the pickling/IPC cost that this path exists to avoid.
   """
   processor = build_spec_processor()
   spec_paths = {}
@@ -120,7 +122,7 @@ def extract_spectrograms_from_arrays(
     dst = spec_dir / f'{path.stem}.npy'
     dst.parent.mkdir(parents=True, exist_ok=True)
     if not dst.is_file():
-      spec = compute_spectrogram_from_stem_arrays(stems, sample_rate, processor)
+      spec = compute_spectrogram_from_stem_arrays(stems, sr_by_path[path], processor)
       np.save(str(dst), spec)
     spec_paths[path] = dst
   return spec_paths
