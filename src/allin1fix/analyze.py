@@ -7,6 +7,7 @@ from .stems import get_stems, StemProvider, DemucsProvider, PrecomputedStemProvi
 from .stems_input import StemsInput, prepare_stems_for_analysis, validate_stems_input
 from .spectrogram import extract_spectrograms, extract_spectrograms_from_arrays
 from .models import load_pretrained_model
+from .models.ensemble import Ensemble
 from .visualize import visualize as _visualize
 from .sonify import sonify as _sonify
 from .helpers import (
@@ -17,7 +18,27 @@ from .helpers import (
   save_results,
 )
 from .utils import mkpath, load_result
-from .typings import AnalysisResult, PathLike
+from .typings import AllInOneOutput, AnalysisResult, PathLike
+
+
+def _wrap_compiled_fold(compiled_fold):
+  """mode='reduce-overhead' uses CUDA graphs with static output buffers.
+  Ensemble.forward() calls all folds in a plain Python loop *then* stacks
+  their outputs, so by the time the stack happens, a later fold's cudagraph
+  replay may have already overwritten an earlier fold's output buffer.
+  Marking a new cudagraph step and cloning the output before returning avoids
+  that (see torch.compiler.cudagraph_mark_step_begin docs)."""
+  def wrapped(x):
+    torch.compiler.cudagraph_mark_step_begin()
+    out = compiled_fold(x)
+    return AllInOneOutput(
+      logits_beat=out.logits_beat.clone(),
+      logits_downbeat=out.logits_downbeat.clone(),
+      logits_section=out.logits_section.clone(),
+      logits_function=out.logits_function.clone(),
+      embeddings=out.embeddings.clone(),
+    )
+  return wrapped
 
 
 def analyze(
@@ -38,6 +59,9 @@ def analyze(
   stems_dict: Optional[dict] = None,
   skip_separation: bool = False,
   stems_input: Union[StemsInput, List[StemsInput], List[dict]] = None,
+  compile_model: bool = False,
+  demucs_overlap: float = 0.25,
+  demucs_fp16: bool = False,
 ) -> Union[AnalysisResult, List[AnalysisResult]]:
   """
   Analyzes the provided audio files and returns the analysis results.
@@ -84,6 +108,19 @@ def analyze(
   stems_input : Union[StemsInput, List[StemsInput], List[dict]], optional
       Direct stems input. Provide pre-separated stem files (bass, drums, other, vocals) directly.
       Alternative to paths parameter for stems-only workflow.
+  compile_model : bool, optional
+      EXPERIMENTAL. Wrap the loaded model(s) with torch.compile(mode='reduce-overhead').
+      Adds a ~57s one-time compilation cost on first inference, then ~38% faster steady-state
+      forward passes -- only worth it for long-lived/batch processing, not single tracks.
+      Default is False.
+  demucs_overlap : float, optional
+      EXPERIMENTAL, accuracy-affecting. Overlap fraction between chunks passed to demucs'
+      apply_model(). Default is 0.25 (demucs' own default; unchanged from prior behavior).
+      Profiling showed different values can shift segment boundaries slightly.
+  demucs_fp16 : bool, optional
+      EXPERIMENTAL, accuracy-affecting. Run demucs separation under torch.autocast('cuda',
+      dtype=torch.float16) for faster separation. Default is False (fp32, unchanged from
+      prior behavior). Only takes effect on CUDA.
 
   Returns
   -------
@@ -204,7 +241,7 @@ def analyze(
         # Byproducts must land on disk for the caller to keep, so use the
         # ordinary write/read path (same as the in-memory branch's cache
         # fallback below).
-        demix_paths = demix(todo_paths, demix_dir, device)
+        demix_paths = demix(todo_paths, demix_dir, device, demucs_overlap, demucs_fp16)
       else:
         # Default HTDemucs, fresh run, byproducts not requested: skip the
         # stem wav write/read round trip (~0.83s/track) by keeping stem
@@ -214,11 +251,11 @@ def analyze(
         # through the ordinary path, so existing caching semantics for those
         # are unaffected.
         cached_paths, stems_dirs, arrays_by_path, sample_rate = separate_in_memory(
-          todo_paths, demix_dir, device,
+          todo_paths, demix_dir, device, demucs_overlap, demucs_fp16,
         )
         spec_paths_by_path = {}
         if cached_paths:
-          cached_demix_paths = get_stems(cached_paths, demix_dir, None, device)
+          cached_demix_paths = get_stems(cached_paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
           cached_spec_paths = extract_spectrograms(cached_demix_paths, spec_dir, multiprocess)
           spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
         if arrays_by_path:
@@ -238,6 +275,18 @@ def analyze(
       model_name=model,
       device=device,
     )
+
+    if compile_model:
+      # EXPERIMENTAL: ~57s one-time compile cost, ~38% faster steady-state
+      # forward -- only pays off across many tracks in one process, not a
+      # single-track run. Compile each ensemble fold individually rather than
+      # the Ensemble wrapper itself: Ensemble.forward() loops over `.models`
+      # in plain Python, so compiling the wrapper would just re-trace that
+      # loop instead of the actual per-fold computation.
+      if isinstance(model, Ensemble):
+        model.models = [_wrap_compiled_fold(torch.compile(m, mode='reduce-overhead')) for m in model.models]
+      else:
+        model = torch.compile(model, mode='reduce-overhead')
 
     with torch.no_grad():
       pbar = tqdm(zip(todo_paths, spec_paths), total=len(todo_paths))

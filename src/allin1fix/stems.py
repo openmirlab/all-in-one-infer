@@ -76,9 +76,21 @@ class StemProvider(ABC):
 class DemucsProvider(StemProvider):
     """Default stem provider using integrated separation module with model caching."""
 
-    def __init__(self, model_name: str = 'htdemucs', device: Union[str, torch.device] = 'cuda'):
+    def __init__(
+        self,
+        model_name: str = 'htdemucs',
+        device: Union[str, torch.device] = 'cuda',
+        demucs_overlap: float = 0.25,
+        demucs_fp16: bool = False,
+    ):
         self.model_name = model_name
         self.device = device
+        # EXPERIMENTAL, accuracy-affecting knobs -- defaults reproduce prior
+        # behavior exactly (0.25 is demucs' own apply_model default, fp16=False
+        # keeps separation in fp32). See profiling notes: non-default overlap
+        # and fp16 autocast can shift segment boundaries slightly.
+        self.demucs_overlap = demucs_overlap
+        self.demucs_fp16 = demucs_fp16
         self._model = None  # Cache for loaded model
 
     @property
@@ -160,7 +172,17 @@ class DemucsProvider(StemProvider):
             progress_callback("Separating audio sources", 0.3)
 
         with torch.no_grad():
-            sources = apply_model(model, wav_batch, device=self.device, progress=bool(progress_callback))
+            if self.demucs_fp16 and 'cuda' in str(self.device):
+                with torch.autocast('cuda', dtype=torch.float16):
+                    sources = apply_model(
+                        model, wav_batch, device=self.device,
+                        progress=bool(progress_callback), overlap=self.demucs_overlap,
+                    )
+            else:
+                sources = apply_model(
+                    model, wav_batch, device=self.device,
+                    progress=bool(progress_callback), overlap=self.demucs_overlap,
+                )
 
         # Move to CPU immediately to free GPU memory
         sources = sources.cpu()
@@ -219,6 +241,8 @@ def separate_in_memory(
     paths: List[Path],
     demix_dir: Path,
     device: Union[str, torch.device] = 'cuda',
+    demucs_overlap: float = 0.25,
+    demucs_fp16: bool = False,
 ):
     """Fresh-run fast path for the default DemucsProvider: separates audio
     directly into in-memory mono stem arrays, skipping the stem wav
@@ -267,7 +291,17 @@ def separate_in_memory(
         wav_batch = wav.unsqueeze(0).to(device)
 
         with torch.no_grad():
-            sources = apply_model(provider.model, wav_batch, device=device, progress=False)
+            if demucs_fp16 and 'cuda' in str(device):
+                with torch.autocast('cuda', dtype=torch.float16):
+                    sources = apply_model(
+                        provider.model, wav_batch, device=device,
+                        progress=False, overlap=demucs_overlap,
+                    )
+            else:
+                sources = apply_model(
+                    provider.model, wav_batch, device=device,
+                    progress=False, overlap=demucs_overlap,
+                )
 
         sources = sources.cpu().squeeze(0)
         del wav_batch
@@ -353,14 +387,16 @@ class CustomSeparatorProvider(StemProvider):
 
 
 def get_stems(
-    paths: List[Path], 
-    stems_dir: Path, 
+    paths: List[Path],
+    stems_dir: Path,
     stem_provider: Optional[StemProvider] = None,
-    device: Union[str, torch.device] = 'cuda'
+    device: Union[str, torch.device] = 'cuda',
+    demucs_overlap: float = 0.25,
+    demucs_fp16: bool = False,
 ) -> List[Path]:
     """
     Get stems for audio files using specified provider.
-    
+
     Parameters
     ----------
     paths : List[Path]
@@ -371,14 +407,20 @@ def get_stems(
         Stem provider to use. If None, uses default DemucsProvider
     device : Union[str, torch.device]
         Device to use for separation
-    
+    demucs_overlap : float
+        EXPERIMENTAL, accuracy-affecting. Only used when stem_provider is None
+        (default DemucsProvider). See DemucsProvider.__init__.
+    demucs_fp16 : bool
+        EXPERIMENTAL, accuracy-affecting. Only used when stem_provider is None
+        (default DemucsProvider). See DemucsProvider.__init__.
+
     Returns
     -------
     List[Path]
         List of paths to directories containing stems
     """
     if stem_provider is None:
-        stem_provider = DemucsProvider(device=device)
+        stem_provider = DemucsProvider(device=device, demucs_overlap=demucs_overlap, demucs_fp16=demucs_fp16)
     
     stem_paths = []
     todos = []

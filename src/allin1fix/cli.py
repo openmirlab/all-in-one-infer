@@ -46,7 +46,22 @@ def make_parser():
                       help='Overwrite existing files (default: False)')
   parser.add_argument('--no-multiprocess', action='store_true', default=False,
                       help='Disable multiprocessing (default: False)')
-  
+
+  # Performance options
+  perf_group = parser.add_argument_group('Performance (opt-in)')
+  perf_group.add_argument('--compile-model', action='store_true', default=False,
+                          help='EXPERIMENTAL: torch.compile the model(s) (reduce-overhead mode). '
+                               '~57s one-time compile cost, ~38%% faster steady-state forward -- '
+                               'only worth it for long-lived/batch processing (default: False)')
+  perf_group.add_argument('--demucs-overlap', type=float, default=0.25,
+                          help='EXPERIMENTAL, accuracy-affecting: overlap fraction for demucs '
+                               'separation chunks. Default 0.25 matches demucs\' own default '
+                               '(unchanged behavior); other values can shift segment boundaries.')
+  perf_group.add_argument('--demucs-fp16', action='store_true', default=False,
+                          help='EXPERIMENTAL, accuracy-affecting: run demucs separation under '
+                               'fp16 autocast (CUDA only) for faster separation (default: False)')
+
+
   # Source separation options
   parser.add_argument('--stems-dict', type=Path, default=None,
                       help='JSON file mapping audio paths to stem directories')
@@ -182,6 +197,9 @@ def main():
     multiprocess=not args.no_multiprocess,
     stems_dict=stems_dict,
     skip_separation=args.skip_separation,
+    compile_model=args.compile_model,
+    demucs_overlap=args.demucs_overlap,
+    demucs_fp16=args.demucs_fp16,
   )
 
   print(f'=> Analysis results are successfully saved to {args.out_dir}')

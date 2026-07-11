@@ -11,12 +11,15 @@ from typing import List, Union, Optional
 from .stems import get_stems, DemucsProvider, StemProvider
 
 
-def demix(paths: List[Path], demix_dir: Path, device: Union[str, torch.device]):
+def demix(
+    paths: List[Path], demix_dir: Path, device: Union[str, torch.device],
+    demucs_overlap: float = 0.25, demucs_fp16: bool = False,
+):
   """
   Legacy demix function for backward compatibility.
   Now uses the new stems infrastructure.
   """
-  return get_stems(paths, demix_dir, None, device)
+  return get_stems(paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
 
 
 def demix_with_provider(
