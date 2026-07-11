@@ -1,5 +1,6 @@
 import torch
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from omegaconf import OmegaConf
 from huggingface_hub import hf_hub_download
@@ -32,6 +33,22 @@ ENSEMBLE_MODELS = {
 }
 
 
+def _download_checkpoint(model_name: str, cache_dir: Optional[PathLike] = None) -> str:
+  filename = NAME_TO_FILE[model_name]
+  return hf_hub_download(repo_id='taejunkim/allinone', filename=filename, cache_dir=cache_dir)
+
+
+def _build_model_from_checkpoint(checkpoint_path: str, device) -> AllInOne:
+  checkpoint = torch.load(checkpoint_path, map_location=device)
+  config = OmegaConf.create(checkpoint['config'])
+
+  model = AllInOne(config).to(device)
+  model.load_state_dict(checkpoint['state_dict'])
+  model.eval()
+
+  return model
+
+
 def load_pretrained_model(
   model_name: Optional[str] = None,
   cache_dir: Optional[PathLike] = None,
@@ -49,17 +66,8 @@ def load_pretrained_model(
     else:
       device = 'cpu'
 
-  filename = NAME_TO_FILE[model_name]
-  checkpoint_path = hf_hub_download(repo_id='taejunkim/allinone', filename=filename, cache_dir=cache_dir)
-
-  checkpoint = torch.load(checkpoint_path, map_location=device)
-  config = OmegaConf.create(checkpoint['config'])
-
-  model = AllInOne(config).to(device)
-  model.load_state_dict(checkpoint['state_dict'])
-  model.eval()
-
-  return model
+  checkpoint_path = _download_checkpoint(model_name, cache_dir)
+  return _build_model_from_checkpoint(checkpoint_path, device)
 
 
 def load_ensemble_model(
@@ -67,10 +75,28 @@ def load_ensemble_model(
   cache_dir: Optional[PathLike] = None,
   device=None,
 ):
-  models = []
-  for model_name in ENSEMBLE_MODELS[model_name]:
-    model = load_pretrained_model(model_name, cache_dir, device)
-    models.append(model)
+  fold_names = ENSEMBLE_MODELS[model_name]
+
+  # Only hf_hub_download benefits from threading here: it's dominated by local
+  # cache-resolution I/O (~0.2s/file even fully cached) that releases the GIL.
+  # torch.load + state_dict construction do NOT benefit -- measured empirically,
+  # threading those actually regresses wall-clock time (GIL/CUDA-context
+  # contention across 8 threads outweighs any overlap). So only the download
+  # step is parallelized; executor.map preserves fold order in its output
+  # regardless of completion order, so ensemble fold order is unchanged.
+  with ThreadPoolExecutor(max_workers=len(fold_names)) as executor:
+    checkpoint_paths = list(executor.map(
+      lambda name: _download_checkpoint(name, cache_dir),
+      fold_names,
+    ))
+
+  if device is None:
+    if torch.cuda.device_count():
+      device = 'cuda'
+    else:
+      device = 'cpu'
+
+  models = [_build_model_from_checkpoint(path, device) for path in checkpoint_paths]
 
   ensemble = Ensemble(models).to(device)
   ensemble.eval()
