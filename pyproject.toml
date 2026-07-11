@@ -65,6 +65,7 @@ dependencies = [
 natten = [
   "natten>=0.17.1,<0.20",  # natten>=0.20 removed the legacy functional API and RPB support
   "torch>=2.0.0,<2.8.0",   # natten 0.17.x breaks on torch 2.8+ (_device_t removed)
+  "torchaudio<2.8.0",      # keep torchaudio paired with torch<2.8 (mismatched pairs fail to load)
 ]
 train = [
   "lightning",
@@ -108,4 +109,12 @@ packages = {find = {where = ["src"], exclude = ["tests*", "examples*"]}}
 [tool.uv]
 override-dependencies = [
   "scipy>=1.13.0",  # madmom requires scipy>=1.13, which requires Python 3.9+
+]
+
+[tool.uv.sources]
+madmom = { git = "https://github.com/CPJKU/madmom" }
+
+[dependency-groups]
+dev = [
+    "madmom",
 ]
