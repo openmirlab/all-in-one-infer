@@ -8,6 +8,16 @@
 
 📦 **Available on PyPI:** [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
 
+> ## 📢 Officially renamed: all-in-one-fix → all-in-one-infer
+>
+> This project has **officially moved** from `all-in-one-fix` to **`all-in-one-infer`** (as of v3.0.0, 2026-07).
+>
+> - **Install:** `pip install all-in-one-infer` (the old `all-in-one-fix` PyPI package will no longer receive updates)
+> - **Import:** `import allin1_infer` (formerly `allin1fix`)
+> - **CLI:** `all-in-one-infer` (formerly `allin1fix`)
+>
+> Existing `all-in-one-fix` users: see the [Migration](#-migration-from-all-in-one) section below.
+
 > **🙏 Acknowledgments**:
 >
 > This package builds upon the exceptional work of the foundational project:
@@ -23,7 +33,7 @@ This package provides models for music structure analysis, predicting:
 4. Functional segment boundaries
 5. Functional segment labels (e.g., intro, verse, chorus, bridge, outro)
 
-## 🆕 What's New in All-In-One-Infer (v2.0.0)
+## 🆕 What's New in v2.0.0 (historical)
 
 ### 🎵 **Integrated Source Separation**
 - **Source Separation**: Uses demucs-infer package for high-quality source separation
@@ -37,7 +47,7 @@ This package provides models for music structure analysis, predicting:
 - **NATTEN 0.17.x Verified**: Fully tested and working with PyTorch 2.0-2.7+
   - Automatic version detection supports NATTEN 0.17.x-0.19.x
   - Extensively tested with real music analysis workloads
-  - **Note**: NATTEN 0.20+ (including 0.21.0) is not compatible due to API changes requiring dimensional validation updates
+  - **Note**: NATTEN 0.20+ is not compatible due to API changes requiring dimensional validation updates
 - **Unified Package**: Single package with all functionality included
 - **Modern Packaging**: UV-style packaging with full pip compatibility
 
@@ -120,7 +130,9 @@ dependencies = ["torch>=2.0.0"]  # no upper bound, no compiled extension
   forward and backward)
 - Pretrained checkpoints load unchanged — no weight conversion
 - If a compatible NATTEN (0.17.x-0.19.x) is installed, it is used automatically
-  as a faster fused-kernel backend: `pip install "all-in-one-infer[natten]"`
+  as a faster fused-kernel backend: `pip install "all-in-one-infer[natten]"` —
+  see the Installation section's ["Optional: NATTEN fused kernels"](#optional-natten-fused-kernels)
+  for the required torch pin and `--no-build-isolation` steps
 
 **Impact:** Installs anywhere with a single `pip install` — any torch >= 2.0
 (including 2.8+), CPU-only machines, and platforms NATTEN never supported
@@ -505,7 +517,7 @@ count = allin1_infer.clear_model_cache()  # Actually delete
 All-In-One-Infer includes several technical enhancements over the original:
 
 - **Modern PyTorch Support**: Compatible with PyTorch 2.x and CUDA 12.x
-- **NATTEN 0.17.5**: Upgraded from 0.15.0 for PyTorch 2.x compatibility
+- **Pure-PyTorch Neighborhood Attention**: NATTEN is no longer required — a numerically identical pure-PyTorch implementation ships by default; NATTEN 0.17.x can optionally be installed via the `[natten]` extra as a faster fused-kernel backend
 - **Source Separation**: Uses demucs-infer package with model caching and GPU cleanup
 - **Memory Optimization**: Automatic GPU memory cleanup prevents OOM errors on batch processing
 - **Performance**: 6x faster on repeated use with intelligent model caching
@@ -521,7 +533,8 @@ $ all-in-one-infer -h
 usage: all-in-one-infer [-h] [-o OUT_DIR] [-v] [--viz-dir VIZ_DIR] [-s]
                  [--sonif-dir SONIF_DIR] [-a] [-e] [-m MODEL] [-d DEVICE] [-k]
                  [--demix-dir DEMIX_DIR] [--spec-dir SPEC_DIR] [--overwrite]
-                 [--no-multiprocess] [--stems-dict STEMS_DICT]
+                 [--no-multiprocess] [--compile-model] [--demucs-overlap DEMUCS_OVERLAP]
+                 [--demucs-fp16] [--stems-dict STEMS_DICT]
                  [--stems-dir STEMS_DIR] [--skip-separation] [--no-demucs]
                  [--stems-bass STEMS_BASS] [--stems-drums STEMS_DRUMS]
                  [--stems-other STEMS_OTHER] [--stems-vocals STEMS_VOCALS]
@@ -540,6 +553,20 @@ Core Options:
   -m, --model          Model to use (default: harmonix-all)
   -d, --device         Device to use (default: cuda if available else cpu)
   -k, --keep-byproducts Keep demixed audio and spectrograms (default: False)
+
+Performance Options (opt-in, experimental):
+  --compile-model       torch.compile the model(s) (reduce-overhead mode).
+                        ~57s one-time compile cost, ~38% faster steady-state
+                        forward -- only worth it for long-lived/batch
+                        processing (default: False)
+  --demucs-overlap DEMUCS_OVERLAP
+                        Accuracy-affecting: overlap fraction for demucs
+                        separation chunks. Default 0.25 matches demucs' own
+                        default (unchanged behavior); other values can shift
+                        segment boundaries
+  --demucs-fp16         Accuracy-affecting: run demucs separation under
+                        fp16 autocast (CUDA only) for faster separation
+                        (default: False)
 
 Stems Input Options:
   --stems-dict         JSON file mapping audio paths to stem directories
@@ -661,13 +688,13 @@ Available functions:
 Analyzes the provided audio files and returns the analysis results.
 
 ```python
-import allin1
+import allin1_infer
 
 # You can analyze a single file:
-result = allin1.analyze('your_audio_file.wav')
+result = allin1_infer.analyze('your_audio_file.wav')
 
 # Or multiple files:
-results = allin1.analyze(['your_audio_file1.wav', 'your_audio_file2.mp3'])
+results = allin1_infer.analyze(['your_audio_file1.wav', 'your_audio_file2.mp3'])
 ```
 A result is a dataclass instance containing:
 ```python
@@ -692,7 +719,7 @@ AnalysisResult(
 ```
 Unlike CLI, it does not save the results to disk by default. You can save them as follows:
 ```python
-result = allin1.analyze(
+result = allin1_infer.analyze(
   'your_audio_file.wav',
   out_dir='./struct',
 )
@@ -736,6 +763,15 @@ Whether to keep the source-separated audio and spectrograms or not. Default is F
 - `multiprocess` : `bool` (optional)  
 Whether to use multiprocessing for extracting spectrograms. Default is True.
 
+- `compile_model` : `bool` (optional)  
+EXPERIMENTAL. Wrap the loaded model(s) with `torch.compile(mode='reduce-overhead')`. Adds a ~57s one-time compilation cost on first inference, then ~38% faster steady-state forward passes -- only worth it for long-lived/batch processing, not single tracks. Default is False.
+
+- `demucs_overlap` : `float` (optional)  
+EXPERIMENTAL, accuracy-affecting. Overlap fraction between chunks passed to demucs' `apply_model()`. Default is 0.25 (demucs' own default; unchanged from prior behavior). Profiling showed different values can shift segment boundaries slightly.
+
+- `demucs_fp16` : `bool` (optional)  
+EXPERIMENTAL, accuracy-affecting. Run demucs separation under `torch.autocast('cuda', dtype=torch.float16)` for faster separation. Default is False (fp32, unchanged from prior behavior). Only takes effect on CUDA.
+
 #### Returns:
 
 - `Union[AnalysisResult, List[AnalysisResult]]`  
@@ -747,7 +783,7 @@ Analysis results for the provided audio files.
 Loads the analysis results from the disk.
 
 ```python
-result = allin1.load_result('./struct/24k_Magic.json')
+result = allin1_infer.load_result('./struct/24k_Magic.json')
 ```
 
 
@@ -756,7 +792,7 @@ result = allin1.load_result('./struct/24k_Magic.json')
 Visualizes the analysis results.
 
 ```python
-fig = allin1.visualize(result)
+fig = allin1_infer.visualize(result)
 fig.show()
 ```
 
@@ -781,7 +817,7 @@ It will mix metronome clicks for beats and downbeats, and event sounds for segme
 to the original audio file.
 
 ```python
-y, sr = allin1.sonify(result)
+y, sr = allin1_infer.sonify(result)
 # y: sonified audio with shape (channels=2, samples)
 # sr: sampling rate (=44100)
 ```
@@ -802,7 +838,7 @@ List of tuples or a single tuple containing the sonified audio and the sampling 
 ## Visualization & Sonification
 This package provides a simple visualization (`-v` or `--visualize`) and sonification (`-s` or `--sonify`) function for the analysis results.
 ```shell
-allin1 -v -s your_audio_file.wav
+all-in-one-infer -v -s your_audio_file.wav
 ```
 The visualizations will be saved in the `./viz` directory by default:
 ```shell
@@ -828,7 +864,7 @@ For more details, please refer to the [paper](http://arxiv.org/abs/2307.16425).
 
 By default, the `harmonix-all` model is used. To use a different model, use the `--model` option:
 ```shell
-allin1 --model harmonix-fold0 your_audio_file.wav
+all-in-one-infer --model harmonix-fold0 your_audio_file.wav
 ```
 
 
@@ -846,7 +882,7 @@ without post-processing. These have a resolution of 100 FPS, equivalent to 0.01 
 #### Activations
 The `--activ` option also saves frame-level raw activations from sigmoid and softmax:
 ```shell
-$ allin1 --activ your_audio_file.wav
+$ all-in-one-infer --activ your_audio_file.wav
 ```
 You can find the activations in the `.npz` file:
 ```shell
@@ -877,7 +913,7 @@ as `result.activation_fps` whenever `include_activations=True` -- read it from t
 
 You can access the label names as follows:
 ```python
->>> allin1.HARMONIX_LABELS
+>>> allin1_infer.HARMONIX_LABELS
 ['start',
  'end',
  'intro',
@@ -894,7 +930,7 @@ You can access the label names as follows:
 #### Embeddings
 This package also provides an option to extract raw embeddings from the model.
 ```shell
-$ allin1 --embed your_audio_file.wav
+$ all-in-one-infer --embed your_audio_file.wav
 ```
 You can find the embeddings in the `.npy` file:
 ```shell
@@ -917,9 +953,9 @@ Using the `--embed` option with the `harmonix-all` ensemble model will stack the
 saving them with the shape `[stems=4, time_steps, embedding_size=24, models=8]`.
 
 ### Python
-The Python API `allin1.analyze()` offers the same options as the CLI:
+The Python API `allin1_infer.analyze()` offers the same options as the CLI:
 ```python
->>> allin1.analyze(
+>>> allin1_infer.analyze(
       paths='your_audio_file.wav',
       include_activations=True,
       include_embeddings=True,
@@ -984,8 +1020,9 @@ all-in-one-infer track.wav -o ./results
 # Old dependencies (All-In-One - original)
 dependencies = ["demucs", "natten>=0.15.0"]
 
-# v2.0.0+ dependencies (uses demucs-infer)
-dependencies = ["natten==0.17.5", "demucs-infer"]  # Clean separation via demucs-infer!
+# Current (3.0.0+) dependencies — NATTEN is no longer required
+dependencies = ["torch>=2.0.0", "demucs-infer", ...]  # pure-PyTorch neighborhood attention
+# Optional fused-kernel backend: pip install "all-in-one-infer[natten]"  (natten>=0.17.1,<0.20)
 ```
 
 ### **Installation Methods**
@@ -1017,8 +1054,8 @@ pip install -e .
 - ✅ All visualization and sonification features
 
 ### **What's Enhanced**
-- 🆕 Modern PyTorch 2.x support (NATTEN 0.15.0 → 0.17.5-0.21.0+ flexible support)
-- 🆕 Automatic NATTEN version detection (supports 0.17.5 through 0.21.0+)
+- 🆕 NATTEN removed as a hard dependency — pure-PyTorch NA ships by default (numerically identical, no compiled extension, any torch>=2.0)
+- 🆕 Optional `[natten]` extra (natten>=0.17.1,<0.20, torch<2.8) as a speed optimization
 - 🆕 PyTorch 2.0-2.7.0 and CUDA 11.7-12.8 compatibility
 - 🆕 Uses demucs-infer package for PyTorch 2.x compatible separation
 - 🆕 Clean dependency management via demucs-infer
@@ -1030,7 +1067,7 @@ pip install -e .
 - 🆕 Modern packaging (UV-style with pip compatibility)
 
 ## Training
-Please refer to [TRAINING.md](docs/TRAINING.md).
+This package is inference-only; training code has been removed. [TRAINING.md](docs/TRAINING.md) is kept as a historical guide. To retrain models, refer to the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository.
 
 ## Citation
 
@@ -1060,10 +1097,10 @@ If you use this package for your research, please cite the following papers:
 
 ### What is This Project?
 
-All-In-One-Infer (v2.0.0) is a unified package that combines:
+All-In-One-Infer is a unified package that combines:
 - **Music structure analysis** from [All-In-One](https://github.com/mir-aidj/all-in-one) by Taejun Kim & Juhan Nam
 - **Source separation** via [demucs-infer](https://github.com/openmirlab/demucs-infer) package
-- **NATTEN 0.17.5-0.21.0+ support** with modern PyTorch 2.x compatibility
+- **Pure-PyTorch neighborhood attention** by default (no NATTEN required); optional `[natten]` extra for NATTEN's fused-kernel backend
 - **Performance improvements** and integration work
 
 ### Key Principles
@@ -1078,7 +1115,7 @@ All-In-One-Infer (v2.0.0) is a unified package that combines:
 
 ### This Fork's Contributions 🔧
 
-- PyTorch 2.x compatibility (NATTEN 0.17.5 upgrade)
+- PyTorch 2.x compatibility (NATTEN dependency removed; pure-PyTorch neighborhood attention by default, optional `[natten]` extra)
 - Performance optimizations (model caching, GPU management)
 - Modern packaging and dependency management
 - Enhanced error handling and user experience
@@ -1097,12 +1134,11 @@ See [Citation](#citation) section for BibTeX.
 
 ### Project Information
 
-**Version**: 2.0.0
 **License**: MIT (same as All-In-One and Demucs)
 **Original All-In-One**: [github.com/mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one)
 **Original Demucs**: [github.com/facebookresearch/demucs](https://github.com/facebookresearch/demucs)
 
-### What Changed in v2.0.0?
+### What Changed in v2.0.0? (historical)
 
 See [Motivation & Changes](#-motivation--changes) section above for detailed breakdown of modifications.
 
