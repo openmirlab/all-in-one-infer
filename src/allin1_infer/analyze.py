@@ -17,7 +17,8 @@ Ensemble), .visualize, .sonify, .helpers
 
 import torch
 
-from typing import List, Union, Optional
+from pathlib import Path
+from typing import List, Tuple, Union, Optional
 from tqdm import tqdm
 from .demix import demix
 from .stems import get_stems, StemProvider, DemucsProvider, PrecomputedStemProvider, separate_in_memory
@@ -56,6 +57,70 @@ def _wrap_compiled_fold(compiled_fold):
       embeddings=out.embeddings.clone(),
     )
   return wrapped
+
+
+def _select_stems(
+  todo_paths: List[Path],
+  demix_dir: Path,
+  spec_dir: Path,
+  device: str,
+  skip_separation: bool,
+  stems_dict: Optional[dict],
+  stem_provider: Optional[StemProvider],
+  keep_byproducts: bool,
+  demucs_overlap: float,
+  demucs_fp16: bool,
+  multiprocess: bool,
+) -> Tuple[List[Path], List[Path]]:
+  """Decides HOW to separate `todo_paths` (not used in direct-stems-input
+  mode): skip separation entirely, a precomputed-stems dict, a custom
+  stem_provider, the ordinary disk-based Demucs path (when byproducts must
+  be kept), or the default in-memory Demucs fast path. Returns (demix_paths,
+  spec_paths); spec_paths is `[]` unless the in-memory branch already
+  computed them, in which case the caller must skip its own
+  extract_spectrograms() fallback."""
+  spec_paths = []
+
+  if skip_separation:
+    # Assume stems are already in demix_dir with expected structure
+    demix_paths = [demix_dir / 'htdemucs' / path.stem for path in todo_paths]
+    print(f'=> Skipping source separation, using existing stems.')
+  elif stems_dict:
+    # Use pre-computed stems from dictionary
+    stem_provider = PrecomputedStemProvider(stems_dict)
+    demix_paths = get_stems(todo_paths, demix_dir, stem_provider, device)
+  elif stem_provider is not None:
+    # Use custom stem provider
+    demix_paths = get_stems(todo_paths, demix_dir, stem_provider, device)
+  elif keep_byproducts:
+    # Byproducts must land on disk for the caller to keep, so use the
+    # ordinary write/read path (same as the in-memory branch's cache
+    # fallback below).
+    demix_paths = demix(todo_paths, demix_dir, device, demucs_overlap, demucs_fp16)
+  else:
+    # Default HTDemucs, fresh run, byproducts not requested: skip the
+    # stem wav write/read round trip (~0.83s/track) by keeping stem
+    # tensors in memory and feeding them straight into spectrogram
+    # extraction. Tracks whose stems are already cached on disk (e.g. a
+    # prior keep_byproducts=True run against this demix_dir) still go
+    # through the ordinary path, so existing caching semantics for those
+    # are unaffected.
+    cached_paths, stems_dirs, arrays_by_path, sr_by_path = separate_in_memory(
+      todo_paths, demix_dir, device, demucs_overlap, demucs_fp16,
+    )
+    spec_paths_by_path = {}
+    if cached_paths:
+      cached_demix_paths = get_stems(cached_paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
+      cached_spec_paths = extract_spectrograms(cached_demix_paths, spec_dir, multiprocess)
+      spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
+    if arrays_by_path:
+      spec_paths_by_path.update(
+        extract_spectrograms_from_arrays(arrays_by_path, spec_dir, sr_by_path)
+      )
+    demix_paths = [stems_dirs[path] for path in todo_paths]
+    spec_paths = [spec_paths_by_path[path] for path in todo_paths]
+
+  return demix_paths, spec_paths
 
 
 def analyze(
@@ -242,45 +307,11 @@ def analyze(
       )
       print(f'=> Using direct stems input for {len(todo_stems)} track(s).')
     else:
-      # Handle source separation based on provided options
-      if skip_separation:
-        # Assume stems are already in demix_dir with expected structure
-        demix_paths = [demix_dir / 'htdemucs' / path.stem for path in todo_paths]
-        print(f'=> Skipping source separation, using existing stems.')
-      elif stems_dict:
-        # Use pre-computed stems from dictionary
-        stem_provider = PrecomputedStemProvider(stems_dict)
-        demix_paths = get_stems(todo_paths, demix_dir, stem_provider, device)
-      elif stem_provider is not None:
-        # Use custom stem provider
-        demix_paths = get_stems(todo_paths, demix_dir, stem_provider, device)
-      elif keep_byproducts:
-        # Byproducts must land on disk for the caller to keep, so use the
-        # ordinary write/read path (same as the in-memory branch's cache
-        # fallback below).
-        demix_paths = demix(todo_paths, demix_dir, device, demucs_overlap, demucs_fp16)
-      else:
-        # Default HTDemucs, fresh run, byproducts not requested: skip the
-        # stem wav write/read round trip (~0.83s/track) by keeping stem
-        # tensors in memory and feeding them straight into spectrogram
-        # extraction. Tracks whose stems are already cached on disk (e.g. a
-        # prior keep_byproducts=True run against this demix_dir) still go
-        # through the ordinary path, so existing caching semantics for those
-        # are unaffected.
-        cached_paths, stems_dirs, arrays_by_path, sr_by_path = separate_in_memory(
-          todo_paths, demix_dir, device, demucs_overlap, demucs_fp16,
-        )
-        spec_paths_by_path = {}
-        if cached_paths:
-          cached_demix_paths = get_stems(cached_paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
-          cached_spec_paths = extract_spectrograms(cached_demix_paths, spec_dir, multiprocess)
-          spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
-        if arrays_by_path:
-          spec_paths_by_path.update(
-            extract_spectrograms_from_arrays(arrays_by_path, spec_dir, sr_by_path)
-          )
-        demix_paths = [stems_dirs[path] for path in todo_paths]
-        spec_paths = [spec_paths_by_path[path] for path in todo_paths]
+      demix_paths, spec_paths = _select_stems(
+        todo_paths, demix_dir, spec_dir, device,
+        skip_separation, stems_dict, stem_provider, keep_byproducts,
+        demucs_overlap, demucs_fp16, multiprocess,
+      )
 
     # Extract spectrograms for the tracks that are not analyzed yet (the
     # in-memory branch above already computed spec_paths directly).
