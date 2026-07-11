@@ -8,19 +8,33 @@ import torch
 from abc import ABC,  abstractmethod
 from typing import Callable, Optional, Tuple
 
-# NATTEN compatibility: Support versions 0.17.x to 0.19.x
-# Note: NATTEN >=0.20 requires additional wrapper updates (not yet implemented)
+# Neighborhood attention backend selection:
+# NATTEN is optional — if a compatible version (0.17.x-0.19.x) is installed we
+# use its fused kernels, otherwise we fall back to the pure-PyTorch
+# implementation in .neighborhood_attention (numerically identical, works on
+# CPU/CUDA/MPS with any torch >= 2.0, no compiled extension needed).
+# NATTEN >=0.20 removed this functional API and RPB support entirely, so it
+# cannot be used with the pretrained checkpoints; its import fails below and
+# the fallback takes over. A broken NATTEN install (e.g. 0.17.x compiled
+# against a mismatched torch) can raise non-ImportError exceptions at import
+# time, hence the broad `except Exception`.
 try:
-    # Try short names first (NATTEN <0.19)
+    # NATTEN 0.17.x-0.18.x short names
     from natten.functional import na1d_av, na1d_qk, na2d_av, na2d_qk
-except ImportError:
-    # Fall back to long names (NATTEN 0.19.x)
-    from natten.functional import (
-        natten1dav as na1d_av,
-        natten1dqkrpb as na1d_qk,
-        natten2dav as na2d_av,
-        natten2dqkrpb as na2d_qk,
-    )
+    NA_BACKEND = 'natten'
+except Exception:
+    try:
+        # NATTEN 0.19.x long names
+        from natten.functional import (
+            natten1dav as na1d_av,
+            natten1dqkrpb as na1d_qk,
+            natten2dav as na2d_av,
+            natten2dqkrpb as na2d_qk,
+        )
+        NA_BACKEND = 'natten'
+    except Exception:
+        from .neighborhood_attention import na1d_av, na1d_qk, na2d_av, na2d_qk
+        NA_BACKEND = 'torch'
 
 
 from ..config import Config

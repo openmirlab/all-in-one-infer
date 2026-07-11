@@ -98,31 +98,33 @@ The original **All-In-One** package is an excellent music structure analysis too
 
 This fork addresses these issues through strategic integration and improvements:
 
-#### **1. NATTEN Upgrade for Modern PyTorch** 🔧
+#### **1. NATTEN Dependency Removed (Pure-PyTorch Neighborhood Attention)** 🔧
 
 **Before:**
 ```toml
-# Original All-In-One used NATTEN 0.15.0 (PyTorch 1.x only)
+# Original All-In-One required NATTEN, a compiled CUDA/C++ extension that must
+# be built against the exact installed torch version at install time.
 dependencies = ["natten>=0.15.0"]
 ```
 
 **After:**
 ```toml
-# Flexible NATTEN support: 0.17.5 through 0.21.0+
-dependencies = ["natten>=0.17.5"]  # Supports PyTorch 2.0-2.7.0
+# No natten needed — neighborhood attention is implemented in pure PyTorch.
+dependencies = ["torch>=2.0.0"]  # no upper bound, no compiled extension
 ```
 
 **Changes Made:**
-- Upgraded NATTEN dependency from 0.15.0 to 0.17.5+ (flexible)
-- Added automatic version detection for NATTEN 0.17.5-0.21.0+
-- Code automatically adapts to installed NATTEN version
-- Tested with PyTorch 2.0-2.7.0 and CUDA 11.7-12.8
+- Reimplemented NATTEN's neighborhood attention (1D + 2D, with relative
+  positional biases) in pure PyTorch: `src/allin1fix/models/neighborhood_attention.py`
+- Numerically identical to NATTEN 0.17.5 (verified by golden-fixture tests,
+  forward and backward)
+- Pretrained checkpoints load unchanged — no weight conversion
+- If a compatible NATTEN (0.17.x-0.19.x) is installed, it is used automatically
+  as a faster fused-kernel backend: `pip install "all-in-one-fix[natten]"`
 
-**NATTEN Version Support:**
-- **NATTEN 0.17.5**: PyTorch 2.0-2.6, CUDA 11.7-12.1
-- **NATTEN 0.21.0**: PyTorch 2.7.0, CUDA 12.8
-
-**Impact:** All-In-One models work with both legacy and latest PyTorch versions
+**Impact:** Installs anywhere with a single `pip install` — any torch >= 2.0
+(including 2.8+), CPU-only machines, and platforms NATTEN never supported
+(e.g. macOS / Apple Silicon). No C++ toolchain required.
 
 #### **2. Streamlined Source Separation** 🎵
 
@@ -212,7 +214,7 @@ This project integrates two foundational open-source projects:
 - **[demucs-infer](https://github.com/openmirlab/demucs-infer)** - Source separation package (PyTorch 2.x compatible)
 
 **What's New in v2.0.0:**
-- ✅ NATTEN 0.17.5 for PyTorch 2.x compatibility
+- ✅ NATTEN removed — pure-PyTorch neighborhood attention (any PyTorch >= 2.0, no compilation)
 - ✅ demucs-infer integration for source separation
 - ✅ Performance improvements (6x faster with model caching)
 - ✅ Enhanced error handling and cache management
@@ -237,71 +239,27 @@ This project integrates two foundational open-source projects:
 
 ### Quick Install from PyPI 🚀
 
-**For most users, use these commands:**
-
 ```bash
-# Install PyTorch first
-pip install torch>=2.0.0
+pip install all-in-one-fix
 
-# Install all-in-one-fix (madmom will be auto-installed during installation)
-pip install all-in-one-fix --no-build-isolation
-```
-
-**Note:** `madmom` will be automatically installed from git during the `all-in-one-fix` installation. If auto-installation fails, install it manually:
-```bash
+# madmom is required at runtime; if it wasn't installed automatically:
 pip install git+https://github.com/CPJKU/madmom
 ```
 
 **Or if you prefer UV (faster):**
 ```bash
-uv add torch
+uv add all-in-one-fix
 uv add git+https://github.com/CPJKU/madmom
-uv add all-in-one-fix --no-build-isolation
 ```
 
-### Step-by-Step Installation from PyPI
-
-If you prefer to install step-by-step:
-
-**Step 1:** Install PyTorch first (required)
-```bash
-pip install torch>=2.0.0
-```
-
-**Step 2:** Install all-in-one-fix (madmom will be auto-installed)
-```bash
-pip install all-in-one-fix --no-build-isolation
-```
-
-**Note:** `madmom` is automatically installed during Step 2. If it fails, install manually:
-```bash
-pip install git+https://github.com/CPJKU/madmom
-```
-
-### Why Multiple Steps?
-
-⚠️ **Important:** 
-1. **PyTorch** must be installed first because `natten` requires `torch` during its build process
-2. Use `--no-build-isolation` flag when installing `all-in-one-fix` (so `natten` can access `torch` during build)
-3. **madmom** is automatically installed from git during `all-in-one-fix` installation (PyPI doesn't allow git dependencies, so we use a post-install hook)
-
-**What happens if you skip this?**
-- `pip install all-in-one-fix` alone will fail with: `ModuleNotFoundError: No module named 'torch'`
-- This is because pip's build isolation prevents access to installed packages during build
+That's it — no `--no-build-isolation`, no "install torch first". Since NATTEN
+is no longer a dependency, there is nothing to compile at install time.
 
 ### Requirements
 
 - **Python**: 3.9 or later (required for `scipy>=1.13` and `madmom`)
-- **PyTorch**: 2.0.0 to <2.8.0 (PyTorch 2.8+ breaks natten 0.17.5 compatibility)
+- **PyTorch**: 2.0.0 or later (no upper bound)
 - **OS**: Linux, macOS, Windows
-
-> **⚠️ Important Compatibility Note:**
-> - **PyTorch 2.0-2.7**: Fully supported with natten 0.17.5
-> - **PyTorch 2.8+**: Not compatible with natten 0.17.5 (internal API changes). Use PyTorch <2.8.0 or wait for natten 0.21+ support
->
-> **💡 NATTEN Version Compatibility:**
-> - **NATTEN 0.17.5**: Works with PyTorch 2.0-2.7, CUDA 11.7-12.1
-> - **NATTEN 0.21.0+**: Requires code updates (API changes) - not yet supported
 
 ### GPU Support (Optional)
 
@@ -310,22 +268,22 @@ For GPU acceleration, install PyTorch with CUDA support:
 ```bash
 # Example: CUDA 12.1
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install allin1fix --no-build-isolation
+pip install all-in-one-fix
 ```
 
-### ❌ What Won't Work
+### Optional: NATTEN fused kernels
 
-**This will FAIL:**
+Neighborhood attention runs on a built-in pure-PyTorch implementation that is
+numerically identical to NATTEN. If you want NATTEN's fused CUDA kernels as a
+speed optimization (Linux + CUDA + torch < 2.8 only, compiles at install time):
+
 ```bash
-pip install allin1fix  # ❌ Missing torch and --no-build-isolation
+pip install torch"<2.8"
+pip install "all-in-one-fix[natten]" --no-build-isolation
 ```
 
-**Error you'll see:**
-```
-ModuleNotFoundError: No module named 'torch'
-hint: This error likely indicates that `natten@0.17.5` depends on `torch`, 
-but doesn't declare it as a build dependency.
-```
+It is picked up automatically when importable; otherwise the pure-PyTorch
+backend is used. Results are identical either way.
 
 ### ✅ Verify Installation
 
@@ -343,10 +301,6 @@ allin1fix --help
 ```
 
 ### Troubleshooting
-
-**Installation fails with "No module named 'torch'"**
-- ✅ **Cause:** Didn't install torch first or didn't use `--no-build-isolation`
-- ✅ **Solution:** Install `torch>=2.0.0` first, then use `--no-build-isolation`
 
 **Installation fails with scipy version error**
 - ✅ **Cause:** Using Python < 3.9
@@ -371,31 +325,23 @@ If you want to install the latest development version from GitHub:
 # Install UV if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install PyTorch first
-uv pip install torch>=2.0.0
-
 # Install from GitHub
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git --no-build-isolation
+uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
 ```
 
 **Using pip:**
 ```bash
-# Install PyTorch first
-pip install torch>=2.0.0
-
-# Install from GitHub
-pip install git+https://github.com/openmirlab/all-in-one-fix.git --no-build-isolation
+pip install git+https://github.com/openmirlab/all-in-one-fix.git
 ```
 
 **Development Installation (Editable):**
 ```bash
 git clone https://github.com/openmirlab/all-in-one-fix.git
 cd all-in-one-fix
-pip install torch>=2.0.0
-pip install -e . --no-build-isolation
+pip install -e .
 ```
 
-**Note:** All dependencies (including **demucs-infer** and **madmom**) will be installed automatically from GitHub. You must install PyTorch first before installing allin1fix.
+**Note:** All PyPI dependencies (including **demucs-infer**) are installed automatically. **madmom** still needs to come from git if it isn't picked up automatically: `pip install git+https://github.com/CPJKU/madmom`.
 
 ### (Optional) Install FFmpeg for MP3 support
 

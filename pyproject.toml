@@ -38,13 +38,15 @@ classifiers = [
 ]
 
 # Core dependencies
-# IMPORTANT: torch MUST be listed before natten for proper installation order
-# natten requires torch during build, so torch must be installed first
+# Note: natten is NOT required anymore — neighborhood attention ships as a
+# pure-PyTorch implementation (src/allin1fix/models/neighborhood_attention.py),
+# so no compiled extension and no torch upper bound. If a compatible natten
+# (0.17.x-0.19.x) is installed, it is picked up automatically as a faster GPU
+# backend; see the [natten] extra below.
 dependencies = [
   "numpy",
   "librosa",
-  "torch>=2.0.0,<2.8.0",  # Required FIRST for natten build; PyTorch 2.8+ breaks natten 0.17.5 (_device_t removed)
-  "natten==0.17.5",  # NATTEN 0.17.5 verified with PyTorch 2.0-2.7; PyTorch 2.8+ requires natten 0.21+ (API changes)
+  "torch>=2.0.0",
   "hydra-core",
   "omegaconf",
   "huggingface_hub",
@@ -56,6 +58,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Optional fused GPU kernels for neighborhood attention. Requires a C++
+# toolchain and torch<2.8 at install time (natten 0.17.x compiles against the
+# installed torch). Purely a speed optimization — results are identical to the
+# built-in pure-PyTorch implementation.
+natten = [
+  "natten>=0.17.1,<0.20",  # natten>=0.20 removed the legacy functional API and RPB support
+  "torch>=2.0.0,<2.8.0",   # natten 0.17.x breaks on torch 2.8+ (_device_t removed)
+]
 train = [
   "lightning",
   "timm",
