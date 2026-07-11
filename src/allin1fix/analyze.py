@@ -3,9 +3,9 @@ import torch
 from typing import List, Union, Optional
 from tqdm import tqdm
 from .demix import demix
-from .stems import get_stems, StemProvider, DemucsProvider, PrecomputedStemProvider
+from .stems import get_stems, StemProvider, DemucsProvider, PrecomputedStemProvider, separate_in_memory
 from .stems_input import StemsInput, prepare_stems_for_analysis, validate_stems_input
-from .spectrogram import extract_spectrograms
+from .spectrogram import extract_spectrograms, extract_spectrograms_from_arrays
 from .models import load_pretrained_model
 from .visualize import visualize as _visualize
 from .sonify import sonify as _sonify
@@ -200,12 +200,38 @@ def analyze(
       elif stem_provider is not None:
         # Use custom stem provider
         demix_paths = get_stems(todo_paths, demix_dir, stem_provider, device)
-      else:
-        # Default: use HTDemucs (backward compatibility)
+      elif keep_byproducts:
+        # Byproducts must land on disk for the caller to keep, so use the
+        # ordinary write/read path (same as the in-memory branch's cache
+        # fallback below).
         demix_paths = demix(todo_paths, demix_dir, device)
+      else:
+        # Default HTDemucs, fresh run, byproducts not requested: skip the
+        # stem wav write/read round trip (~0.83s/track) by keeping stem
+        # tensors in memory and feeding them straight into spectrogram
+        # extraction. Tracks whose stems are already cached on disk (e.g. a
+        # prior keep_byproducts=True run against this demix_dir) still go
+        # through the ordinary path, so existing caching semantics for those
+        # are unaffected.
+        cached_paths, stems_dirs, arrays_by_path, sample_rate = separate_in_memory(
+          todo_paths, demix_dir, device,
+        )
+        spec_paths_by_path = {}
+        if cached_paths:
+          cached_demix_paths = get_stems(cached_paths, demix_dir, None, device)
+          cached_spec_paths = extract_spectrograms(cached_demix_paths, spec_dir, multiprocess)
+          spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
+        if arrays_by_path:
+          spec_paths_by_path.update(
+            extract_spectrograms_from_arrays(arrays_by_path, spec_dir, sample_rate)
+          )
+        demix_paths = [stems_dirs[path] for path in todo_paths]
+        spec_paths = [spec_paths_by_path[path] for path in todo_paths]
 
-    # Extract spectrograms for the tracks that are not analyzed yet.
-    spec_paths = extract_spectrograms(demix_paths, spec_dir, multiprocess)
+    # Extract spectrograms for the tracks that are not analyzed yet (the
+    # in-memory branch above already computed spec_paths directly).
+    if not spec_paths:
+      spec_paths = extract_spectrograms(demix_paths, spec_dir, multiprocess)
 
     # Load the model.
     model = load_pretrained_model(

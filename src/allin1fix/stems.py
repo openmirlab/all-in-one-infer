@@ -21,7 +21,9 @@ from abc import ABC, abstractmethod
 # Import demucs-infer for source separation
 from demucs_infer.pretrained import get_model
 from demucs_infer.apply import apply_model
-from demucs_infer.audio import save_audio
+from demucs_infer.audio import save_audio, prevent_clip
+
+import numpy as np
 
 
 class StemSeparator(Protocol):
@@ -187,6 +189,98 @@ class DemucsProvider(StemProvider):
             progress_callback("Separation complete", 1.0)
 
         return stems_dir
+
+
+def quantize_stem_to_madmom_mono_int16(wav: torch.Tensor) -> np.ndarray:
+    """Reproduce, bit-for-bit, the int16 mono array that madmom's
+    ``Signal(path, num_channels=1)`` reads back from a stem wav file written
+    by ``demucs_infer.audio.save_audio(wav, path, sr)`` with its defaults
+    (``clip='rescale'``, PCM_S 16-bit). Lets the in-memory pipeline skip the
+    wav write/read round trip while staying numerically identical to it.
+
+    wav : [channels, samples] float32 tensor (one row of demucs `sources`).
+
+    Verified empirically against the real on-disk round trip (see the perf
+    validation script); if demucs-infer ever changes save_audio's defaults
+    (clip mode, bit depth) this needs to be re-verified against it.
+    """
+    wav = prevent_clip(wav, mode='rescale')
+    # PCM_S16 quantization -- matches torchaudio's soundfile backend exactly
+    # (round-half-to-even via torch.round, then clamp to int16 range).
+    quantized = (wav.clamp(-1, 1) * 32768).round().clamp(-32768, 32767).to(torch.int16)
+    arr = quantized.cpu().numpy().T  # [samples, channels], scipy.io.wavfile's convention
+    # madmom's remix() to mono for integer dtypes: mean over the channel axis
+    # in float64, then cast back to int16 -- numpy's float->int astype
+    # truncates toward zero, it does not round.
+    return np.mean(arr, axis=-1).astype(np.int16)
+
+
+def separate_in_memory(
+    paths: List[Path],
+    demix_dir: Path,
+    device: Union[str, torch.device] = 'cuda',
+):
+    """Fresh-run fast path for the default DemucsProvider: separates audio
+    directly into in-memory mono stem arrays, skipping the stem wav
+    write/read round trip (~0.83s/track).
+
+    Tracks whose stems already exist on disk are left untouched and reported
+    back as `cached_paths` -- callers must run those through the ordinary
+    get_stems()/extract_spectrograms() path so existing keep_byproducts /
+    resumed-run caching semantics are preserved exactly.
+
+    Returns
+    -------
+    cached_paths : List[Path]
+        Subset of `paths` whose stems are already cached on disk.
+    stems_dirs : Dict[Path, Path]
+        For every path in `paths` (cached or fresh): the stems directory that
+        holds/would hold its stem wavs, mirroring DemucsProvider.get_stems()'s
+        naming, for bookkeeping/cleanup.
+    arrays_by_path : Dict[Path, Dict[str, np.ndarray]]
+        For the freshly-separated paths only: {'bass': arr, 'drums': arr,
+        'other': arr, 'vocals': arr} mono int16 arrays.
+    sample_rate : Optional[int]
+        Sample rate shared by the freshly-separated tracks' arrays (None if
+        every path in `paths` was already cached).
+    """
+    provider = DemucsProvider(device=device)
+    required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
+
+    cached_paths = []
+    stems_dirs = {}
+    arrays_by_path = {}
+    sample_rate = None
+
+    for path in paths:
+        stems_dir = demix_dir / provider.model_name / Path(path).stem
+        stems_dirs[path] = stems_dir
+        if all((stems_dir / stem).exists() for stem in required_stems):
+            cached_paths.append(path)
+            continue
+
+        wav, sr = torchaudio.load(str(path))
+        if wav.shape[0] == 1:
+            wav = wav.repeat(2, 1)
+        elif wav.shape[0] > 2:
+            wav = wav[:2]
+        wav_batch = wav.unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            sources = apply_model(provider.model, wav_batch, device=device, progress=False)
+
+        sources = sources.cpu().squeeze(0)
+        del wav_batch
+        if device == 'cuda' and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        arrays_by_path[path] = {
+            name: quantize_stem_to_madmom_mono_int16(sources[i])
+            for i, name in enumerate(provider.model.sources)
+        }
+        sample_rate = sr
+
+    return cached_paths, stems_dirs, arrays_by_path, sample_rate
 
 
 class PrecomputedStemProvider(StemProvider):
