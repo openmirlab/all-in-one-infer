@@ -67,13 +67,6 @@ natten = [
   "torch>=2.0.0,<2.8.0",   # natten 0.17.x breaks on torch 2.8+ (_device_t removed)
   "torchaudio<2.8.0",      # keep torchaudio paired with torch<2.8 (mismatched pairs fail to load)
 ]
-train = [
-  "lightning",
-  "timm",
-  "wandb",
-  "mir_eval",
-  "numpy<1.24", # otherwise, mir_eval will raise AttributeError: module 'numpy' has no attribute 'int'
-]
 # Development dependencies
 dev = [
   "black",
@@ -82,8 +75,6 @@ dev = [
 
 [project.scripts]
 allin1fix = "allin1fix.cli:main"
-allin1fix-train = "allin1fix.training.train:main"
-allin1fix-preprocess = "allin1fix.training.preprocess:main"
 
 [project.urls]
 Homepage = "https://github.com/openmirlab/all-in-one-fix"

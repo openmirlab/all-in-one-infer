@@ -1107,7 +1107,7 @@ See [Motivation & Changes](#-motivation--changes) section above for detailed bre
 Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 - **[USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md)** - Detailed usage examples and code snippets
-- **[TRAINING.md](docs/TRAINING.md)** - Guide for training All-In-One models
+- **[TRAINING.md](docs/TRAINING.md)** - Historical training guide (this package is inference-only; see note in the doc)
 - **[INTEGRATION.md](docs/INTEGRATION.md)** - Details about Demucs integration
 - **[IMPROVEMENTS.md](docs/IMPROVEMENTS.md)** - Performance improvements documentation
 - **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history and release notes

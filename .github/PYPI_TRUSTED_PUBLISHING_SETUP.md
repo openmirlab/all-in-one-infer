@@ -18,7 +18,7 @@
    **Important:** 
    - PyPI project name (`all-in-one-fix`) now matches repository name (`all-in-one-fix`) ✅
    - Python package name is `allin1fix` (used in imports: `import allin1fix`)
-   - CLI commands are `allin1fix`, `allin1fix-train`, etc. (based on Python package name)
+   - CLI command is `allin1fix` (based on Python package name)
 
 3. **Verify Configuration:**
    - The publisher should appear as "pending" until the next workflow run

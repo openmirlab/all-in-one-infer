@@ -1,5 +1,14 @@
 # Training All-In-One Music Structure Analaysis Models
 
+> **Note:** `all-in-one-fix` is an inference-only package — the training
+> pipeline described below (the `allin1fix.training` module, the `train`
+> extra, and the `allin1fix-train`/`allin1fix-preprocess` CLI commands it
+> documents) has been removed from this package. It is kept here purely as
+> a historical reference. If you want to retrain a model, use the upstream
+> [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository,
+> which still contains the full training pipeline, or check this
+> repository's git history prior to the training-removal commit.
+
 ## Install Dependencies
 
 ```shell

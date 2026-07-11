@@ -39,8 +39,14 @@ Following the demucs-infer pattern:
 - `numpy`, `librosa`, `hydra-core`, `omegaconf`, `huggingface_hub`, `matplotlib`
 
 **Optional dependencies:**
-- `train`: For training models (lightning, timm, wandb, mir_eval)
+- `natten`: Optional fused GPU kernels for neighborhood attention (speed-only; pure-PyTorch implementation is used otherwise)
 - `dev`: For development (black, ruff)
+
+> Note: this package is inference-only. A `train` extra and
+> `allin1fix-train`/`allin1fix-preprocess` CLI commands used to exist for
+> reproducing the paper's training pipeline; they have been removed. See
+> [TRAINING.md](TRAINING.md) for historical reference and pointers to the
+> upstream training pipeline.
 
 ### Project URLs
 
@@ -80,11 +86,9 @@ pip install -e .
 
 ## CLI Commands
 
-Three entry points are configured:
+One entry point is configured:
 
 1. `allin1fix` - Main CLI for music structure analysis
-2. `allin1fix-train` - Training CLI for model training
-3. `allin1fix-preprocess` - Preprocessing CLI for data preparation
 
 ## Package Structure
 
@@ -101,8 +105,7 @@ all-in-one-fix/
 │       ├── cli.py         # CLI entry point
 │       ├── analyze.py     # Core analysis functions
 │       ├── models/        # Model definitions
-│       ├── postprocessing/# Post-processing
-│       └── training/      # Training utilities
+│       └── postprocessing/# Post-processing
 ├── docs/                   # Documentation
 ├── tests/                  # Test suite
 └── examples/              # Usage examples
@@ -132,7 +135,6 @@ all-in-one-fix/
 
 4. **Development Tools**
    - Optional dev dependencies (black, ruff)
-   - Optional training dependencies
    - Editable install support
 
 5. **NATTEN Compatibility Layer**
@@ -153,8 +155,8 @@ all-in-one-fix/
 | Project URLs | 6 URLs | 6 URLs ✅ |
 | Wheel + sdist | Yes | Yes ✅ |
 | GitHub deps | N/A | Yes (demucs-infer, madmom) ✅ |
-| Optional deps | mp3, quantized | train, dev ✅ |
-| CLI scripts | 1 | 3 ✅ |
+| Optional deps | mp3, quantized | natten, dev ✅ |
+| CLI scripts | 1 | 1 ✅ |
 | UV compatible | Yes | Yes ✅ |
 
 ## Publishing Readiness
