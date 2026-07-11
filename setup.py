@@ -12,7 +12,7 @@ from pathlib import Path
 
 def get_version():
     """Read version from __about__.py"""
-    version_file = Path(__file__).parent / "src" / "allin1fix" / "__about__.py"
+    version_file = Path(__file__).parent / "src" / "allin1_infer" / "__about__.py"
     with open(version_file) as f:
         for line in f:
             if line.startswith("__version__"):

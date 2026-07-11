@@ -1,11 +1,11 @@
-# All-In-One-Fix Package Structure
+# All-In-One-Infer Package Structure
 
 This document describes the package structure and publishing configuration following the pattern from `demucs-infer`.
 
 ## Package Information
 
-- **Name**: `allin1fix`
-- **Version**: 2.0.0 (from `src/allin1fix/__about__.py`)
+- **Name**: `allin1_infer`
+- **Version**: 2.0.0 (from `src/allin1_infer/__about__.py`)
 - **License**: MIT
 - **Build System**: hatchling
 - **Python**: 3.10
@@ -39,19 +39,25 @@ Following the demucs-infer pattern:
 - `numpy`, `librosa`, `hydra-core`, `omegaconf`, `huggingface_hub`, `matplotlib`
 
 **Optional dependencies:**
-- `train`: For training models (lightning, timm, wandb, mir_eval)
+- `natten`: Optional fused GPU kernels for neighborhood attention (speed-only; pure-PyTorch implementation is used otherwise)
 - `dev`: For development (black, ruff)
+
+> Note: this package is inference-only. A `train` extra and
+> `allin1_infer-train`/`allin1_infer-preprocess` CLI commands used to exist for
+> reproducing the paper's training pipeline; they have been removed. See
+> [TRAINING.md](TRAINING.md) for historical reference and pointers to the
+> upstream training pipeline.
 
 ### Project URLs
 
 ```toml
 [project.urls]
-Homepage = "https://github.com/ChenPaulYu/all-in-one-fix"
-Repository = "https://github.com/ChenPaulYu/all-in-one-fix"
-Documentation = "https://github.com/ChenPaulYu/all-in-one-fix#readme"
-"Bug Reports" = "https://github.com/ChenPaulYu/all-in-one-fix/issues"
+Homepage = "https://github.com/ChenPaulYu/all-in-one-infer"
+Repository = "https://github.com/ChenPaulYu/all-in-one-infer"
+Documentation = "https://github.com/ChenPaulYu/all-in-one-infer#readme"
+"Bug Reports" = "https://github.com/ChenPaulYu/all-in-one-infer/issues"
 "Original All-In-One" = "https://github.com/mir-aidj/all-in-one"
-Changelog = "https://github.com/ChenPaulYu/all-in-one-fix/blob/main/docs/CHANGELOG.md"
+Changelog = "https://github.com/ChenPaulYu/all-in-one-infer/blob/main/docs/CHANGELOG.md"
 ```
 
 ## Installation Methods
@@ -59,50 +65,47 @@ Changelog = "https://github.com/ChenPaulYu/all-in-one-fix/blob/main/docs/CHANGEL
 ### Option 1: UV (Recommended)
 ```bash
 # Install from GitHub
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
 
 # Editable install for development
-git clone https://github.com/openmirlab/all-in-one-fix.git
-cd all-in-one-fix
+git clone https://github.com/openmirlab/all-in-one-infer.git
+cd all-in-one-infer
 uv pip install -e .
 ```
 
 ### Option 2: pip (Traditional)
 ```bash
 # Install from GitHub
-pip install git+https://github.com/openmirlab/all-in-one-fix.git
+pip install git+https://github.com/openmirlab/all-in-one-infer.git
 
 # Editable install for development
-git clone https://github.com/openmirlab/all-in-one-fix.git
-cd all-in-one-fix
+git clone https://github.com/openmirlab/all-in-one-infer.git
+cd all-in-one-infer
 pip install -e .
 ```
 
 ## CLI Commands
 
-Three entry points are configured:
+One entry point is configured:
 
-1. `allin1fix` - Main CLI for music structure analysis
-2. `allin1fix-train` - Training CLI for model training
-3. `allin1fix-preprocess` - Preprocessing CLI for data preparation
+1. `all-in-one-infer` - Main CLI for music structure analysis
 
 ## Package Structure
 
 ```
-all-in-one-fix/
+all-in-one-infer/
 ├── pyproject.toml          # Modern packaging configuration
 ├── README.md               # Comprehensive documentation
 ├── LICENSE                 # MIT license
 ├── NOTICE                  # Attribution notices
 ├── src/
-│   └── allin1fix/         # Main package
+│   └── allin1_infer/      # Main package
 │       ├── __about__.py   # Version info (2.0.0)
 │       ├── __init__.py    # Package exports
 │       ├── cli.py         # CLI entry point
 │       ├── analyze.py     # Core analysis functions
 │       ├── models/        # Model definitions
-│       ├── postprocessing/# Post-processing
-│       └── training/      # Training utilities
+│       └── postprocessing/# Post-processing
 ├── docs/                   # Documentation
 ├── tests/                  # Test suite
 └── examples/              # Usage examples
@@ -132,7 +135,6 @@ all-in-one-fix/
 
 4. **Development Tools**
    - Optional dev dependencies (black, ruff)
-   - Optional training dependencies
    - Editable install support
 
 5. **NATTEN Compatibility Layer**
@@ -144,7 +146,7 @@ all-in-one-fix/
 
 ## Comparison with demucs-infer Pattern
 
-| Feature | demucs-infer | allin1fix |
+| Feature | demucs-infer | all-in-one-infer |
 |---------|--------------|-----------|
 | Build backend | hatchling | hatchling ✅ |
 | License format | `{text = "MIT"}` | `{text = "MIT"}` ✅ |
@@ -153,8 +155,8 @@ all-in-one-fix/
 | Project URLs | 6 URLs | 6 URLs ✅ |
 | Wheel + sdist | Yes | Yes ✅ |
 | GitHub deps | N/A | Yes (demucs-infer, madmom) ✅ |
-| Optional deps | mp3, quantized | train, dev ✅ |
-| CLI scripts | 1 | 3 ✅ |
+| Optional deps | mp3, quantized | natten, dev ✅ |
+| CLI scripts | 1 | 1 ✅ |
 | UV compatible | Yes | Yes ✅ |
 
 ## Publishing Readiness
@@ -169,7 +171,7 @@ The package is now ready for:
 
 ## Notes
 
-- **PyTorch requirement**: Users must install PyTorch manually before installing allin1fix (same as demucs-infer)
+- **PyTorch requirement**: Users must install PyTorch manually before installing all-in-one-infer (same as demucs-infer)
 - **License compatibility**: MIT license compatible with both All-In-One and Demucs
 - **Backward compatibility**: All original functionality preserved
 - **Attribution**: Proper credit to All-In-One and Demucs in README and NOTICE

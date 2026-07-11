@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Example script demonstrating custom source separation integration with All-In-One-Fix.
+Example script demonstrating custom source separation integration with All-In-One-Infer.
 
 This script shows different ways to use custom models or pre-computed stems
 instead of the default HTDemucs separation.
@@ -11,8 +11,8 @@ import torch
 import librosa
 import soundfile as sf
 from pathlib import Path
-from allin1fix import analyze
-from allin1fix.stems import (
+from allin1_infer import analyze
+from allin1_infer.stems import (
     CustomSeparatorProvider,
     PrecomputedStemProvider, 
     DemucsProvider
@@ -199,7 +199,7 @@ def example3_stems_dict_cli():
     
     print(f"✓ Created stems mapping: {mapping_file}")
     print(f"Now you can use it with CLI:")
-    print(f"  allin1fix './assets/Nujabes - Luv(sic) Part 2 feat.Shing02.wav' --stems-dict {mapping_file} -o ./results_cli")
+    print(f"  all-in-one-infer './assets/Nujabes - Luv(sic) Part 2 feat.Shing02.wav' --stems-dict {mapping_file} -o ./results_cli")
 
 
 if __name__ == "__main__":

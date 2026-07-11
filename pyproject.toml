@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 # Metadata is still defined in pyproject.toml (PEP 621)
 
 [project]
-name = "all-in-one-fix"  # PyPI project name (matches repository name)
-# Note: Python package name is still "allin1fix" (in src/allin1fix/)
-# This allows: import allin1fix (Python) while PyPI project is all-in-one-fix
+name = "all-in-one-infer"  # PyPI project name (matches repository name)
+# Note: Python package name is "allin1_infer" (in src/allin1_infer/)
+# This allows: import allin1_infer (Python) while PyPI project is all-in-one-infer
 dynamic = ["version"]
 description = "All-In-One Music Structure Analyzer with source separation"
 readme = "README.md"
@@ -20,7 +20,7 @@ authors = [
 maintainers = [
   { name = "Package Maintainers" },
 ]
-keywords = ["music", "beat", "downbeat", "tracking", "structure", "analysis", "allin1fix", "source-separation"]
+keywords = ["music", "beat", "downbeat", "tracking", "structure", "analysis", "allin1-infer", "source-separation"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -38,13 +38,15 @@ classifiers = [
 ]
 
 # Core dependencies
-# IMPORTANT: torch MUST be listed before natten for proper installation order
-# natten requires torch during build, so torch must be installed first
+# Note: natten is NOT required anymore — neighborhood attention ships as a
+# pure-PyTorch implementation (src/allin1_infer/models/neighborhood_attention.py),
+# so no compiled extension and no torch upper bound. If a compatible natten
+# (0.17.x-0.19.x) is installed, it is picked up automatically as a faster GPU
+# backend; see the [natten] extra below.
 dependencies = [
   "numpy",
   "librosa",
-  "torch>=2.0.0,<2.8.0",  # Required FIRST for natten build; PyTorch 2.8+ breaks natten 0.17.5 (_device_t removed)
-  "natten==0.17.5",  # NATTEN 0.17.5 verified with PyTorch 2.0-2.7; PyTorch 2.8+ requires natten 0.21+ (API changes)
+  "torch>=2.0.0",
   "hydra-core",
   "omegaconf",
   "huggingface_hub",
@@ -56,12 +58,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-train = [
-  "lightning",
-  "timm",
-  "wandb",
-  "mir_eval",
-  "numpy<1.24", # otherwise, mir_eval will raise AttributeError: module 'numpy' has no attribute 'int'
+# Optional fused GPU kernels for neighborhood attention. Requires a C++
+# toolchain and torch<2.8 at install time (natten 0.17.x compiles against the
+# installed torch). Purely a speed optimization — results are identical to the
+# built-in pure-PyTorch implementation.
+natten = [
+  "natten>=0.17.1,<0.20",  # natten>=0.20 removed the legacy functional API and RPB support
+  "torch>=2.0.0,<2.8.0",   # natten 0.17.x breaks on torch 2.8+ (_device_t removed)
+  "torchaudio<2.8.0",      # keep torchaudio paired with torch<2.8 (mismatched pairs fail to load)
 ]
 # Development dependencies
 dev = [
@@ -70,17 +74,15 @@ dev = [
 ]
 
 [project.scripts]
-allin1fix = "allin1fix.cli:main"
-allin1fix-train = "allin1fix.training.train:main"
-allin1fix-preprocess = "allin1fix.training.preprocess:main"
+all-in-one-infer = "allin1_infer.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/openmirlab/all-in-one-fix"
-Repository = "https://github.com/openmirlab/all-in-one-fix"
-Documentation = "https://github.com/openmirlab/all-in-one-fix#readme"
-"Bug Reports" = "https://github.com/openmirlab/all-in-one-fix/issues"
+Homepage = "https://github.com/openmirlab/all-in-one-infer"
+Repository = "https://github.com/openmirlab/all-in-one-infer"
+Documentation = "https://github.com/openmirlab/all-in-one-infer#readme"
+"Bug Reports" = "https://github.com/openmirlab/all-in-one-infer/issues"
 "Original All-In-One" = "https://github.com/mir-aidj/all-in-one"
-Changelog = "https://github.com/openmirlab/all-in-one-fix/blob/main/docs/CHANGELOG.md"
+Changelog = "https://github.com/openmirlab/all-in-one-infer/blob/main/docs/CHANGELOG.md"
 
 # Setuptools configuration (since we're using setuptools.build_meta)
 [tool.setuptools]
@@ -93,9 +95,17 @@ packages = {find = {where = ["src"], exclude = ["tests*", "examples*"]}}
 # Note: Version is read in setup.py from __about__.py
 # Hatchling configs below are kept for reference but not used with setuptools backend
 # [tool.hatch.version]
-# path = "src/allin1fix/__about__.py"
+# path = "src/allin1_infer/__about__.py"
 
 [tool.uv]
 override-dependencies = [
   "scipy>=1.13.0",  # madmom requires scipy>=1.13, which requires Python 3.9+
+]
+
+[tool.uv.sources]
+madmom = { git = "https://github.com/CPJKU/madmom" }
+
+[dependency-groups]
+dev = [
+    "madmom",
 ]

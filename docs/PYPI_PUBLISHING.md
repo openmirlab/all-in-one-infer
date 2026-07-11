@@ -1,16 +1,16 @@
-# PyPI Publishing Guide for all-in-one-fix
+# PyPI Publishing Guide for all-in-one-infer
 
-This guide covers best practices for publishing `all-in-one-fix` to PyPI, including handling the `natten` build requirement.
+This guide covers best practices for publishing `all-in-one-infer` to PyPI, including handling the `natten` build requirement.
 
 **Note:** 
-- PyPI project name: `all-in-one-fix` (matches repository name)
-- Python package name: `allin1fix` (used in imports: `import allin1fix`)
-- Install with: `pip install all-in-one-fix` (uses PyPI project name)
+- PyPI project name: `all-in-one-infer` (matches repository name)
+- Python package name: `allin1_infer` (used in imports: `import allin1_infer`)
+- Install with: `pip install all-in-one-infer` (uses PyPI project name)
 
 ## Pre-Publishing Checklist
 
 ### 1. Version Management
-- [ ] Update version in `src/allin1fix/__about__.py`
+- [ ] Update version in `src/allin1_infer/__about__.py`
 - [ ] Ensure version is consistent across all files
 - [ ] Create a git tag: `git tag v<version>`
 
@@ -31,11 +31,11 @@ twine check dist/*
 ```bash
 # Test installation from built wheel
 pip install torch>=2.0.0
-pip install dist/allin1fix-*.whl --no-build-isolation
+pip install dist/all_in_one_infer-*.whl --no-build-isolation
 
 # Test installation from source distribution
 pip install torch>=2.0.0
-pip install dist/allin1fix-*.tar.gz --no-build-isolation
+pip install dist/all_in_one_infer-*.tar.gz --no-build-isolation
 ```
 
 ## Publishing Process
@@ -70,7 +70,7 @@ twine check dist/*
 twine upload --repository testpypi dist/*
 
 # 5. Test installation from TestPyPI
-pip install --index-url https://test.pypi.org/simple/ allin1fix --no-build-isolation
+pip install --index-url https://test.pypi.org/simple/ all-in-one-infer --no-build-isolation
 
 # 6. Upload to PyPI
 twine upload dist/*
@@ -79,7 +79,7 @@ twine upload dist/*
 ## Post-Publishing Verification
 
 ### 1. Verify Package on PyPI
-- Visit: https://pypi.org/project/all-in-one-fix/
+- Visit: https://pypi.org/project/all-in-one-infer/
 - Check that README renders correctly
 - Verify all metadata is correct
 
@@ -91,18 +91,18 @@ source test_env/bin/activate  # On Windows: test_env\Scripts\activate
 
 # Test installation
 pip install torch>=2.0.0
-pip install allin1fix --no-build-isolation
+pip install all-in-one-infer --no-build-isolation
 
 # Verify installation
-python -c "import allin1fix; print(allin1fix.__version__)"
-allin1fix --help
+python -c "import allin1_infer; print(allin1_infer.__version__)"
+all-in-one-infer --help
 ```
 
 ## Important Notes for Users
 
 ### Installation Requirements
 - **Python 3.9+** (required for `scipy>=1.13` and `madmom`)
-- **torch>=2.0.0** must be installed **before** `allin1fix`
+- **torch>=2.0.0** must be installed **before** `all-in-one-infer`
 - Use `--no-build-isolation` flag when installing
 
 ### Why `--no-build-isolation`?
@@ -114,12 +114,12 @@ allin1fix --help
 
 **For pip users:**
 ```bash
-pip install torch>=2.0.0 && pip install allin1fix --no-build-isolation
+pip install torch>=2.0.0 && pip install all-in-one-infer --no-build-isolation
 ```
 
 **For uv users:**
 ```bash
-uv add torch && uv add allin1fix --no-build-isolation
+uv add torch && uv add all-in-one-infer --no-build-isolation
 ```
 
 ## Troubleshooting
@@ -148,11 +148,11 @@ source test_clean/bin/activate
 
 # Test installation
 pip install torch>=2.0.0
-pip install allin1fix --no-build-isolation
+pip install all-in-one-infer --no-build-isolation
 
 # Test functionality
-allin1fix --help
-python -c "import allin1fix; print('Success!')"
+all-in-one-infer --help
+python -c "import allin1_infer; print('Success!')"
 ```
 
 ## PyPI Project Page Configuration
@@ -167,7 +167,7 @@ The README.md will be automatically used as the long description.
 - tracking
 - structure
 - analysis
-- allin1fix
+- allin1-infer
 - source-separation
 
 ### Classifiers
@@ -183,6 +183,6 @@ The README.md will be automatically used as the long description.
 ## Version History
 
 Track versions in:
-- `src/allin1fix/__about__.py` - Version definition
+- `src/allin1_infer/__about__.py` - Version definition
 - `docs/CHANGELOG.md` - Detailed changelog
 - GitHub Releases - Release notes

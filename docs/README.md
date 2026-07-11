@@ -32,13 +32,15 @@ This directory contains detailed documentation for the All-In-One-Fix package.
   - GitHub Actions workflow
   - Build and installation testing
 
-### Training & Research
+### Training & Research (historical, not part of this package)
 
-- **[TRAINING.md](TRAINING.md)** - Guide for training All-In-One models
-  - Dataset preparation
-  - Training configuration
-  - Model evaluation
-  - Advanced training options
+This package is inference-only. Model training was removed in favor of the
+upstream project's training pipeline — see below.
+
+- **[TRAINING.md](TRAINING.md)** - Historical guide for training All-In-One
+  models (kept for reference; points to the upstream
+  [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) training
+  pipeline, which this package no longer ships)
 
 ### Project History
 

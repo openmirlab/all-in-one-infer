@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test original all-in-one vs our all-in-one-fix on the same three tracks.
+Test original all-in-one vs our all-in-one-infer on the same three tracks.
 """
 
 import sys
