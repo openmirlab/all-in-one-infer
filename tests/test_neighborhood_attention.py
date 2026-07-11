@@ -14,10 +14,10 @@ from pathlib import Path
 import pytest
 import torch
 
-# Import the module file directly: `import allin1fix` pulls in heavy runtime
+# Import the module file directly: `import allin1_infer` pulls in heavy runtime
 # deps (torchaudio, madmom) that these unit tests don't need.
 _MODULE_PATH = (
-  Path(__file__).parent.parent / 'src' / 'allin1fix' / 'models' / 'neighborhood_attention.py'
+  Path(__file__).parent.parent / 'src' / 'allin1_infer' / 'models' / 'neighborhood_attention.py'
 )
 _spec = importlib.util.spec_from_file_location('neighborhood_attention', _MODULE_PATH)
 na = importlib.util.module_from_spec(_spec)

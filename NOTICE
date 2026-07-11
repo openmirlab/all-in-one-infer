@@ -1,4 +1,4 @@
-All-In-One-Fix
+All-In-One-Infer
 ================
 
 This package integrates code from multiple open-source projects under the MIT License.
@@ -16,7 +16,7 @@ This package integrates code from multiple open-source projects under the MIT Li
    - Copyright: (c) Meta Platforms, Inc. and affiliates
    - Version: v4.1.0a2
    - Description: Source separation models (HTDemucs)
-   - Usage: Integrated in src/allin1fix/separation/ for stem-based analysis
+   - Usage: Integrated in src/allin1_infer/separation/ for stem-based analysis
 
 3. Integration and Modifications
    - Copyright: (c) 2025 Bo-Yu Chen

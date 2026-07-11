@@ -19,7 +19,7 @@ This document shows practical examples of using the new improvements.
 ### Example 1.1: Basic Batch Processing
 
 ```python
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 from pathlib import Path
 
 # Create provider once
@@ -183,7 +183,7 @@ for i in range(100):
 ### Example 4.1: Simple Console Progress
 
 ```python
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 
 def show_progress(message, percent):
     """Simple console progress"""
@@ -212,7 +212,7 @@ print("\n✅ Done!")
 
 ```python
 import gradio as gr
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 
 def separate_audio(audio_file, model_choice, progress=gr.Progress()):
     """Gradio demo with progress"""
@@ -357,7 +357,7 @@ tracker.report()
 
 ```python
 from pathlib import Path
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 import time
 
 def batch_separate(input_dir, output_dir, model='htdemucs'):
@@ -393,7 +393,7 @@ batch_separate('input_songs/', 'output_stems/', model='htdemucs_ft')
 
 ```python
 from fastapi import FastAPI, UploadFile, WebSocket
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 import asyncio
 
 app = FastAPI()
@@ -438,7 +438,7 @@ async def separate_websocket(websocket: WebSocket):
 ```python
 from queue import Queue
 from threading import Thread
-from allin1fix.stems import DemucsProvider
+from allin1_infer.stems import DemucsProvider
 from demucs_infer.pretrained import list_models
 
 class SeparationWorker:

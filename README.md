@@ -1,12 +1,12 @@
-# All-In-One-Fix Music Structure Analyzer
+# All-In-One-Infer Music Structure Analyzer
 
 [![Visual Demo](https://img.shields.io/badge/Visual-Demo-8A2BE2)](https://taejun.kim/music-dissector/)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.16425-B31B1B)](http://arxiv.org/abs/2307.16425/)
-[![PyPI](https://img.shields.io/pypi/v/all-in-one-fix)](https://pypi.org/project/all-in-one-fix/)
+[![PyPI](https://img.shields.io/pypi/v/all-in-one-infer)](https://pypi.org/project/all-in-one-infer/)
 
 **An enhanced version of All-In-One with integrated source separation and modern PyTorch compatibility**
 
-📦 **Available on PyPI:** [https://pypi.org/project/all-in-one-fix/](https://pypi.org/project/all-in-one-fix/)
+📦 **Available on PyPI:** [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
 
 > **🙏 Acknowledgments**:
 >
@@ -23,7 +23,7 @@ This package provides models for music structure analysis, predicting:
 4. Functional segment boundaries
 5. Functional segment labels (e.g., intro, verse, chorus, bridge, outro)
 
-## 🆕 What's New in All-In-One-Fix (v2.0.0)
+## 🆕 What's New in All-In-One-Infer (v2.0.0)
 
 ### 🎵 **Integrated Source Separation**
 - **Source Separation**: Uses demucs-infer package for high-quality source separation
@@ -48,12 +48,12 @@ This package provides models for music structure analysis, predicting:
 - **Hybrid Workflows**: Mix custom separation, pre-computed stems, and default separation
 
 ### 🗂️ **Cache Management**
-- **View Cache**: `allin1fix --cache-info` to see cached separation models
-- **Clear Cache**: `allin1fix --clear-cache` to free up disk space
-- **Python API**: `allin1fix.print_cache_info()`, `allin1fix.clear_model_cache()`
+- **View Cache**: `all-in-one-infer --cache-info` to see cached separation models
+- **Clear Cache**: `all-in-one-infer --clear-cache` to free up disk space
+- **Python API**: `allin1_infer.print_cache_info()`, `allin1_infer.clear_model_cache()`
 
 ### 📦 **Enhanced CLI & API**
-- **Backward Compatible**: All original functionality preserved with `allin1fix` namespace
+- **Backward Compatible**: All original functionality preserved with `allin1_infer` namespace
 - **Rich CLI Options**: New stems handling and cache management options
 - **Python API**: Enhanced analyze function with new stem provider system
 
@@ -78,7 +78,7 @@ This package provides models for music structure analysis, predicting:
 - [Concerning MP3 Files](#concerning-mp3-files)
 - [Migration from All-In-One](#-migration-from-all-in-one)
 - [Citation](#citation)
-- [About All-In-One-Fix](#-about-all-in-one-fix)
+- [About All-In-One-Infer](#-about-all-in-one-infer)
 - [Documentation](#-documentation)
 
 ## 💡 Motivation & Changes
@@ -115,12 +115,12 @@ dependencies = ["torch>=2.0.0"]  # no upper bound, no compiled extension
 
 **Changes Made:**
 - Reimplemented NATTEN's neighborhood attention (1D + 2D, with relative
-  positional biases) in pure PyTorch: `src/allin1fix/models/neighborhood_attention.py`
+  positional biases) in pure PyTorch: `src/allin1_infer/models/neighborhood_attention.py`
 - Numerically identical to NATTEN 0.17.5 (verified by golden-fixture tests,
   forward and backward)
 - Pretrained checkpoints load unchanged — no weight conversion
 - If a compatible NATTEN (0.17.x-0.19.x) is installed, it is used automatically
-  as a faster fused-kernel backend: `pip install "all-in-one-fix[natten]"`
+  as a faster fused-kernel backend: `pip install "all-in-one-infer[natten]"`
 
 **Impact:** Installs anywhere with a single `pip install` — any torch >= 2.0
 (including 2.8+), CPU-only machines, and platforms NATTEN never supported
@@ -152,8 +152,8 @@ dependencies = ["demucs-infer"]
 #### **3. Enhanced Cache Management** 🗂️
 
 **Added Features:**
-- View cached models: `allin1fix --cache-info`
-- Clear cache: `allin1fix --clear-cache` (with `--clear-cache-dry-run` preview)
+- View cached models: `all-in-one-infer --cache-info`
+- Clear cache: `all-in-one-infer --clear-cache` (with `--clear-cache-dry-run` preview)
 - Python API: `get_cache_size()`, `list_cached_models()`, `clear_model_cache()`
 - Tracks model files (`.th`, `.pth`) in `~/.cache/torch/hub/checkpoints/`
 
@@ -193,10 +193,10 @@ build-backend = "hatchling.build"
 **Installation Methods:**
 ```bash
 # With UV (recommended, faster)
-uv pip install allin1fix
+uv pip install all-in-one-infer
 
 # With traditional pip (still supported)
-pip install allin1fix
+pip install all-in-one-infer
 
 # Editable install for development
 uv pip install -e .
@@ -235,12 +235,12 @@ This project integrates two foundational open-source projects:
 
 ## 📦 Installation
 
-**📦 Available on PyPI:** [https://pypi.org/project/all-in-one-fix/](https://pypi.org/project/all-in-one-fix/)
+**📦 Available on PyPI:** [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
 
 ### Quick Install from PyPI 🚀
 
 ```bash
-pip install all-in-one-fix
+pip install all-in-one-infer
 
 # madmom is required at runtime; if it wasn't installed automatically:
 pip install git+https://github.com/CPJKU/madmom
@@ -248,7 +248,7 @@ pip install git+https://github.com/CPJKU/madmom
 
 **Or if you prefer UV (faster):**
 ```bash
-uv add all-in-one-fix
+uv add all-in-one-infer
 uv add git+https://github.com/CPJKU/madmom
 ```
 
@@ -268,7 +268,7 @@ For GPU acceleration, install PyTorch with CUDA support:
 ```bash
 # Example: CUDA 12.1
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install all-in-one-fix
+pip install all-in-one-infer
 ```
 
 ### Optional: NATTEN fused kernels
@@ -279,7 +279,7 @@ speed optimization (Linux + CUDA + torch < 2.8 only, compiles at install time):
 
 ```bash
 pip install torch"<2.8"
-pip install "all-in-one-fix[natten]" --no-build-isolation
+pip install "all-in-one-infer[natten]" --no-build-isolation
 ```
 
 It is picked up automatically when importable; otherwise the pure-PyTorch
@@ -291,13 +291,13 @@ After installation, verify it worked:
 
 ```bash
 # Check if installed
-python -c "import allin1fix; print('✅ allin1fix installed successfully!')"
+python -c "import allin1_infer; print('✅ allin1_infer installed successfully!')"
 
 # Check version
-python -c "import allin1fix; print(allin1fix.__version__)"
+python -c "import allin1_infer; print(allin1_infer.__version__)"
 
 # Test CLI
-allin1fix --help
+all-in-one-infer --help
 ```
 
 ### Troubleshooting
@@ -308,7 +308,7 @@ allin1fix --help
 
 **ImportError: No module named 'madmom'**
 - ✅ **Cause:** `madmom` must be installed separately from git (PyPI limitation)
-- ✅ **Solution:** Run `pip install git+https://github.com/CPJKU/madmom` before using allin1fix
+- ✅ **Solution:** Run `pip install git+https://github.com/CPJKU/madmom` before using all-in-one-infer
 
 **Installation fails with madmom error**
 - ✅ **Cause:** Installing `madmom` from GitHub requires git and internet
@@ -326,18 +326,18 @@ If you want to install the latest development version from GitHub:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install from GitHub
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 **Using pip:**
 ```bash
-pip install git+https://github.com/openmirlab/all-in-one-fix.git
+pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 **Development Installation (Editable):**
 ```bash
-git clone https://github.com/openmirlab/all-in-one-fix.git
-cd all-in-one-fix
+git clone https://github.com/openmirlab/all-in-one-infer.git
+cd all-in-one-infer
 pip install -e .
 ```
 
@@ -364,26 +364,26 @@ brew install ffmpeg
 
 To analyze audio files:
 ```shell
-allin1fix your_audio_file1.wav your_audio_file2.mp3
+all-in-one-infer your_audio_file1.wav your_audio_file2.mp3
 ```
 
 ### 🎛️ **New Stems Features**
 
 **1. Direct stems input from directory:**
 ```shell
-allin1fix --stems-from-dir ./my_stems --stems-id "my_song" -o ./results
+all-in-one-infer --stems-from-dir ./my_stems --stems-id "my_song" -o ./results
 # Expects: ./my_stems/{bass,drums,other,vocals}.wav
 ```
 
 **2. Custom stem filename patterns:**
 ```shell
-allin1fix --stems-from-dir ./stems --stems-pattern "track_{stem}.wav" -o ./results
+all-in-one-infer --stems-from-dir ./stems --stems-pattern "track_{stem}.wav" -o ./results
 # Expects: ./stems/track_{bass,drums,other,vocals}.wav
 ```
 
 **3. Individual stem files:**
 ```shell
-allin1fix \
+all-in-one-infer \
   --stems-bass path/to/bass.wav \
   --stems-drums path/to/drums.wav \
   --stems-other path/to/other.wav \
@@ -399,12 +399,12 @@ allin1fix \
   "song2.wav": "/path/to/song2_stems/"
 }
 
-allin1fix song1.wav song2.wav --stems-dict stems_mapping.json -o ./results
+all-in-one-infer song1.wav song2.wav --stems-dict stems_mapping.json -o ./results
 ```
 
 **5. Skip separation (use existing stems in demix-dir):**
 ```shell
-allin1fix track.wav --skip-separation --demix-dir ./existing_stems -o ./results
+all-in-one-infer track.wav --skip-separation --demix-dir ./existing_stems -o ./results
 ```
 Results will be saved in the `./struct` directory by default:
 ```shell
@@ -452,7 +452,7 @@ Separation models are downloaded to `~/.cache/torch/hub/checkpoints/` and can us
 
 **View cache information:**
 ```shell
-allin1fix --cache-info
+all-in-one-infer --cache-info
 ```
 
 Output:
@@ -474,35 +474,35 @@ Cached models:
 
 **Preview what would be deleted (dry run):**
 ```shell
-allin1fix --clear-cache-dry-run
+all-in-one-infer --clear-cache-dry-run
 ```
 
 **Clear all cached models:**
 ```shell
-allin1fix --clear-cache
+all-in-one-infer --clear-cache
 ```
 
 **Python API:**
 ```python
-import allin1fix
+import allin1_infer
 
 # View cache info
-allin1fix.print_cache_info()
+allin1_infer.print_cache_info()
 
 # Get cache size
-size_gb = allin1fix.get_cache_size()
+size_gb = allin1_infer.get_cache_size()
 
 # List models
-models = allin1fix.list_cached_models()
+models = allin1_infer.list_cached_models()
 
 # Clear cache (dry run first!)
-count = allin1fix.clear_model_cache(dry_run=True)
-count = allin1fix.clear_model_cache()  # Actually delete
+count = allin1_infer.clear_model_cache(dry_run=True)
+count = allin1_infer.clear_model_cache()  # Actually delete
 ```
 
 ### 🔧 **Technical Improvements**
 
-All-In-One-Fix includes several technical enhancements over the original:
+All-In-One-Infer includes several technical enhancements over the original:
 
 - **Modern PyTorch Support**: Compatible with PyTorch 2.x and CUDA 12.x
 - **NATTEN 0.17.5**: Upgraded from 0.15.0 for PyTorch 2.x compatibility
@@ -516,9 +516,9 @@ All-In-One-Fix includes several technical enhancements over the original:
 ### 📋 **All Available CLI Options**
 
 ```shell
-$ allin1fix -h
+$ all-in-one-infer -h
 
-usage: allin1fix [-h] [-o OUT_DIR] [-v] [--viz-dir VIZ_DIR] [-s]
+usage: all-in-one-infer [-h] [-o OUT_DIR] [-v] [--viz-dir VIZ_DIR] [-s]
                  [--sonif-dir SONIF_DIR] [-a] [-e] [-m MODEL] [-d DEVICE] [-k]
                  [--demix-dir DEMIX_DIR] [--spec-dir SPEC_DIR] [--overwrite]
                  [--no-multiprocess] [--stems-dict STEMS_DICT]
@@ -558,7 +558,7 @@ Stems Input Options:
 ### Basic Usage
 
 ```python
-from allin1fix import analyze
+from allin1_infer import analyze
 
 # Analyze audio files (uses demucs-infer for separation)
 results = analyze(['song1.wav', 'song2.mp3'])
@@ -568,7 +568,7 @@ results = analyze(['song1.wav', 'song2.mp3'])
 
 **1. Custom separation models:**
 ```python
-from allin1fix import analyze, CustomSeparatorProvider
+from allin1_infer import analyze, CustomSeparatorProvider
 
 class MyCustomSeparator:
     def __init__(self, model_path):
@@ -597,7 +597,7 @@ results = analyze(['song.wav'], stem_provider=provider)
 
 **2. Pre-computed stems:**
 ```python
-from allin1fix import analyze, PrecomputedStemProvider
+from allin1_infer import analyze, PrecomputedStemProvider
 
 # Use stems from any source separation tool
 stems_mapping = {
@@ -611,7 +611,7 @@ results = analyze(['song1.wav', 'song2.wav', 'song3.wav'], stem_provider=provide
 
 **3. Direct stems input:**
 ```python
-from allin1fix import analyze, StemsInput, create_stems_input_from_directory
+from allin1_infer import analyze, StemsInput, create_stems_input_from_directory
 
 # Method 1: Manual specification
 stems = StemsInput(
@@ -637,7 +637,7 @@ results = analyze(stems_input=stems_list)
 **4. Hybrid workflows:**
 ```python
 # Mix different approaches in the same analysis
-from allin1fix import analyze, PrecomputedStemProvider, StemsInput
+from allin1_infer import analyze, PrecomputedStemProvider, StemsInput
 
 # Some tracks have pre-computed stems
 stems_mapping = {'song1.wav': '/path/to/stems/'}
@@ -955,15 +955,15 @@ ensuring straightforward decoding.
 
 ## 🔄 **Migration from All-In-One**
 
-All-In-One-Fix is designed to be a drop-in replacement with enhanced features. Here's how to migrate:
+All-In-One-Infer is designed to be a drop-in replacement with enhanced features. Here's how to migrate:
 
 ### **Package Name Changes**
 ```python
 # Old (All-In-One)
 from allin1 import analyze
 
-# New (All-In-One-Fix)  
-from allin1fix import analyze
+# New (All-In-One-Infer)  
+from allin1_infer import analyze
 ```
 
 ### **CLI Command Changes**
@@ -972,7 +972,7 @@ from allin1fix import analyze
 allin1 track.wav -o ./results
 
 # New
-allin1fix track.wav -o ./results
+all-in-one-infer track.wav -o ./results
 ```
 
 ### **Dependency Changes**
@@ -986,18 +986,18 @@ dependencies = ["natten==0.17.5", "demucs-infer"]  # Clean separation via demucs
 
 ### **Installation Methods**
 
-All-In-One-Fix supports both **UV** (recommended, faster) and **pip** (traditional):
+All-In-One-Infer supports both **UV** (recommended, faster) and **pip** (traditional):
 
 ```bash
 # With UV (recommended, faster dependency resolution)
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
 
 # With traditional pip (still fully supported)
-pip install git+https://github.com/openmirlab/all-in-one-fix.git
+pip install git+https://github.com/openmirlab/all-in-one-infer.git
 
 # Editable install for development (works with both)
-git clone https://github.com/openmirlab/all-in-one-fix.git
-cd all-in-one-fix
+git clone https://github.com/openmirlab/all-in-one-infer.git
+cd all-in-one-infer
 uv pip install -e .
 # or
 pip install -e .
@@ -1052,11 +1052,11 @@ If you use this package for your research, please cite the following papers:
 }
 ```
 
-## 📝 **About All-In-One-Fix**
+## 📝 **About All-In-One-Infer**
 
 ### What is This Project?
 
-All-In-One-Fix (v2.0.0) is a unified package that combines:
+All-In-One-Infer (v2.0.0) is a unified package that combines:
 - **Music structure analysis** from [All-In-One](https://github.com/mir-aidj/all-in-one) by Taejun Kim & Juhan Nam
 - **Source separation** via [demucs-infer](https://github.com/openmirlab/demucs-infer) package
 - **NATTEN 0.17.5-0.21.0+ support** with modern PyTorch 2.x compatibility

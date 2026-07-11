@@ -18,7 +18,7 @@ resolution-markers = [
 overrides = [{ name = "scipy", specifier = ">=1.13.0" }]
 
 [[package]]
-name = "all-in-one-fix"
+name = "all-in-one-infer"
 source = { editable = "." }
 dependencies = [
     { name = "demucs-infer" },

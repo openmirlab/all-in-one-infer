@@ -8,7 +8,7 @@ except ImportError:
     raise ImportError(
         "madmom is required but not installed. "
         "Please install it with: pip install git+https://github.com/CPJKU/madmom\n"
-        "If you just installed allin1fix, the auto-install may have failed.\n"
+        "If you just installed allin1_infer, the auto-install may have failed.\n"
         "See README.md for complete installation instructions."
     )
 

@@ -205,7 +205,7 @@ if __name__ == "__main__":
     else:
         print(f"\n⚠️ Could not install original all-in-one for comparison")
         print(f"This might be due to:")
-        print(f"• Dependency conflicts with all-in-one-fix")
+        print(f"• Dependency conflicts with all-in-one-infer")
         print(f"• NATTEN version compatibility issues")
         print(f"• Environment conflicts")
         print(f"")

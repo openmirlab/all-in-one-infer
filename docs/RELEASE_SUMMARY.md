@@ -1,15 +1,15 @@
-# Release Summary: all-in-one-fix v2.0.0+
+# Release Summary: all-in-one-infer v2.0.0+
 
 ## 🎯 Overview
 
-This document summarizes all changes made to transform `all-in-one-fix` into a publishable, modern Python package with flexible NATTEN support (0.17.5-0.21.0+) and integration with the openmirlab organization.
+This document summarizes all changes made to transform `all-in-one-infer` into a publishable, modern Python package with flexible NATTEN support (0.17.5-0.21.0+) and integration with the openmirlab organization.
 
 ---
 
 ## 📦 Repository Information
 
 - **Organization**: openmirlab
-- **Repository**: https://github.com/openmirlab/all-in-one-fix
+- **Repository**: https://github.com/openmirlab/all-in-one-infer
 - **Base Package**: All-In-One by Taejun Kim & Juhan Nam
 - **Version**: 2.0.0+
 - **License**: MIT
@@ -50,12 +50,12 @@ Made the package publishable following the `demucs-infer` pattern:
 
 Migrated from personal repository to organization:
 
-- ✅ Updated git remote: `ChenPaulYu/all-in-one-fix` → `openmirlab/all-in-one-fix`
+- ✅ Updated git remote: `ChenPaulYu/all-in-one-infer` → `openmirlab/all-in-one-infer`
 - ✅ Updated all URLs in pyproject.toml
 - ✅ Updated all URLs in README.md
 - ✅ Updated all URLs in PACKAGE_STRUCTURE.md
 
-**New Repository**: https://github.com/openmirlab/all-in-one-fix
+**New Repository**: https://github.com/openmirlab/all-in-one-infer
 
 ---
 
@@ -74,7 +74,7 @@ dependencies = ["natten>=0.17.5"]  # Supports 0.17.5-0.21.0+
 ```
 
 #### Compatibility System:
-The code already had a three-tier compatibility system in `src/allin1fix/models/dinat.py`:
+The code already had a three-tier compatibility system in `src/allin1_infer/models/dinat.py`:
 
 1. **Tier 1** (NATTEN <0.19): Short function names
 2. **Tier 2** (NATTEN 0.19): Long function names
@@ -118,7 +118,7 @@ ffdebf9 - chore: Update repository URLs to openmirlab organization
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 uv pip install natten==0.17.5
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 #### Latest (NATTEN 0.21.0, PyTorch 2.7.0)
@@ -126,7 +126,7 @@ uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0
 uv pip install natten==0.21.0+torch270cu128 -f https://whl.natten.org
-uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 ### Option 2: pip (Traditional)
@@ -135,14 +135,14 @@ uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 pip install natten==0.17.5
-pip install git+https://github.com/openmirlab/all-in-one-fix.git
+pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 #### Latest (NATTEN 0.21.0, PyTorch 2.7.0)
 ```bash
 pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0
 pip install natten==0.21.0+torch270cu128 -f https://whl.natten.org
-pip install git+https://github.com/openmirlab/all-in-one-fix.git
+pip install git+https://github.com/openmirlab/all-in-one-infer.git
 ```
 
 ---
@@ -186,18 +186,18 @@ The package is now ready for:
 
 1. ✅ **GitHub Installation**
    ```bash
-   pip install git+https://github.com/openmirlab/all-in-one-fix.git
+   pip install git+https://github.com/openmirlab/all-in-one-infer.git
    ```
 
 2. ✅ **UV Installation** (10-100x faster)
    ```bash
-   uv pip install git+https://github.com/openmirlab/all-in-one-fix.git
+   uv pip install git+https://github.com/openmirlab/all-in-one-infer.git
    ```
 
 3. ✅ **Local Development**
    ```bash
-   git clone https://github.com/openmirlab/all-in-one-fix.git
-   cd all-in-one-fix
+   git clone https://github.com/openmirlab/all-in-one-infer.git
+   cd all-in-one-infer
    pip install -e .
    ```
 
@@ -254,7 +254,7 @@ uv run python test_natten_compatibility.py
 
 ## 🎉 Summary
 
-**all-in-one-fix** is now:
+**all-in-one-infer** is now:
 - ✅ A publishable Python package
 - ✅ Following modern standards (PEP 621)
 - ✅ Flexible NATTEN support (0.17.5-0.21.0+)
