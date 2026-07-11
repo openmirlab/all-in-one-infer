@@ -26,7 +26,7 @@ import subprocess
 import torch
 import torchaudio
 from pathlib import Path
-from typing import List, Union, Optional, Dict, Callable, Protocol
+from typing import List, Union, Optional, Dict, Callable, Protocol, Tuple
 from abc import ABC, abstractmethod
 
 # Import demucs-infer for source separation
@@ -84,6 +84,60 @@ class StemProvider(ABC):
             Path to directory containing stems (bass.wav, drums.wav, other.wav, vocals.wav)
         """
         pass
+
+
+def _run_demucs_separation(
+    model,
+    audio_path: Union[Path, str],
+    device: Union[str, torch.device],
+    overlap: float,
+    fp16: bool,
+    progress_callback: Optional[Callable[[str, float], None]] = None,
+) -> Tuple[torch.Tensor, int]:
+    """Shared load -> force-stereo -> apply_model -> to-CPU sequence used by
+    both DemucsProvider.get_stems (writes stems to disk) and
+    separate_in_memory (keeps stems as in-memory arrays), so the two paths
+    can't numerically drift apart. Returns (sources, sr) with the batch
+    dimension already squeezed out and sources moved to CPU.
+    """
+    if progress_callback:
+        progress_callback("Loading audio file", 0.2)
+
+    wav, sr = torchaudio.load(str(audio_path))
+
+    # Ensure stereo (demucs requires 2 channels)
+    if wav.shape[0] == 1:
+        wav = wav.repeat(2, 1)
+    elif wav.shape[0] > 2:
+        wav = wav[:2]
+
+    # Add batch dimension and move to device
+    wav_batch = wav.unsqueeze(0).to(device)
+
+    if progress_callback:
+        progress_callback("Separating audio sources", 0.3)
+
+    with torch.no_grad():
+        if fp16 and 'cuda' in str(device):
+            with torch.autocast('cuda', dtype=torch.float16):
+                sources = apply_model(
+                    model, wav_batch, device=device,
+                    progress=bool(progress_callback), overlap=overlap,
+                )
+        else:
+            sources = apply_model(
+                model, wav_batch, device=device,
+                progress=bool(progress_callback), overlap=overlap,
+            )
+
+    # Move to CPU immediately to free GPU memory, remove batch dimension
+    sources = sources.cpu().squeeze(0)
+
+    del wav_batch
+    if device == 'cuda' and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    return sources, sr
 
 
 class DemucsProvider(StemProvider):
@@ -165,48 +219,10 @@ class DemucsProvider(StemProvider):
 
         model = self.model  # Uses cached model if available
 
-        # Load audio
-        if progress_callback:
-            progress_callback("Loading audio file", 0.2)
-
-        wav, sr = torchaudio.load(str(audio_path))
-
-        # Ensure stereo (demucs requires 2 channels)
-        if wav.shape[0] == 1:
-            wav = wav.repeat(2, 1)
-        elif wav.shape[0] > 2:
-            wav = wav[:2]
-
-        # Add batch dimension and move to device
-        wav_batch = wav.unsqueeze(0).to(self.device)
-
-        # Apply model
-        if progress_callback:
-            progress_callback("Separating audio sources", 0.3)
-
-        with torch.no_grad():
-            if self.demucs_fp16 and 'cuda' in str(self.device):
-                with torch.autocast('cuda', dtype=torch.float16):
-                    sources = apply_model(
-                        model, wav_batch, device=self.device,
-                        progress=bool(progress_callback), overlap=self.demucs_overlap,
-                    )
-            else:
-                sources = apply_model(
-                    model, wav_batch, device=self.device,
-                    progress=bool(progress_callback), overlap=self.demucs_overlap,
-                )
-
-        # Move to CPU immediately to free GPU memory
-        sources = sources.cpu()
-
-        # Clean up GPU memory
-        del wav_batch
-        if self.device == 'cuda' and torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
-        # Remove batch dimension
-        sources = sources.squeeze(0)
+        sources, sr = _run_demucs_separation(
+            model, audio_path, self.device, self.demucs_overlap, self.demucs_fp16,
+            progress_callback=progress_callback,
+        )
 
         # Save stems
         if progress_callback:
@@ -218,7 +234,7 @@ class DemucsProvider(StemProvider):
             save_audio(sources[i], str(stem_path), sr)
 
         # Clean up CPU memory
-        del wav, sources
+        del sources
 
         if progress_callback:
             progress_callback("Separation complete", 1.0)
@@ -298,30 +314,9 @@ def separate_in_memory(
             cached_paths.append(path)
             continue
 
-        wav, sr = torchaudio.load(str(path))
-        if wav.shape[0] == 1:
-            wav = wav.repeat(2, 1)
-        elif wav.shape[0] > 2:
-            wav = wav[:2]
-        wav_batch = wav.unsqueeze(0).to(device)
-
-        with torch.no_grad():
-            if demucs_fp16 and 'cuda' in str(device):
-                with torch.autocast('cuda', dtype=torch.float16):
-                    sources = apply_model(
-                        provider.model, wav_batch, device=device,
-                        progress=False, overlap=demucs_overlap,
-                    )
-            else:
-                sources = apply_model(
-                    provider.model, wav_batch, device=device,
-                    progress=False, overlap=demucs_overlap,
-                )
-
-        sources = sources.cpu().squeeze(0)
-        del wav_batch
-        if device == 'cuda' and torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        sources, sr = _run_demucs_separation(
+            provider.model, path, device, demucs_overlap, demucs_fp16,
+        )
 
         arrays_by_path[path] = {
             name: quantize_stem_to_madmom_mono_int16(sources[i])
