@@ -871,6 +871,10 @@ Details of the activations are as follows:
 * `segment`: Raw activations from the **sigmoid** layer for **segment boundary detection** (shape: `[time_steps]`)
 * `label`: Raw activations from the **softmax** layer for **segment labeling** (shape: `[label_class=10, time_steps]`)
 
+The frame rate of these activations (frames per second, i.e. `1 / time_steps` in seconds) is available
+as `result.activation_fps` whenever `include_activations=True` -- read it from there instead of hardcoding
+100, since it reflects the actual loaded model's `cfg.fps` rather than assuming a fixed value.
+
 You can access the label names as follows:
 ```python
 >>> allin1.HARMONIX_LABELS
