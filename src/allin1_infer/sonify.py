@@ -1,3 +1,15 @@
+"""Renders an AnalysisResult back into audible audio: click-track metronome on
+beats/downbeats, plus synthesized risers/drops marking section boundaries.
+
+Purely a QA/demo tool for eyeballing (ear-balling) whether beats, downbeats
+and segment boundaries line up with the actual track -- not part of the
+inference pipeline itself. Mixes the synthesized cues into the original audio
+and clips to [-1, 1]; multiprocess Pool.imap_unordered is used across results
+since each track's sonification is independent.
+
+Reads: .typings (AnalysisResult, Segment), .utils, demucs_infer.audio (save_audio)
+"""
+
 import numpy as np
 
 import torch

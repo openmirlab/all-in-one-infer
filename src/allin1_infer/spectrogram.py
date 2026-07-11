@@ -1,3 +1,17 @@
+"""Extracts the madmom log-filtered spectrogram features the model consumes,
+per stem, in two flavors: disk-based (reads stem wavs) and in-memory (reads
+stem arrays directly from demix.separate_in_memory's fast path).
+
+Both flavors share `build_spec_processor()`'s exact madmom processing chain
+(frame/STFT/filter/log-spectrogram) so results stay bit-for-bit identical
+regardless of which path a track went through -- the in-memory path exists
+purely to skip a stem wav write/read round trip, not to change the math. Each
+stem produces its own spectrogram; the four are stacked as
+(instruments, frames, bins) and cached to disk as one .npy per track.
+
+Reads: madmom.audio.{signal,stft,spectrogram}, madmom.processors
+"""
+
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple

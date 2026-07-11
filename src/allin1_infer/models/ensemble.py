@@ -1,3 +1,17 @@
+"""Ensemble of K AllInOne fold models: averages logits and thresholds.
+
+`forward()` calls every fold model in a plain Python loop, then stacks and
+means their logits/embeddings -- this is not fused or vectorized across
+folds. That matters to callers doing torch.compile: compiling the Ensemble
+wrapper itself just re-traces the Python loop, so analyze.py instead compiles
+each fold individually and wraps them to guard against CUDA-graph buffer
+reuse across the loop iterations (see analyze._wrap_compiled_fold). The
+per-fold best_threshold_beat/best_threshold_downbeat are averaged at
+construction time into one shared `cfg` for the ensemble as a whole.
+
+Reads: .allinone (AllInOne), ..typings (AllInOneOutput)
+"""
+
 import torch
 import torch.nn as nn
 

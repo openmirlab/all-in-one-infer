@@ -2,6 +2,16 @@
 # Copyright (c) 2025 Bo-Yu Chen (Integration modifications)
 # SPDX-License-Identifier: MIT
 
+"""Legacy `demix()`/`demix_with_provider()` compatibility shims.
+
+Both functions are thin pass-throughs to `stems.get_stems()`, kept only so
+older call sites (and any external code written against the pre-stems.py
+API) keep working. New code should call `stems.get_stems()` directly; nothing
+here does real separation work anymore.
+
+Reads: .stems (get_stems, DemucsProvider, StemProvider)
+"""
+
 import sys
 import subprocess
 import torch

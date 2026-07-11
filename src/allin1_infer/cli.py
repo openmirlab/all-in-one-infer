@@ -2,6 +2,18 @@
 # Copyright (c) 2025 Bo-Yu Chen (Cache management additions)
 # SPDX-License-Identifier: MIT
 
+"""Command-line entry point (`allin1_infer` console script): argument parsing
+and dispatch into analyze().
+
+Three mutually-exclusive input modes are validated before dispatch: regular
+audio paths, direct stems input (four separate stem files or a directory/
+pattern), or cache-management commands (--cache-info/--clear-cache) that exit
+before any analysis runs. Most flags are a thin pass-through to analyze()'s
+own parameters -- see analyze.py for what each one actually does.
+
+Reads: .analyze, .stems (PrecomputedStemProvider), .stems_input, .helpers
+"""
+
 import argparse
 import torch
 import json

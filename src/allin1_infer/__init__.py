@@ -1,4 +1,16 @@
-__version__ = "2.0.0"
+"""Public API surface of the allin1_infer package.
+
+Re-exports the user-facing entry points (analyze, visualize, sonify, stem
+providers, cache helpers) so `import allin1_infer` gives a flat API without
+callers needing to know the internal module layout. Hard-fails at import time
+if madmom isn't installed, since madmom's DBN beat/downbeat decoder
+(postprocessing/metrical.py) is a non-optional part of the inference
+pipeline, not a soft dependency.
+
+Reads: .analyze, .visualize, .sonify, .stems, .stems_input, .helpers, .config, .utils, .__about__
+"""
+
+from .__about__ import __version__
 
 # Check for required madmom dependency
 # Note: madmom should be auto-installed during package installation via setup.py hook

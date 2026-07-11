@@ -1,3 +1,17 @@
+"""Decodes structural segments (verse/chorus/bridge/...) from the model's
+section-boundary and function-label logits.
+
+Section-boundary probabilities are smoothed via `local_maxima` then peak-picked
+into discrete boundary frames; each resulting segment's label is the argmax of
+the mean function-label probability over its own frame span (not per-frame
+labels), then boundaries are forced to span the full track by inserting a
+start-at-0 and appending end-at-duration edge if the decoded ones don't
+already reach the edges.
+
+Reads: ..typings (AllInOneOutput, Segment), ..config (Config, HARMONIX_LABELS),
+.helpers (local_maxima, peak_picking, event_frames_to_time)
+"""
+
 import numpy as np
 import torch
 from ..typings import AllInOneOutput, Segment

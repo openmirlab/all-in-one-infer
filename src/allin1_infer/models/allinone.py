@@ -1,3 +1,22 @@
+"""The AllInOne model: a small conv-frontend + DiNAT-attention encoder with
+four task heads (beat, downbeat, section, function/label).
+
+Input is a per-instrument log-spectrogram stack (N batch, K=4 instruments, T
+time, F=81 freq bins); a conv embedding stem folds each instrument's frame
+independently down to a channel vector, then `AllInOneEncoder` alternates
+per-instrument time-axis attention (`DinatLayer1d`, dilation growing with
+depth) with cross-instrument attention (`DinatLayer2d`) at every block. All
+four heads read the same final hidden state, so this is genuinely one
+multi-task model, not four separate ones bolted together. Architecture
+dimensions (depth, dim_embed, kernel_size, num_heads, dilation_factor, ...)
+all come from `Config`, which is also what's embedded in and restored from
+pretrained checkpoints -- this file has no architecture literals of its own
+beyond what `cfg` supplies.
+
+Reads: .dinat (DinatLayer1d, DinatLayer2d), .utils (get_activation_function),
+..config (Config), ..typings (AllInOneOutput)
+"""
+
 import torch
 import torch.nn as nn
 

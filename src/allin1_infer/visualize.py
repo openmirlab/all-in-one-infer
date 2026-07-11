@@ -1,3 +1,13 @@
+"""Renders an AnalysisResult as a plot: RMS energy curve with beat/downbeat
+tick marks and color-coded structural segments (HARMONIX_COLORS) overlaid.
+
+QA/demo visualization only, not part of the inference pipeline. Runs each
+result's plot independently, so a multiprocessing.Pool is used across
+multiple results the same way sonify.py parallelizes across tracks.
+
+Reads: .typings (AnalysisResult), .utils, matplotlib, librosa
+"""
+
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec

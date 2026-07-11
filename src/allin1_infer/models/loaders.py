@@ -1,3 +1,19 @@
+"""Downloads and builds pretrained AllInOne models (single fold or ensemble)
+from the `taejunkim/allinone` Hugging Face Hub repo.
+
+Each checkpoint embeds its own `Config` (restored via `OmegaConf.create`), so
+the model architecture is reconstructed from the checkpoint itself rather
+than from any config the caller passes in. For `harmonix-all`, the 8 fold
+checkpoints are downloaded concurrently with a ThreadPoolExecutor -- but only
+the download step, deliberately: `torch.load` + state_dict construction was
+measured to regress under threading (GIL/CUDA-context contention outweighs
+overlap), so model building stays sequential and `executor.map` preserves
+fold order regardless of download completion order.
+
+Reads: .allinone (AllInOne), .ensemble (Ensemble), ..typings (PathLike),
+huggingface_hub (hf_hub_download), omegaconf
+"""
+
 import torch
 
 from concurrent.futures import ThreadPoolExecutor

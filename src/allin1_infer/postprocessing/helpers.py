@@ -1,3 +1,15 @@
+"""Grab-bag of small numeric building blocks used by metrical.py and
+functional.py's decoders: frame<->time conversion, local-maxima/peak-picking,
+smoothing filters, and sub-frame quadratic interpolation.
+
+Note: this file also defines its own `estimate_tempo_from_beats` (near the
+bottom), but it is dead code -- the package's actual tempo estimate is
+`..postprocessing.tempo.estimate_tempo_from_beats`, re-exported via
+`postprocessing/__init__.py`. Don't confuse the two when editing tempo logic.
+
+Reads: ..config (Config), librosa, scipy.signal/interpolate, numpy
+"""
+
 import numpy as np
 import torch.nn.functional as F
 import torch

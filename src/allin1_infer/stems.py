@@ -2,12 +2,23 @@
 # Copyright (c) 2025 Bo-Yu Chen (Integration modifications)
 # SPDX-License-Identifier: MIT
 
-"""
-Stem input/output handling for flexible source separation.
+"""Stem input/output handling for flexible source separation.
 
 This module provides interfaces for working with pre-separated stems,
-allowing developers to use custom source separation models or skip
-source separation entirely if stems are already available.
+allowing developers to use custom source separation models or skip source
+separation entirely if stems are already available. It also holds the
+in-memory vs. disk-based separation split: `DemucsProvider.get_stems` writes
+stem wavs to disk and is used whenever byproducts must be kept or stems
+already exist on disk, while `separate_in_memory` skips that write/read round
+trip (~0.83s/track) by handing stem tensors straight to spectrogram
+extraction. The two paths must stay numerically identical, which is what
+`quantize_stem_to_madmom_mono_int16` guarantees: it reproduces, bit-for-bit,
+the int16 mono array madmom's `Signal(path, num_channels=1)` would read back
+from a wav written by `demucs_infer.audio.save_audio` -- if demucs-infer ever
+changes `save_audio`'s defaults (clip mode, bit depth), this needs
+re-verification against the real on-disk round trip.
+
+Reads: demucs_infer (pretrained.get_model, apply.apply_model, audio.save_audio)
 """
 
 import sys

@@ -7,6 +7,9 @@ functional API and relative positional bias (RPB) support — which the
 pretrained all-in-one checkpoints require. This module reimplements the exact
 semantics of NATTEN 0.17.x with plain gather + einsum, so the package installs
 anywhere (CPU, CUDA, MPS, any torch >= 2.0) with no compiled extension.
+Numerically verified against real NATTEN 0.17.x output by the golden-fixture
+test in tests/test_neighborhood_attention.py -- treat that test as the
+correctness contract for this file; any change here must keep it passing.
 
 Semantics (must match NATTEN 0.17.x bit-for-bit up to float associativity):
   - Each query attends to exactly `kernel_size` keys at the same residue class
@@ -18,6 +21,9 @@ Semantics (must match NATTEN 0.17.x bit-for-bit up to float associativity):
 The model dims in this project are tiny (kernel 5, heads 2, head_dim 12), so
 the O(kernel_size) memory overhead of materializing gathered neighbors is
 negligible compared to NATTEN's fused kernels' target workloads.
+
+Reads: torch (only stdlib + torch; no other same-repo modules). Selected as
+the fallback backend by .dinat when NATTEN is absent/incompatible.
 """
 
 import functools

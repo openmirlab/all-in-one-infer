@@ -1,3 +1,16 @@
+"""Shared dataclasses for model I/O and saved analysis results.
+
+`AllInOneOutput` is the model's raw forward-pass output (logits/embeddings);
+`AnalysisResult` is the final saved-and-loadable result the public API
+returns. `AnalysisResult.from_json` is the counterpart to
+`helpers.save_results`'s write path: a result's activations and embeddings are
+saved as `<name>.activ.npz`/`<name>.embed.npy` sidecar files next to its
+`.json`, so loading one back requires reconstructing those sidecar paths by
+suffix, not just parsing the JSON.
+
+Reads: helpers.save_results (write-side counterpart), numpy, torch
+"""
+
 import numpy as np
 import torch
 import json

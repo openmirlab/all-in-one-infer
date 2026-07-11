@@ -1,6 +1,23 @@
-"""This is a modification of:
+"""DiNAT (Dilated Neighborhood Attention) layers, 1D (per-instrument time
+axis) and 2D (cross-instrument), plus the NATTEN backend-selection shim.
+
+This is a modification of:
   https://github.com/huggingface/transformers/blob/main/src/transformers/models/dinat/modeling_dinat.py
   so that it can provide both 1D and 2D attention.
+
+Neighborhood attention backend selection (NA_BACKEND, below): NATTEN is
+optional -- if a compatible version (0.17.x-0.19.x) is installed we use its
+fused kernels (NA_BACKEND='natten'), otherwise we fall back to the
+pure-PyTorch implementation in .neighborhood_attention (NA_BACKEND='torch'),
+which is numerically identical and works on CPU/CUDA/MPS with any torch >=
+2.0, no compiled extension needed. NATTEN >=0.20 removed this functional API
+and RPB support entirely, so it cannot be used with the pretrained
+checkpoints; its import fails below and the fallback takes over. A broken
+NATTEN install (e.g. 0.17.x compiled against a mismatched torch) can raise
+non-ImportError exceptions at import time, hence the broad `except Exception`.
+
+Reads: ..config (Config), .utils, .neighborhood_attention (fallback backend),
+natten (optional fused-kernel backend)
 """
 
 import math
@@ -8,16 +25,6 @@ import torch
 from abc import ABC,  abstractmethod
 from typing import Callable, Optional, Tuple
 
-# Neighborhood attention backend selection:
-# NATTEN is optional — if a compatible version (0.17.x-0.19.x) is installed we
-# use its fused kernels, otherwise we fall back to the pure-PyTorch
-# implementation in .neighborhood_attention (numerically identical, works on
-# CPU/CUDA/MPS with any torch >= 2.0, no compiled extension needed).
-# NATTEN >=0.20 removed this functional API and RPB support entirely, so it
-# cannot be used with the pretrained checkpoints; its import fails below and
-# the fallback takes over. A broken NATTEN install (e.g. 0.17.x compiled
-# against a mismatched torch) can raise non-ImportError exceptions at import
-# time, hence the broad `except Exception`.
 try:
     # NATTEN 0.17.x-0.18.x short names
     from natten.functional import na1d_av, na1d_qk, na2d_av, na2d_qk

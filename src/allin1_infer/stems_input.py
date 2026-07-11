@@ -1,8 +1,16 @@
-"""
-Direct stems input functionality for All-In-One.
+"""Direct stems input functionality for All-In-One.
 
-This module enables users to directly provide separated stems (bass, drums, other, vocals)
-as input instead of a single audio track, completely bypassing source separation.
+This module enables users to directly provide separated stems (bass, drums,
+other, vocals) as input instead of a single audio track, completely bypassing
+source separation. `StemsInput` validates the four files exist; the
+prepare/copy/link functions materialize them into the same
+`demix_dir/stems_input/<name>/{bass,drums,other,vocals}.wav` layout that
+`stems.py`'s Demucs-based providers produce, so downstream spectrogram
+extraction can treat both sources identically. Symlinking is the default
+(`prepare_stems_for_analysis(use_symlinks=True)`) to avoid copying large
+audio files.
+
+Reads: .typings (PathLike)
 """
 
 import shutil

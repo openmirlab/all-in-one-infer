@@ -1,3 +1,17 @@
+"""Decodes beat/downbeat times from this model's own activations using
+madmom's DBN (dynamic Bayesian network) beat tracker as a smoothing decoder.
+
+Important: this is NOT madmom running its own neural-network beat/downbeat
+detector -- the model's sigmoid activations (logits_beat/logits_downbeat) are
+combined into a 3-class distribution (beat-not-downbeat / downbeat / neither)
+and fed into `DBNDownBeatTrackingProcessor` purely as its decode step, using
+`cfg.best_threshold_downbeat` and `cfg.fps` from this project's own trained
+Config. Swapping in madmom's own pretrained activations here would be wrong.
+
+Reads: madmom.features.downbeats (DBNDownBeatTrackingProcessor), ..typings
+(AllInOneOutput), ..config (Config)
+"""
+
 import torch
 
 from madmom.features.downbeats import DBNDownBeatTrackingProcessor

@@ -1,3 +1,17 @@
+"""Structured config shared by the model architecture and checkpoint loading.
+
+`Config` is NOT training-only: every pretrained checkpoint on the Hugging Face
+hub embeds a serialized `Config` (see models/loaders.py), and `AllInOne.__init__`
+reads architecture fields (depth, dim_embed, kernel_size, num_heads, ...) straight
+off it at model-construction time. Training-only fields (lr, optimizer, sched,
+...) are kept here too because they were part of the original checkpoints'
+embedded config and OmegaConf/hydra need the dataclass shape to match on load --
+removing them would break deserialization of existing checkpoints, not just
+training code.
+
+Reads: hydra, omegaconf (ConfigStore/MISSING for structured config registration)
+"""
+
 from typing import List, Optional, Any
 from dataclasses import dataclass, field
 from hydra.core.config_store import ConfigStore

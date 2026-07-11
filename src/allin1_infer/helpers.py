@@ -2,6 +2,21 @@
 # Copyright (c) 2025 Bo-Yu Chen (Cache management additions)
 # SPDX-License-Identifier: MIT
 
+"""Two grab-bags of support code for analyze.py: (1) per-track inference
+plumbing, (2) Demucs model-cache management for the CLI.
+
+`run_inference` is the actual model-forward + postprocess + result-assembly
+step analyze() calls per track; `save_results` writes an AnalysisResult back
+out as JSON plus `.activ.npz`/`.embed.npy` sidecars (the inverse of
+`AnalysisResult.from_json` in typings.py). The `get_model_cache_dir`/
+`list_cached_models`/`clear_model_cache`/`print_cache_info` cluster is
+unrelated to inference -- it backs the CLI's `--cache-info`/`--clear-cache`
+flags and manages torch hub's Demucs checkpoint cache. Kept in one file for
+historical reasons; a split along those two concerns would be cleaner.
+
+Reads: .utils, .typings, .postprocessing
+"""
+
 import numpy as np
 import json
 import torch

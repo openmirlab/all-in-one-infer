@@ -1,3 +1,20 @@
+"""Top-level `analyze()` orchestration: audio/stems in, AnalysisResult(s) out.
+
+Wires together the whole inference pipeline in one call: source separation
+(or direct stems input), spectrogram extraction, pretrained model inference,
+postprocessing, and optional visualize/sonify/save. Picks between three
+separation fast paths (skip / precomputed-dict / custom provider / default
+in-memory Demucs) and an ensemble-vs-single-fold model path, so most of the
+branching complexity here is dispatch, not computation. `_wrap_compiled_fold`
+exists because `torch.compile(mode='reduce-overhead')` uses CUDA graphs with
+static output buffers, and `Ensemble.forward()` loops over folds in plain
+Python -- without the clone-per-fold wrapper, a later fold's cudagraph replay
+can silently overwrite an earlier fold's output buffer.
+
+Reads: .demix, .stems, .stems_input, .spectrogram, .models (load_pretrained_model,
+Ensemble), .visualize, .sonify, .helpers
+"""
+
 import torch
 
 from typing import List, Union, Optional
