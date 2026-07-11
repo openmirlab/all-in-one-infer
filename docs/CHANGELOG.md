@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-07-11
+
+### Added
+- `AnalysisResult.activation_fps`: the frame rate (Hz) of the `activations`
+  array, populated whenever activations are requested — downstream consumers
+  can now map activation frame indices to timestamps (#2). Saved-JSON
+  round-trip is backward compatible (older results load with `None`).
+
+### Documentation
+- README fully synced with the 3.0.0 reality: official rename announcement
+  (all-in-one-fix → all-in-one-infer), stale `allin1` imports in current-usage
+  examples corrected to `allin1_infer`, the pure-PyTorch neighborhood-attention
+  story replaces obsolete NATTEN-required claims, and the opt-in performance
+  flags are documented in both CLI and Python API sections.
+
 ## [3.0.0] - 2026-07-11
 
 First release under the new name **all-in-one-infer** (PyPI project renamed
