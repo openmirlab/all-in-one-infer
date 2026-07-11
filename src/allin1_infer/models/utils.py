@@ -1,3 +1,5 @@
+"""Activation function lookup by config name, used when building model layers."""
+
 import torch.nn as nn
 
 

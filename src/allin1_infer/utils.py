@@ -1,3 +1,6 @@
+"""Small path/JSON helpers shared across the package (path resolution,
+result loading, compact JSON number arrays)."""
+
 import re
 
 from pathlib import Path
