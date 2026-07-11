@@ -11,7 +11,7 @@ pattern), or cache-management commands (--cache-info/--clear-cache) that exit
 before any analysis runs. Most flags are a thin pass-through to analyze()'s
 own parameters -- see analyze.py for what each one actually does.
 
-Reads: .analyze, .stems (PrecomputedStemProvider), .stems_input, .helpers
+Reads: .analyze, .stems (PrecomputedStemProvider), .stems_input, .cache
 """
 
 import argparse
@@ -22,7 +22,7 @@ from pathlib import Path
 from .analyze import analyze
 from .stems import PrecomputedStemProvider
 from .stems_input import StemsInput, create_stems_input_from_directory, create_stems_input_from_pattern
-from .helpers import print_cache_info, clear_model_cache
+from .cache import print_cache_info, clear_model_cache
 
 
 def make_parser():

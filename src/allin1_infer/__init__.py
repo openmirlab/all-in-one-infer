@@ -7,7 +7,7 @@ if madmom isn't installed, since madmom's DBN beat/downbeat decoder
 (postprocessing/metrical.py) is a non-optional part of the inference
 pipeline, not a soft dependency.
 
-Reads: .analyze, .visualize, .sonify, .stems, .stems_input, .helpers, .config, .utils, .__about__
+Reads: .analyze, .visualize, .sonify, .stems, .stems_input, .cache, .config, .utils, .__about__
 """
 
 from .__about__ import __version__
@@ -43,7 +43,7 @@ from .stems_input import (
     create_stems_input_from_pattern,
     prepare_stems_for_analysis
 )
-from .helpers import (
+from .cache import (
     get_model_cache_dir,
     get_cache_size,
     list_cached_models,
