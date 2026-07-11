@@ -56,6 +56,9 @@ def run_inference(
   if include_activations:
     activations = compute_activations(logits)
     result.activations = activations
+    # model.cfg.fps is embedded per-checkpoint (Ensemble copies it from
+    # fold 0's cfg); only meaningful once activations actually exist.
+    result.activation_fps = float(model.cfg.fps)
 
   if include_embeddings:
     result.embeddings = logits.embeddings[0].cpu().numpy()

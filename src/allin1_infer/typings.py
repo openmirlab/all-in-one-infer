@@ -6,7 +6,10 @@ returns. `AnalysisResult.from_json` is the counterpart to
 `helpers.save_results`'s write path: a result's activations and embeddings are
 saved as `<name>.activ.npz`/`<name>.embed.npy` sidecar files next to its
 `.json`, so loading one back requires reconstructing those sidecar paths by
-suffix, not just parsing the JSON.
+suffix, not just parsing the JSON. `activation_fps` (frames/sec of the
+`activations` arrays, i.e. the model's `cfg.fps`) rides along in the JSON
+body itself, not a sidecar -- it's a scalar, and `.get()`'d back out so old
+JSONs saved before this field existed still load fine (default None).
 
 Reads: helpers.save_results (write-side counterpart), numpy, torch
 """
@@ -49,6 +52,7 @@ class AnalysisResult:
   beat_positions: List[int]
   segments: List[Segment]
   activations: Optional[Dict[str, NDArray]] = None
+  activation_fps: Optional[float] = None
   embeddings: Optional[NDArray] = None
 
   @staticmethod
@@ -70,6 +74,8 @@ class AnalysisResult:
       downbeats=data['downbeats'],
       beat_positions=data['beat_positions'],
       segments=[Segment(**seg) for seg in data['segments']],
+      # .get(): absent in JSONs saved before activation_fps existed.
+      activation_fps=data.get('activation_fps'),
     )
 
     if load_activations:
