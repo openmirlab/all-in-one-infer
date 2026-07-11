@@ -36,6 +36,8 @@ from demucs_infer.audio import save_audio, prevent_clip
 
 import numpy as np
 
+from .spectrogram import STEM_NAMES
+
 
 class StemSeparator(Protocol):
     """Protocol for custom source separation implementations."""
@@ -148,7 +150,7 @@ class DemucsProvider(StemProvider):
         stems_dir = output_dir / self.model_name / audio_path.stem
 
         # Check if stems already exist
-        required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
+        required_stems = [f'{name}.wav' for name in STEM_NAMES]
         if all((stems_dir / stem).exists() for stem in required_stems):
             if progress_callback:
                 progress_callback("Stems already exist, skipping separation", 1.0)
@@ -282,7 +284,7 @@ def separate_in_memory(
         mixed-rate batch must carry a rate per file, not one shared value.
     """
     provider = DemucsProvider(device=device)
-    required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
+    required_stems = [f'{name}.wav' for name in STEM_NAMES]
 
     cached_paths = []
     stems_dirs = {}
@@ -361,7 +363,7 @@ class PrecomputedStemProvider(StemProvider):
         target_dir.mkdir(parents=True, exist_ok=True)
         
         # Copy or link stems if needed
-        required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
+        required_stems = [f'{name}.wav' for name in STEM_NAMES]
         for stem in required_stems:
             source_stem = source_dir / stem
             target_stem = target_dir / stem
@@ -478,7 +480,7 @@ class ExampleCustomSeparator:
         # save_stems(stems, stems_dir)
         
         # Placeholder - in real implementation, this would do actual separation
-        required_stems = ['bass.wav', 'drums.wav', 'other.wav', 'vocals.wav']
+        required_stems = [f'{name}.wav' for name in STEM_NAMES]
         for stem in required_stems:
             stem_path = stems_dir / stem
             if not stem_path.exists():

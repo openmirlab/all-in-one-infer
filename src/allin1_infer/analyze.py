@@ -22,7 +22,7 @@ from tqdm import tqdm
 from .demix import demix
 from .stems import get_stems, StemProvider, DemucsProvider, PrecomputedStemProvider, separate_in_memory
 from .stems_input import StemsInput, prepare_stems_for_analysis, validate_stems_input
-from .spectrogram import extract_spectrograms, extract_spectrograms_from_arrays
+from .spectrogram import extract_spectrograms, extract_spectrograms_from_arrays, STEM_NAMES
 from .models import load_pretrained_model
 from .models.ensemble import Ensemble
 from .visualize import visualize as _visualize
@@ -344,7 +344,7 @@ def analyze(
 
   if not keep_byproducts:
     for path in demix_paths:
-      for stem in ['bass', 'drums', 'other', 'vocals']:
+      for stem in STEM_NAMES:
         stem_file = path / f'{stem}.wav'
         # Only remove if it's not a symlink (to avoid removing original files)
         if stem_file.exists() and not stem_file.is_symlink():

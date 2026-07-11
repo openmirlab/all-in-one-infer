@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import List, Dict, Union, Optional, Tuple
 from dataclasses import dataclass
 from .typings import PathLike
+from .spectrogram import STEM_NAMES
 
 
 @dataclass
@@ -31,8 +32,8 @@ class StemsInput:
     
     def __post_init__(self):
         """Validate that all stem files exist."""
-        stems = {'bass': self.bass, 'drums': self.drums, 'other': self.other, 'vocals': self.vocals}
-        
+        stems = {name: getattr(self, name) for name in STEM_NAMES}
+
         for stem_name, stem_path in stems.items():
             if not Path(stem_path).exists():
                 raise FileNotFoundError(f"Stem file not found: {stem_name} at {stem_path}")
@@ -49,10 +50,7 @@ class StemsInput:
     def to_dict(self) -> Dict[str, str]:
         """Convert to dictionary format."""
         return {
-            'bass': str(self.bass),
-            'drums': str(self.drums),
-            'other': str(self.other),
-            'vocals': str(self.vocals),
+            **{name: str(getattr(self, name)) for name in STEM_NAMES},
             'identifier': self.identifier or self.name
         }
 
@@ -72,18 +70,15 @@ def validate_stems_input(stems_input: Union[StemsInput, Dict[str, PathLike]]) ->
         Validated stems input object
     """
     if isinstance(stems_input, dict):
-        required_keys = {'bass', 'drums', 'other', 'vocals'}
+        required_keys = set(STEM_NAMES)
         provided_keys = set(stems_input.keys())
-        
+
         if not required_keys.issubset(provided_keys):
             missing = required_keys - provided_keys
             raise ValueError(f"Missing required stem keys: {missing}")
-        
+
         stems_input = StemsInput(
-            bass=Path(stems_input['bass']),
-            drums=Path(stems_input['drums']),
-            other=Path(stems_input['other']),
-            vocals=Path(stems_input['vocals']),
+            **{name: Path(stems_input[name]) for name in STEM_NAMES},
             identifier=stems_input.get('identifier')
         )
     
@@ -296,20 +291,17 @@ def create_stems_input_from_pattern(
     if base_path.is_dir():
         stem_paths = {
             stem: base_path / pattern.format(stem=stem)
-            for stem in ['bass', 'drums', 'other', 'vocals']
+            for stem in STEM_NAMES
         }
     else:
         # If base_path is a file pattern, use its parent directory
         parent_dir = base_path.parent
         stem_paths = {
             stem: parent_dir / pattern.format(stem=stem)
-            for stem in ['bass', 'drums', 'other', 'vocals']
+            for stem in STEM_NAMES
         }
-    
+
     return StemsInput(
-        bass=stem_paths['bass'],
-        drums=stem_paths['drums'],
-        other=stem_paths['other'],
-        vocals=stem_paths['vocals'],
+        **{name: stem_paths[name] for name in STEM_NAMES},
         identifier=identifier or f"{base_path.stem}_stems"
     )
