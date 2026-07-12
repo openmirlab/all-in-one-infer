@@ -989,7 +989,7 @@ and use the WAV files for all your data processing pipelines.
 ```shell
 ffmpeg -i your_audio_file.mp3 your_audio_file.wav
 ```
-In this package, audio files are read using [Demucs](https://github.com/facebookresearch/demucs).
+In this package, audio files are read using [demucs-infer](https://github.com/openmirlab/demucs-infer).
 To my understanding, Demucs converts MP3 files to WAV using FFmpeg before reading them.
 However, using a different MP3 decoder can yield different offsets. 
 I've observed variations of about 20~40ms, which is problematic for tasks requiring precise timing like beat tracking, 
