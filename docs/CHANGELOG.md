@@ -27,6 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A fresh-venv install/import/pytest run (no git madmom involved anywhere)
   reproduces the exact same pass/skip test outcomes as the pre-swap baseline.
 
+### Fixed
+- Revived three silently-dead test modules (`tests/test_analyze.py`,
+  `tests/test_sonify.py`, `tests/test_visualize.py`): they still imported the
+  pre-rename `allin1` package (dead since the 3.0.0 rename) and referenced
+  never-committed `tests/test.mp3`/`tests/test.json` assets. They now run a
+  real end-to-end pipeline against the bundled `assets/` demo track via a
+  shared session-scoped `analyze()` fixture (`tests/conftest.py`) — one full
+  demucs + harmonix-all ensemble run per pytest session, byproducts written
+  to a pytest tmp dir. The demo track is a .wav on purpose: sonify's output
+  file mirrors the source suffix, and .mp3 output would require the optional
+  `demucs-infer[mp3]` (lameenc) extra.
+
 ## [3.0.1] - 2026-07-11
 
 ### Added
