@@ -128,6 +128,40 @@ a breaking import change, hence the major version).
   inference-only; see [TRAINING.md](TRAINING.md) for pointers to the
   upstream training pipeline.
 
+## [2.0.0] - historical
+
+First release of this fork under the (now-retired) `all-in-one-fix` /
+`allin1fix` naming, before the 3.0.0 rename to `all-in-one-infer` /
+`allin1_infer`. Recorded here for history; see [3.0.0](#300---2026-07-11)
+above for the rename itself.
+
+### Changed
+
+- **NATTEN dependency removed as a hard requirement**: reimplemented NATTEN's
+  neighborhood attention (1D + 2D, with relative positional biases) in pure
+  PyTorch (`src/allin1_infer/models/neighborhood_attention.py`), numerically
+  identical to NATTEN 0.17.5 per golden-fixture tests (forward and backward).
+  Pretrained checkpoints load unchanged. Installs anywhere with a single
+  `pip install` -- any torch >= 2.0, CPU-only machines, and platforms NATTEN
+  never supported (e.g. macOS / Apple Silicon). If a compatible NATTEN
+  (0.17.x-0.19.x) is installed, it's used automatically as a faster
+  fused-kernel backend.
+- **Source separation switched to demucs-infer**: replaced the original,
+  unmaintained `demucs` dependency (PyTorch 1.x only) with `demucs-infer`
+  (PyTorch 2.x compatible, actively maintained). Added intelligent model
+  caching (~6x faster on repeated use) and automatic GPU memory cleanup.
+- **Modern packaging**: converted to `pyproject.toml` (PEP 621) with
+  hatchling as the build backend; full pip and UV compatibility.
+
+### Added
+
+- Cache management: `--cache-info` / `--clear-cache` CLI flags and
+  `print_cache_info()` / `clear_model_cache()` Python API.
+- Flexible stems input: custom separation models via a pluggable provider
+  interface, pre-computed stems from any tool, direct stems input (skip
+  separation entirely), and hybrid workflows mixing all three.
+- Fuzzy-matching error messages for invalid model names.
+
 ## [1.1.0] - 2023-10-10
 
 ### Added

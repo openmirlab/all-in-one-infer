@@ -6,9 +6,9 @@
 
 **An enhanced version of All-In-One with integrated source separation and modern PyTorch compatibility**
 
-📦 **Available on PyPI:** [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
+Available on PyPI: [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
 
-> ## 📢 Officially renamed: all-in-one-fix → all-in-one-infer
+> ## Officially renamed: all-in-one-fix → all-in-one-infer
 >
 > This project has **officially moved** from `all-in-one-fix` to **`all-in-one-infer`** (as of v3.0.0, 2026-07).
 >
@@ -16,240 +16,147 @@
 > - **Import:** `import allin1_infer` (formerly `allin1fix`)
 > - **CLI:** `all-in-one-infer` (formerly `allin1fix`)
 >
-> Existing `all-in-one-fix` users: see the [Migration](#-migration-from-all-in-one) section below.
+> Existing `all-in-one-fix` users: see the [Migration](#migration-from-all-in-one) section below.
 
-> **🙏 Acknowledgments**:
->
-> This package builds upon the exceptional work of the foundational project:
->
-> - **[All-In-One](https://github.com/mir-aidj/all-in-one)** by [Taejun Kim](https://taejun.kim/) and Juhan Nam - The core music structure analysis algorithms and models. We are deeply grateful for their groundbreaking research in music information retrieval.
->
-> This enhanced version preserves all original research contributions while improving compatibility and workflow flexibility. All credit for the core algorithms belongs to the original authors.
-
-This package provides models for music structure analysis, predicting:
+This package predicts, given an audio file:
 1. Tempo (BPM)
 2. Beats
 3. Downbeats
 4. Functional segment boundaries
 5. Functional segment labels (e.g., intro, verse, chorus, bridge, outro)
 
-## 🆕 What's New in v2.0.0 (historical)
-
-### 🎵 **Integrated Source Separation**
-- **Source Separation**: Uses demucs-infer package for high-quality source separation
-- **Clean Dependencies**: Inference-only Demucs integration via demucs-infer package
-- **Model Caching**: Intelligent model caching for improved performance (6x faster on repeated use)
-- **GPU Memory Management**: Automatic GPU cleanup prevents out-of-memory errors
-- **Better Error Messages**: Fuzzy matching suggestions for model names
-
-### 🔧 **Enhanced Compatibility**
-- **PyTorch 2.x Support**: Compatible with PyTorch 2.0 through 2.7+ and CUDA 11.7-12.8
-- **NATTEN 0.17.x Verified**: Fully tested and working with PyTorch 2.0-2.7+
-  - Automatic version detection supports NATTEN 0.17.x-0.19.x
-  - Extensively tested with real music analysis workloads
-  - **Note**: NATTEN 0.20+ is not compatible due to API changes requiring dimensional validation updates
-- **Unified Package**: Single package with all functionality included
-- **Modern Packaging**: UV-style packaging with full pip compatibility
-
-### 🎛️ **Flexible Source Separation**
-- **Custom Models**: Integrate your own source separation models via pluggable architecture
-- **Pre-computed Stems**: Use existing separated stems from any source separation tool
-- **Direct Stems Input**: Skip source separation entirely by providing stems directly
-- **Hybrid Workflows**: Mix custom separation, pre-computed stems, and default separation
-
-### 🗂️ **Cache Management**
-- **View Cache**: `all-in-one-infer --cache-info` to see cached separation models
-- **Clear Cache**: `all-in-one-infer --clear-cache` to free up disk space
-- **Python API**: `allin1_infer.print_cache_info()`, `allin1_infer.clear_model_cache()`
-
-### 📦 **Enhanced CLI & API**
-- **Backward Compatible**: All original functionality preserved with `allin1_infer` namespace
-- **Rich CLI Options**: New stems handling and cache management options
-- **Python API**: Enhanced analyze function with new stem provider system
-
-
------
-
-
 **Table of Contents**
 
-- [Motivation & Changes](#-motivation--changes)
+- [Why This Exists](#why-this-exists)
+- [Acknowledgments](#acknowledgments)
+- [Citation](#citation)
+- [Features](#features)
+- [Scope](#scope)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Usage for CLI](#usage-for-cli)
-  - [New Stems Features](#-new-stems-features)
-  - [Cache Management](#-cache-management)
-  - [Technical Improvements](#-technical-improvements)
 - [Usage for Python](#usage-for-python)
-  - [New Stems API Features](#-new-stems-api-features)
 - [Visualization & Sonification](#visualization--sonification)
 - [Available Models](#available-models)
 - [Speed](#speed)
 - [Advanced Usage for Research](#advanced-usage-for-research)
 - [Concerning MP3 Files](#concerning-mp3-files)
-- [Migration from All-In-One](#-migration-from-all-in-one)
-- [Citation](#citation)
-- [About All-In-One-Infer](#-about-all-in-one-infer)
-- [Documentation](#-documentation)
+- [Migration from All-In-One](#migration-from-all-in-one)
+- [What This Project Will Never Bundle](#what-this-project-will-never-bundle)
+- [Development](#development)
+- [License](#license)
+- [Support](#support)
+- [Documentation](#documentation)
 
-## 💡 Motivation & Changes
+## Why This Exists
 
-### Why This Fork?
+The original **[All-In-One](https://github.com/mir-aidj/all-in-one)** is an
+excellent music structure analysis tool — predicting tempo, beats, downbeats,
+and functional segments in a single pass — but it became hard to install in
+modern environments:
 
-The original **All-In-One** package is an excellent music structure analysis tool, but needed updates for modern PyTorch environments:
+1. **PyTorch 2.x compatibility**: the original depends on NATTEN, a
+   source-only CUDA/C++ extension that must compile against the exact
+   installed torch version at install time. NATTEN's newer releases also
+   dropped the legacy API and relative-positional-bias support the
+   pretrained checkpoints require, and NATTEN never supported some
+   platforms (e.g. macOS / Apple Silicon) at all.
+2. **Source separation dependency**: the original required a separate,
+   by-then-unmaintained `demucs` install (PyTorch 1.x only), which pulled
+   in its own version conflicts.
+3. **Performance**: no model caching — every run reloaded the ensemble's 8
+   checkpoints from scratch.
+4. **Packaging**: `madmom`, used internally for spectrogram/beat-decoding,
+   has never published a PyPI release with a working sdist and required a
+   `pip install git+https://...` step (git installs are also rejected by
+   PyPI metadata rules).
 
-1. **PyTorch 2.x Compatibility**: NATTEN library needed upgrade for PyTorch 2.x
-2. **Source Separation**: Required separate source separation setup
-3. **Performance**: No model caching, repeated model loading
-4. **Modern Tooling**: Packaging and dependency management improvements
+**What this repo reprovides:** the exact same research — model
+architectures, beat/downbeat/tempo algorithms, and structure segmentation
+are all unchanged from upstream — packaged so `pip install all-in-one-infer`
+just works: pure-PyTorch neighborhood attention (no compiler, no NATTEN
+requirement), source separation via the sibling
+[demucs-infer](https://github.com/openmirlab/demucs-infer) package, and
+spectrogram/beat-decoding via the sibling
+[madmom-infer](https://github.com/openmirlab/madmom-infer) package — both
+plain PyPI installs with no git-install step. See
+[CHANGELOG.md](docs/CHANGELOG.md) for the full version-by-version history of
+how this fork got here.
 
-> **Note**: This fork uses **demucs-infer**, a maintained inference-only package with PyTorch 2.x support for source separation.
+## Acknowledgments
 
-### What Changed in v2.0.0?
+All-In-One-Infer builds entirely on the research, model architectures, and
+pretrained weights of the upstream project below. This repo's own
+contribution is limited to packaging, PyTorch 2.x compatibility, and
+performance/workflow tooling around that unchanged research — all credit
+for the core algorithms belongs to the original authors.
 
-This fork addresses these issues through strategic integration and improvements:
+- **Upstream project:** [All-In-One](https://github.com/mir-aidj/all-in-one) (`mir-aidj` on GitHub)
+- **Individual authors:** [Taejun Kim](https://taejun.kim/) and Juhan Nam (KAIST)
+- **Source repository:** [github.com/mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one)
+- **Pretrained weights host:** [huggingface.co/taejunkim/allinone](https://huggingface.co/taejunkim/allinone) — this package downloads the `harmonix-*` checkpoints directly from that Hugging Face repository (via `huggingface_hub.hf_hub_download`) and hosts no mirror
 
-#### **1. NATTEN Dependency Removed (Pure-PyTorch Neighborhood Attention)** 🔧
+This package also depends on two sibling packages for parts of its
+pipeline, each with its own upstream lineage and Acknowledgments section:
 
-**Before:**
-```toml
-# Original All-In-One required NATTEN, a compiled CUDA/C++ extension that must
-# be built against the exact installed torch version at install time.
-dependencies = ["natten>=0.15.0"]
+- **[demucs-infer](https://github.com/openmirlab/demucs-infer)** — inference-only source separation, itself built on [Demucs](https://github.com/facebookresearch/demucs) by Alexandre Défossez and Meta AI Research
+- **[madmom-infer](https://github.com/openmirlab/madmom-infer)** — a from-scratch, pure numpy/scipy reimplementation of the `madmom` spectrogram/DBN-decoding surface this project uses, published to PyPI
+
+## Citation
+
+If you use this package for your research, please cite the following papers.
+
+**All-In-One (core music structure analysis algorithms):**
+```bibtex
+@inproceedings{taejun2023allinone,
+  title={All-In-One Metrical And Functional Structure Analysis With Neighborhood Attentions on Demixed Audio},
+  author={Kim, Taejun and Nam, Juhan},
+  booktitle={IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
+  year={2023}
+}
 ```
 
-**After:**
-```toml
-# No natten needed — neighborhood attention is implemented in pure PyTorch.
-dependencies = ["torch>=2.0.0"]  # no upper bound, no compiled extension
+**Demucs (source separation models):**
+```bibtex
+@inproceedings{defossez2021hybrid,
+  title={Hybrid Spectrogram and Waveform Source Separation},
+  author={Défossez, Alexandre},
+  booktitle={Proceedings of the ISMIR 2021 Workshop on Music Source Separation},
+  year={2021}
+}
 ```
 
-**Changes Made:**
-- Reimplemented NATTEN's neighborhood attention (1D + 2D, with relative
-  positional biases) in pure PyTorch: `src/allin1_infer/models/neighborhood_attention.py`
-- Numerically identical to NATTEN 0.17.5 (verified by golden-fixture tests,
-  forward and backward)
-- Pretrained checkpoints load unchanged — no weight conversion
-- If a compatible NATTEN (0.17.x-0.19.x) is installed, it is used automatically
-  as a faster fused-kernel backend: `pip install "all-in-one-infer[natten]"` —
-  see the Installation section's ["Optional: NATTEN fused kernels"](#optional-natten-fused-kernels)
-  for the required torch pin and `--no-build-isolation` steps
+## Features
 
-**Impact:** Installs anywhere with a single `pip install` — any torch >= 2.0
-(including 2.8+), CPU-only machines, and platforms NATTEN never supported
-(e.g. macOS / Apple Silicon). No C++ toolchain required.
+- **Modern PyTorch support**: compatible with PyTorch 2.0 through 2.7+ and CUDA 11.7-12.8, no compiled extensions required by default
+- **Pure-PyTorch neighborhood attention**: numerically identical to NATTEN 0.17.5 (golden-fixture tested); optional `[natten]` extra for NATTEN's fused-kernel backend as a speed optimization
+- **Integrated source separation**: uses [demucs-infer](https://github.com/openmirlab/demucs-infer) with intelligent model caching (~6x faster on repeated use) and automatic GPU memory cleanup
+- **Flexible stems input**: custom separation models via a pluggable provider interface, pre-computed stems from any tool, direct stems input (skip separation entirely), and hybrid workflows mixing all three
+- **Cache management**: `--cache-info` / `--clear-cache` CLI flags and a matching Python API to inspect and free the multi-GB separation-model cache
+- **PyPI-only install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — nothing to compile, nothing to `git+https://` install
+- **100% backward compatible**: same analysis JSON structure, function signatures, model names, and accuracy as upstream All-In-One
 
-#### **2. Streamlined Source Separation** 🎵
+See [docs/CHANGELOG.md](docs/CHANGELOG.md) for the detailed, version-by-version history of how these features were added.
 
-**Before:**
-```python
-# Required external demucs package (no longer maintained)
-dependencies = ["demucs"]  # PyTorch 1.x only, not actively maintained
-```
+## Scope
 
-**After:**
-```python
-# Uses demucs-infer (maintained, PyTorch 2.x compatible)
-dependencies = ["demucs-infer"]
-```
+**In scope:**
+- Inference on the pretrained `harmonix-*` models: tempo, beats, downbeats, functional segment boundaries and labels
+- Source separation orchestration (via demucs-infer) as a preprocessing step, including flexible/custom/pre-computed stems input
+- Visualization and sonification of analysis results
+- Frame-level raw activations and embeddings for research use
+- Packaging, PyTorch 2.x compatibility, and performance tooling (caching, GPU cleanup) around the unchanged upstream research
 
-**Changes Made:**
-- Switched to demucs-infer (maintained fork of Demucs for inference)
-- PyTorch 2.x compatibility (no `torchaudio<2.1` restriction)
-- Added intelligent model caching for 6x performance improvement
-- Implemented automatic GPU memory cleanup
-- Enhanced error messages with model name suggestions
+**Out of scope, forever:**
+- **Training.** This package is inference-only; training code has been removed and will not return. To retrain models, use the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository directly (see [Training](#training) below).
+- **Reimplementing demucs-infer or madmom-infer's internals here.** Source separation and spectrogram/beat-decoding are deliberately delegated to those sibling packages rather than vendored, so accuracy and maintenance responsibility stay with the package that owns them.
+- **A NATTEN-required install path.** Pure-PyTorch neighborhood attention is the default and will remain so; NATTEN stays an optional, non-default speed extra.
 
-**Impact:** Actively maintained dependencies, faster processing, modern PyTorch support
+## Installation
 
-#### **3. Enhanced Cache Management** 🗂️
+Available on PyPI: [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
 
-**Added Features:**
-- View cached models: `all-in-one-infer --cache-info`
-- Clear cache: `all-in-one-infer --clear-cache` (with `--clear-cache-dry-run` preview)
-- Python API: `get_cache_size()`, `list_cached_models()`, `clear_model_cache()`
-- Tracks model files (`.th`, `.pth`) in `~/.cache/torch/hub/checkpoints/`
-
-**Impact:** Better disk space management, visibility into cached models
-
-#### **4. Documentation & Code Cleanup** 📝
-
-**Changes:**
-- Updated to use demucs-infer package instead of embedded code
-- Added proper acknowledgments to both All-In-One and Demucs projects
-- Clarified integration source and original authorship
-- Improved docstrings and code comments
-
-**Impact:** Clear attribution, easier maintenance, better developer experience
-
-#### **5. Modern Packaging with UV** 📦
-
-**Before:**
-```toml
-# Traditional setup.py or older pyproject.toml
-```
-
-**After:**
-```toml
-# Modern pyproject.toml with UV support
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-```
-
-**Changes Made:**
-- Converted to modern **UV-style packaging** using `pyproject.toml`
-- Uses [hatchling](https://github.com/pypa/hatch) as build backend
-- Maintains **full pip compatibility** - works with both `uv` and `pip`
-- Follows [PEP 621](https://peps.python.org/pep-0621/) for project metadata
-
-**Installation Methods:**
-```bash
-# With UV (recommended, faster)
-uv pip install all-in-one-infer
-
-# With traditional pip (still supported)
-pip install all-in-one-infer
-
-# Editable install for development
-uv pip install -e .
-pip install -e .
-```
-
-**Impact:** Faster dependency resolution with UV, while maintaining compatibility with traditional pip workflows
-
-### Respect for Original Work
-
-This project integrates two foundational open-source projects:
-
-**Original Projects:**
-- **[All-In-One](https://github.com/mir-aidj/all-in-one)** - Music structure analysis by Taejun Kim & Juhan Nam
-- **[demucs-infer](https://github.com/openmirlab/demucs-infer)** - Source separation package (PyTorch 2.x compatible)
-
-**What's New in v2.0.0:**
-- ✅ NATTEN removed — pure-PyTorch neighborhood attention (any PyTorch >= 2.0, no compilation)
-- ✅ demucs-infer integration for source separation
-- ✅ Performance improvements (6x faster with model caching)
-- ✅ Enhanced error handling and cache management
-- ✅ Modern packaging with UV support
-- ✅ 100% backward compatible with All-In-One API
-
-**What Stayed the Same:**
-- ✅ All-In-One model architectures (unchanged)
-- ✅ Beat/downbeat tracking algorithms (unchanged)
-- ✅ Tempo estimation (unchanged)
-- ✅ Structure segmentation (unchanged)
-- ✅ Research quality and accuracy (unchanged)
-
-**Credit:**
-- **All-In-One research** → Taejun Kim & Juhan Nam ([original paper](https://github.com/mir-aidj/all-in-one))
-- **Source separation** → demucs-infer package (openmirlab/demucs-infer)
-- **This fork** → PyTorch 2.x compatibility, performance improvements, modern tooling
-
-## 📦 Installation
-
-**📦 Available on PyPI:** [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
-
-### Quick Install from PyPI 🚀
+### Quick Install from PyPI
 
 ```bash
 pip install all-in-one-infer
@@ -265,16 +172,6 @@ git-install step. Since NATTEN is no longer a dependency and, as of 3.1.0,
 madmom is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer)
 (a plain PyPI package), there is nothing to compile and nothing to fetch from
 git at install time.
-
-> **madmom → madmom-infer (3.1.0):** all-in-one-infer's spectrogram extraction
-> and DBN beat/downbeat decoding now run on madmom-infer, a from-scratch,
-> pure numpy/scipy reimplementation of the madmom surface this project uses —
-> published to PyPI instead of requiring a `git+https://` install. Verified via
-> closure proof plus an end-to-end run on 3 real songs: every discrete output
-> (bpm/beats/downbeats/segments) was exactly identical to the madmom backend;
-> raw activations differ by at most 2e-4, entirely due to madmom-infer's
-> correctly-rounded STFT magnitude (madmom's own `np.abs` has a known rounding
-> bug) — more accurate, not less.
 
 ### Requirements
 
@@ -306,13 +203,13 @@ pip install "all-in-one-infer[natten]" --no-build-isolation
 It is picked up automatically when importable; otherwise the pure-PyTorch
 backend is used. Results are identical either way.
 
-### ✅ Verify Installation
+### Verify Installation
 
 After installation, verify it worked:
 
 ```bash
 # Check if installed
-python -c "import allin1_infer; print('✅ allin1_infer installed successfully!')"
+python -c "import allin1_infer; print('allin1_infer installed successfully!')"
 
 # Check version
 python -c "import allin1_infer; print(allin1_infer.__version__)"
@@ -324,14 +221,12 @@ all-in-one-infer --help
 ### Troubleshooting
 
 **Installation fails with scipy version error**
-- ✅ **Cause:** Using Python < 3.9
-- ✅ **Solution:** Ensure Python 3.9+ is used
+- Cause: Using Python < 3.9
+- Solution: Ensure Python 3.9+ is used
 
 **ImportError: No module named 'madmom_infer'**
-- ✅ **Cause:** `madmom-infer` failed to install as a regular dependency (rare — it's a plain PyPI package with no compiled extensions)
-- ✅ **Solution:** Run `pip install madmom-infer` before using all-in-one-infer
-
----
+- Cause: `madmom-infer` failed to install as a regular dependency (rare — it's a plain PyPI package with no compiled extensions)
+- Solution: Run `pip install madmom-infer` before using all-in-one-infer
 
 ### Installation from GitHub (Development)
 
@@ -374,6 +269,27 @@ For macOS:
 brew install ffmpeg
 ```
 
+## Quick Start
+
+```shell
+# Analyze one or more audio files from the CLI
+all-in-one-infer your_audio_file.wav
+```
+
+```python
+# Or from Python
+from allin1_infer import analyze
+
+result = allin1_infer.analyze('your_audio_file.wav')
+print(result.bpm, result.beats[:4], result.segments[0])
+```
+
+Both paths run the same pipeline: source separation (via demucs-infer) →
+spectrogram + beat/downbeat extraction (via madmom-infer) → model inference
+→ postprocessing. Results are saved as JSON under `./struct` by default when
+using the CLI; the Python `analyze()` function returns results in memory and
+only writes to disk if you pass `out_dir=`. See [Usage for CLI](#usage-for-cli)
+and [Usage for Python](#usage-for-python) below for the full option set.
 
 ## Usage for CLI
 
@@ -384,7 +300,7 @@ To analyze audio files:
 all-in-one-infer your_audio_file1.wav your_audio_file2.mp3
 ```
 
-### 🎛️ **New Stems Features**
+### New Stems Features
 
 **1. Direct stems input from directory:**
 ```shell
@@ -463,7 +379,7 @@ The analysis results will be saved in JSON format:
 }
 ```
 
-### 🗂️ **Cache Management**
+### Cache Management
 
 Separation models are downloaded to `~/.cache/torch/hub/checkpoints/` and can use several GB of disk space.
 
@@ -517,7 +433,7 @@ count = allin1_infer.clear_model_cache(dry_run=True)
 count = allin1_infer.clear_model_cache()  # Actually delete
 ```
 
-### 🔧 **Technical Improvements**
+### Technical Improvements
 
 All-In-One-Infer includes several technical enhancements over the original:
 
@@ -530,7 +446,7 @@ All-In-One-Infer includes several technical enhancements over the original:
 - **Modular Architecture**: Clean separation of concerns for easier maintenance and extension
 - **Cache Management**: Built-in tools to view and manage cached separation models
 
-### 📋 **All Available CLI Options**
+### All Available CLI Options
 
 ```shell
 $ all-in-one-infer -h
@@ -596,7 +512,7 @@ from allin1_infer import analyze
 results = analyze(['song1.wav', 'song2.mp3'])
 ```
 
-### 🎛️ **New Stems API Features**
+### New Stems API Features
 
 **1. Custom separation models:**
 ```python
@@ -1005,11 +921,11 @@ ensuring straightforward decoding.
 > install it or convert the file to WAV/FLAC first.
 
 
-## 🔄 **Migration from All-In-One**
+## Migration from All-In-One
 
 All-In-One-Infer is designed to be a drop-in replacement with enhanced features. Here's how to migrate:
 
-### **Package Name Changes**
+### Package Name Changes
 ```python
 # Old (All-In-One)
 from allin1 import analyze
@@ -1018,7 +934,7 @@ from allin1 import analyze
 from allin1_infer import analyze
 ```
 
-### **CLI Command Changes**
+### CLI Command Changes
 ```shell
 # Old
 allin1 track.wav -o ./results
@@ -1027,7 +943,7 @@ allin1 track.wav -o ./results
 all-in-one-infer track.wav -o ./results
 ```
 
-### **Dependency Changes**
+### Dependency Changes
 ```toml
 # Old dependencies (All-In-One - original)
 dependencies = ["demucs", "natten>=0.15.0"]
@@ -1037,7 +953,7 @@ dependencies = ["torch>=2.0.0", "demucs-infer", ...]  # pure-PyTorch neighborhoo
 # Optional fused-kernel backend: pip install "all-in-one-infer[natten]"  (natten>=0.17.1,<0.20)
 ```
 
-### **Installation Methods**
+### Installation Methods
 
 All-In-One-Infer supports both **UV** (recommended, faster) and **pip** (traditional):
 
@@ -1058,110 +974,85 @@ pip install -e .
 
 **Note**: The package uses modern `pyproject.toml` metadata (PEP 621 standards). All dependencies (including demucs-infer and, as of 3.1.0, madmom-infer) are installed automatically from PyPI — no GitHub git-install step needed.
 
-### **What Stays the Same**
-- ✅ All analysis results format (JSON structure unchanged)
-- ✅ All function signatures and return types
-- ✅ All model names and parameters
-- ✅ All core functionality and accuracy
-- ✅ All visualization and sonification features
-
-### **What's Enhanced**
-- 🆕 NATTEN removed as a hard dependency — pure-PyTorch NA ships by default (numerically identical, no compiled extension, any torch>=2.0)
-- 🆕 Optional `[natten]` extra (natten>=0.17.1,<0.20, torch<2.8) as a speed optimization
-- 🆕 PyTorch 2.0-2.7.0 and CUDA 11.7-12.8 compatibility
-- 🆕 Uses demucs-infer package for PyTorch 2.x compatible separation
-- 🆕 Clean dependency management via demucs-infer
-- 🆕 Flexible source separation options
-- 🆕 Direct stems input capability
-- 🆕 Custom model integration
-- 🆕 Performance improvements (model caching, GPU cleanup)
-- 🆕 Better error handling and stability
-- 🆕 Modern packaging (UV-style with pip compatibility)
+### What Stays the Same
+- All analysis results format (JSON structure unchanged)
+- All function signatures and return types
+- All model names and parameters
+- All core functionality and accuracy
+- All visualization and sonification features
 
 ## Training
-This package is inference-only; training code has been removed. [TRAINING.md](docs/TRAINING.md) is kept as a historical guide. To retrain models, refer to the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository.
+This package is inference-only; training code has been removed (see [Scope](#scope) above — this is permanent, not a temporary gap). [TRAINING.md](docs/TRAINING.md) is kept as a historical guide. To retrain models, refer to the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository.
 
-## Citation
+## What This Project Will Never Bundle
 
-If you use this package for your research, please cite the following papers:
+All-In-One-Infer downloads pretrained model checkpoints at runtime from three
+different sources; it does not, and will never, ship any of them inside the
+git repository or the published package.
 
-**All-In-One (core music structure analysis algorithms):**
-```bibtex
-@inproceedings{taejun2023allinone,
-  title={All-In-One Metrical And Functional Structure Analysis With Neighborhood Attentions on Demixed Audio},
-  author={Kim, Taejun and Nam, Juhan},
-  booktitle={IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
-  year={2023}
-}
+- **No weight files in the repo or the PyPI package.** `.th`/`.pth`
+  checkpoints are never committed to git and never included in the
+  sdist/wheel.
+- **Own `harmonix-*` models** are downloaded from the upstream author's
+  Hugging Face repository, [huggingface.co/taejunkim/allinone](https://huggingface.co/taejunkim/allinone),
+  via `huggingface_hub.hf_hub_download` — no re-hosted mirror.
+- **Source-separation checkpoints** are downloaded by the sibling
+  [demucs-infer](https://github.com/openmirlab/demucs-infer) package
+  directly from Meta's official CDN — see that package's own
+  ["What This Project Will Never Bundle"](https://github.com/openmirlab/demucs-infer#what-this-project-will-never-bundle)
+  section.
+- **Spectrogram/beat-decoding models**, if any are required, are handled
+  entirely inside [madmom-infer](https://github.com/openmirlab/madmom-infer)
+  — this package never downloads or bundles them directly.
+- **No silently altered or re-derived weights.** This package does not
+  quantize, prune, or fine-tune the upstream models and ship the result as
+  a default.
+
+All downloaded checkpoints land in `~/.cache/torch/hub/checkpoints/` (see
+[Cache Management](#cache-management) above for tooling to inspect and clear
+that cache).
+
+## Development
+
+This is a source-code-only package: see [Installation from GitHub](#installation-from-github-development)
+above for an editable install. Dev-only dependencies (`black`, `ruff`) are
+declared under the `dev` extra in `pyproject.toml`.
+
+```bash
+# Editable install with dev tooling
+pip install -e ".[dev]"
+
+# Run the test suite (uses the demo tracks under assets/; needs network on
+# first run to download checkpoints)
+pytest tests/ -v
 ```
 
-**Demucs (source separation models):**
-```bibtex
-@inproceedings{defossez2021hybrid,
-  title={Hybrid Spectrogram and Waveform Source Separation},
-  author={Défossez, Alexandre},
-  booktitle={Proceedings of the ISMIR 2021 Workshop on Music Source Separation},
-  year={2021}
-}
-```
+See [CLAUDE.md](CLAUDE.md) for this project's file-header convention,
+testing philosophy, and the exact verification commands for a change here.
 
-## 📝 **About All-In-One-Infer**
+## License
 
-### What is This Project?
+**MIT** (same as All-In-One and Demucs).
 
-All-In-One-Infer is a unified package that combines:
-- **Music structure analysis** from [All-In-One](https://github.com/mir-aidj/all-in-one) by Taejun Kim & Juhan Nam
-- **Source separation** via [demucs-infer](https://github.com/openmirlab/demucs-infer) package
-- **Pure-PyTorch neighborhood attention** by default (no NATTEN required); optional `[natten]` extra for NATTEN's fused-kernel backend
-- **Performance improvements** and integration work
+This package includes code from multiple sources under the MIT License:
+1. [All-In-One](https://github.com/mir-aidj/all-in-one) — Copyright (c) 2023 Taejun Kim
+2. Integration and modifications — Copyright (c) 2025 Bo-Yu Chen
 
-### Key Principles
+See [LICENSE](LICENSE) and [NOTICE](NOTICE) for full details and third-party dependency licenses.
 
-**🎯 Respect Original Work:**
-### Core Research: Unchanged ✅
+## Support
 
-- ✅ All-In-One model architectures (100% original)
-- ✅ Beat/downbeat/tempo algorithms (100% original)
-- ✅ Structure segmentation (100% original)
-- ✅ Research quality and accuracy (100% original)
+- **Issues / bug reports**: [GitHub Issues](https://github.com/openmirlab/all-in-one-infer/issues)
+- **Migration questions**: see [Migration from All-In-One](#migration-from-all-in-one) above
+- **Version history**: see [docs/CHANGELOG.md](docs/CHANGELOG.md)
+- **Upstream research questions**: see the original [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository
 
-### This Fork's Contributions 🔧
-
-- PyTorch 2.x compatibility (NATTEN dependency removed; pure-PyTorch neighborhood attention by default, optional `[natten]` extra)
-- Performance optimizations (model caching, GPU management)
-- Modern packaging and dependency management
-- Enhanced error handling and user experience
-- Source separation via demucs-infer package
-
-### Attribution 📚
-
-- **All-In-One research** → Taejun Kim & Juhan Nam ([original](https://github.com/mir-aidj/all-in-one))
-- **Source separation** → demucs-infer (openmirlab/demucs-infer)
-- **PyTorch 2.x compatibility** → This fork
-
-### For Researchers
-
-When using this package, please cite the **All-In-One** paper for music structure analysis.
-See [Citation](#citation) section for BibTeX.
-
-### Project Information
-
-**License**: MIT (same as All-In-One and Demucs)
-**Original All-In-One**: [github.com/mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one)
-**Original Demucs**: [github.com/facebookresearch/demucs](https://github.com/facebookresearch/demucs)
-
-### What Changed in v2.0.0? (historical)
-
-See [Motivation & Changes](#-motivation--changes) section above for detailed breakdown of modifications.
-
-## 📚 Documentation
+## Documentation
 
 Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 - **[USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md)** - Detailed usage examples and code snippets
 - **[TRAINING.md](docs/TRAINING.md)** - Historical training guide (this package is inference-only; see note in the doc)
-- **[INTEGRATION.md](docs/INTEGRATION.md)** - Details about Demucs integration
-- **[IMPROVEMENTS.md](docs/IMPROVEMENTS.md)** - Performance improvements documentation
 - **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history and release notes
 
 For more information, see the [Documentation Index](docs/README.md).
