@@ -253,23 +253,32 @@ This project integrates two foundational open-source projects:
 
 ```bash
 pip install all-in-one-infer
-
-# madmom is required at runtime; if it wasn't installed automatically:
-pip install git+https://github.com/CPJKU/madmom
 ```
 
 **Or if you prefer UV (faster):**
 ```bash
 uv add all-in-one-infer
-uv add git+https://github.com/CPJKU/madmom
 ```
 
-That's it — no `--no-build-isolation`, no "install torch first". Since NATTEN
-is no longer a dependency, there is nothing to compile at install time.
+That's it — no `--no-build-isolation`, no "install torch first", no separate
+git-install step. Since NATTEN is no longer a dependency and, as of 3.1.0,
+madmom is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer)
+(a plain PyPI package), there is nothing to compile and nothing to fetch from
+git at install time.
+
+> **madmom → madmom-infer (3.1.0):** all-in-one-infer's spectrogram extraction
+> and DBN beat/downbeat decoding now run on madmom-infer, a from-scratch,
+> pure numpy/scipy reimplementation of the madmom surface this project uses —
+> published to PyPI instead of requiring a `git+https://` install. Verified via
+> closure proof plus an end-to-end run on 3 real songs: every discrete output
+> (bpm/beats/downbeats/segments) was exactly identical to the madmom backend;
+> raw activations differ by at most 2e-4, entirely due to madmom-infer's
+> correctly-rounded STFT magnitude (madmom's own `np.abs` has a known rounding
+> bug) — more accurate, not less.
 
 ### Requirements
 
-- **Python**: 3.9 or later (required for `scipy>=1.13` and `madmom`)
+- **Python**: 3.9 or later (required for `scipy>=1.13` and `madmom-infer`)
 - **PyTorch**: 2.0.0 or later (no upper bound)
 - **OS**: Linux, macOS, Windows
 
@@ -318,13 +327,9 @@ all-in-one-infer --help
 - ✅ **Cause:** Using Python < 3.9
 - ✅ **Solution:** Ensure Python 3.9+ is used
 
-**ImportError: No module named 'madmom'**
-- ✅ **Cause:** `madmom` must be installed separately from git (PyPI limitation)
-- ✅ **Solution:** Run `pip install git+https://github.com/CPJKU/madmom` before using all-in-one-infer
-
-**Installation fails with madmom error**
-- ✅ **Cause:** Installing `madmom` from GitHub requires git and internet
-- ✅ **Solution:** Ensure git is installed (`apt install git` or `brew install git`) and you have internet access
+**ImportError: No module named 'madmom_infer'**
+- ✅ **Cause:** `madmom-infer` failed to install as a regular dependency (rare — it's a plain PyPI package with no compiled extensions)
+- ✅ **Solution:** Run `pip install madmom-infer` before using all-in-one-infer
 
 ---
 
@@ -353,7 +358,7 @@ cd all-in-one-infer
 pip install -e .
 ```
 
-**Note:** All PyPI dependencies (including **demucs-infer**) are installed automatically. **madmom** still needs to come from git if it isn't picked up automatically: `pip install git+https://github.com/CPJKU/madmom`.
+**Note:** All dependencies (including **demucs-infer** and **madmom-infer**) are installed automatically from PyPI — no separate git-install step.
 
 ### (Optional) Install FFmpeg for MP3 support
 
@@ -992,6 +997,13 @@ where the conventional tolerance is just 70ms.
 Hence, I advise standardizing inputs to the WAV format for all data processing, 
 ensuring straightforward decoding.
 
+> **Note (3.1.0+)**: WAV and FLAC inputs are decoded via `soundfile` (bit-
+> identical to `torchaudio`, no extra install needed). MP3 (and other lossy
+> formats) still decode via `torchaudio`, which requires the separate
+> `torchcodec` package on `torchaudio>=2.11` (`pip install torchcodec`) —
+> if it's missing, loading an MP3 raises a clear error telling you to
+> install it or convert the file to WAV/FLAC first.
+
 
 ## 🔄 **Migration from All-In-One**
 
@@ -1044,7 +1056,7 @@ uv pip install -e .
 pip install -e .
 ```
 
-**Note**: The package uses modern `pyproject.toml` with [hatchling](https://github.com/pypa/hatch) backend, following [PEP 621](https://peps.python.org/pep-0621/) standards. Dependencies are automatically installed from GitHub (demucs-infer, madmom) and PyPI (other packages).
+**Note**: The package uses modern `pyproject.toml` metadata (PEP 621 standards). All dependencies (including demucs-infer and, as of 3.1.0, madmom-infer) are installed automatically from PyPI — no GitHub git-install step needed.
 
 ### **What Stays the Same**
 - ✅ All analysis results format (JSON structure unchanged)

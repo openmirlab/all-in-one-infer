@@ -8,13 +8,13 @@ and fed into `DBNDownBeatTrackingProcessor` purely as its decode step, using
 `cfg.best_threshold_downbeat` and `cfg.fps` from this project's own trained
 Config. Swapping in madmom's own pretrained activations here would be wrong.
 
-Reads: madmom.features.downbeats (DBNDownBeatTrackingProcessor), ..typings
+Reads: madmom_infer.features.downbeats (DBNDownBeatTrackingProcessor), ..typings
 (AllInOneOutput), ..config (Config)
 """
 
 import torch
 
-from madmom.features.downbeats import DBNDownBeatTrackingProcessor
+from madmom_infer.features.downbeats import DBNDownBeatTrackingProcessor
 from ..typings import AllInOneOutput
 from ..config import Config
 

@@ -18,6 +18,12 @@ from a wav written by `demucs_infer.audio.save_audio` -- if demucs-infer ever
 changes `save_audio`'s defaults (clip mode, bit depth), this needs
 re-verification against the real on-disk round trip.
 
+`_run_demucs_separation` loads the user's ORIGINAL input file (whatever
+format they passed in -- wav/flac/mp3/...), not demucs's own output; see
+`_load_input_audio`'s docstring for the wav/flac-via-soundfile,
+mp3-stays-torchaudio-only split this requires (3.1.0, mirroring
+demucs-infer 4.2.2's torchaudio>=2.11 fix).
+
 Reads: demucs_infer (pretrained.get_model, apply.apply_model, audio.save_audio)
 """
 
@@ -25,6 +31,7 @@ import sys
 import subprocess
 import torch
 import torchaudio
+import soundfile as sf
 from pathlib import Path
 from typing import List, Union, Optional, Dict, Callable, Protocol, Tuple
 from abc import ABC, abstractmethod
@@ -86,6 +93,55 @@ class StemProvider(ABC):
         pass
 
 
+# Extensions where soundfile's decode is empirically bit-identical to
+# torchaudio's at this call site (verified: torchaudio==2.7.1+cu126 vs
+# soundfile==0.13.1 -- PCM16/24/32 wav + FLAC, mono/stereo synthetic
+# fixtures, plus the two real multi-minute stereo wav assets under
+# assets/ -- np.array_equal exact on every file; see docs/CHANGELOG.md's
+# 3.1.0 entry and demucs-infer's matching 4.2.2 fix). mp3 (and anything
+# else) is deliberately excluded: the same check measured mp3 decode to
+# differ by up to ~2.4e-6 per sample between torchaudio (ffmpeg-backed)
+# and soundfile (libmpg123-backed) -- consistent with demucs-infer's own
+# ~7e-7 finding on a different mp3 file -- so lossy formats never
+# silently switch decoders here.
+_LOSSLESS_SOUNDFILE_EXTS = {'.wav', '.flac'}
+
+
+def _load_input_audio(audio_path: Union[Path, str]) -> Tuple[torch.Tensor, int]:
+    """Load the user's ORIGINAL input audio file (arbitrary format --
+    wav/flac/mp3/whatever librosa/torchaudio can decode -- NOT demucs's own
+    stem output) into a [channels, samples] float32 tensor, matching
+    torchaudio.load's convention.
+
+    wav/flac go through soundfile first (bit-identical to torchaudio here,
+    see `_LOSSLESS_SOUNDFILE_EXTS`), so a fresh install keeps working on
+    torchaudio>=2.11 without the separate torchcodec package. Every other
+    format -- mp3 in particular, since it's a documented, first-class input
+    format for this package (see README's "Concerning MP3 Files") -- stays
+    on torchaudio only: soundfile's mp3 decode is not proven to match it, so
+    it must never be a silent fallback. If torchaudio itself can't decode
+    (torchaudio>=2.11 without torchcodec), a clear actionable error is
+    raised instead.
+    """
+    path = Path(audio_path)
+    if path.suffix.lower() in _LOSSLESS_SOUNDFILE_EXTS:
+        data, sr = sf.read(str(path), dtype='float32', always_2d=True)
+        return torch.from_numpy(data.T).contiguous(), sr
+
+    try:
+        return torchaudio.load(str(path))
+    except Exception as err:
+        raise RuntimeError(
+            f"Failed to load '{path}' via torchaudio: {err}. torchaudio>=2.11 "
+            "dropped its bundled decoders (mp3 included) in favor of the "
+            "separate torchcodec package. This format is not silently routed "
+            "through soundfile instead (its mp3 decode isn't proven "
+            "bit-identical to torchaudio's) -- install torchcodec "
+            "(`pip install torchcodec`), or convert the file to wav/flac, "
+            "which this package decodes via soundfile without torchcodec."
+        ) from err
+
+
 def _run_demucs_separation(
     model,
     audio_path: Union[Path, str],
@@ -103,7 +159,7 @@ def _run_demucs_separation(
     if progress_callback:
         progress_callback("Loading audio file", 0.2)
 
-    wav, sr = torchaudio.load(str(audio_path))
+    wav, sr = _load_input_audio(audio_path)
 
     # Ensure stereo (demucs requires 2 channels)
     if wav.shape[0] == 1:

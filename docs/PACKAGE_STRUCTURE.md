@@ -30,11 +30,9 @@ Following the demucs-infer pattern:
 
 ### Dependencies
 
-**Core dependencies from GitHub:**
-- `demucs-infer @ git+https://github.com/openmirlab/demucs-infer.git`
-- `madmom @ git+https://github.com/CPJKU/madmom`
-
 **Core dependencies from PyPI:**
+- `demucs-infer`
+- `madmom-infer` (as of 3.1.0; replaces the former `madmom @ git+...` dependency)
 - `natten>=0.17.5` (flexible: 0.17.5-0.21.0+ for PyTorch 2.0-2.7.0)
 - `numpy`, `librosa`, `hydra-core`, `omegaconf`, `huggingface_hub`, `matplotlib`
 
@@ -126,8 +124,8 @@ all-in-one-infer/
    - License file auto-inclusion
 
 3. **Dependency Management**
-   - demucs-infer from GitHub (PyTorch 2.x compatible)
-   - madmom from GitHub (latest version)
+   - demucs-infer (PyTorch 2.x compatible)
+   - madmom-infer (as of 3.1.0; PyPI package, no longer a git dependency)
    - NATTEN 0.17.5-0.21.0+ flexible support (automatic version detection)
    - PyTorch 2.0-2.7.0 compatibility
    - CUDA 11.7-12.8 support
@@ -154,7 +152,7 @@ all-in-one-infer/
 | Enhanced classifiers | Yes | Yes ✅ |
 | Project URLs | 6 URLs | 6 URLs ✅ |
 | Wheel + sdist | Yes | Yes ✅ |
-| GitHub deps | N/A | Yes (demucs-infer, madmom) ✅ |
+| GitHub deps | N/A | None -- demucs-infer and madmom-infer are both plain PyPI deps ✅ |
 | Optional deps | mp3, quantized | natten, dev ✅ |
 | CLI scripts | 1 | 1 ✅ |
 | UV compatible | Yes | Yes ✅ |
