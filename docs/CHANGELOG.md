@@ -38,6 +38,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to a pytest tmp dir. The demo track is a .wav on purpose: sonify's output
   file mirrors the source suffix, and .mp3 output would require the optional
   `demucs-infer[mp3]` (lameenc) extra.
+- **Fresh installs on torchaudio>=2.11 crashed loading the user's input
+  audio.** `stems.py`'s `_run_demucs_separation` had its own unguarded
+  `torchaudio.load(str(audio_path))` call (for the ORIGINAL input file the
+  user passed in — not demucs's own stem output) alongside demucs-infer's,
+  raising `ImportError('TorchCodec is required for load_with_torchcodec...')`
+  once torchaudio dropped its bundled decoders. Reproduced end-to-end with a
+  fresh `uv venv` letting the resolver pick torch 2.13.0 / torchaudio 2.11.0:
+  13 passed / 2 skipped / **5 errors** before the fix, 18 passed / 2 skipped
+  / 0 errors after — matching the pre-existing swap-branch baseline exactly.
+  Fixed the same way demucs-infer 4.2.2 fixed its own equivalent call: wav/
+  flac now load via `soundfile` (verified bit-identical to `torchaudio.load`
+  — `np.array_equal` exact — on PCM16/24/32 wav, FLAC, mono/stereo, and the
+  two real multi-minute assets under `assets/`). mp3 stays `torchaudio`-only
+  — the same check measured mp3 decode to differ by up to `2.4e-6` per
+  sample between `torchaudio` and `soundfile` (consistent with
+  demucs-infer's own `~7e-7` finding), so it's never silently routed through
+  a different decoder — a clear, actionable error (install `torchcodec`, or
+  convert to wav/flac) is raised instead if `torchaudio` itself can't decode.
+  mp3 is a documented, first-class input format here (see "Concerning MP3
+  Files" below), unlike demucs-infer's own call site which only ever reads
+  its own wav/flac stem output — so this fix's format split had to be
+  derived independently rather than copied verbatim.
+- Bumped the `demucs-infer` dependency floor to `>=4.2.2` for its own
+  torchaudio>=2.11/torchcodec fix (and the earlier bit-exact-fixture/
+  natten-era fixes); added `soundfile>=0.12.1` as an explicit core
+  dependency (previously only pulled in transitively).
 
 ## [3.0.1] - 2026-07-11
 
