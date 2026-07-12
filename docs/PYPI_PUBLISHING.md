@@ -101,7 +101,7 @@ all-in-one-infer --help
 ## Important Notes for Users
 
 ### Installation Requirements
-- **Python 3.9+** (required for `scipy>=1.13` and `madmom`)
+- **Python 3.9+** (required for `scipy>=1.13` and `madmom-infer`)
 - **torch>=2.0.0** must be installed **before** `all-in-one-infer`
 - Use `--no-build-isolation` flag when installing
 
@@ -132,10 +132,6 @@ uv add torch && uv add all-in-one-infer --no-build-isolation
 
 2. **Installation fails with scipy version conflict**
    - **Solution:** Ensure Python 3.9+ is used (required for `scipy>=1.13`)
-
-3. **madmom installation fails**
-   - **Solution:** `madmom` is installed from GitHub, ensure git is available
-   - Check network connectivity to GitHub
 
 ### Testing Before Publishing
 

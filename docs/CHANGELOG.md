@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-07-12
+
+### Changed
+- **madmom dependency replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer)**:
+  spectrogram extraction (`spectrogram.py`) and DBN downbeat decoding
+  (`postprocessing/metrical.py`) now import from `madmom_infer` instead of
+  `madmom`. madmom-infer is a from-scratch, pure numpy/scipy reimplementation
+  of the madmom surface this project uses, published to PyPI — no more
+  `pip install git+https://github.com/CPJKU/madmom` step, no post-install
+  hook, no git dependency in package metadata (PyPI rejects those anyway).
+  `setup.py` (which existed solely to auto-install madmom from git after
+  `pip install`) is removed; the version is now read directly from
+  `__about__.py` via `[tool.setuptools.dynamic]`.
+- **Verification**: closure proof showed the only numerical difference
+  between madmom and madmom-infer is madmom-infer's correctly-rounded STFT
+  magnitude (madmom's own `np.abs` has a known 1-ULP rounding bug) — i.e.
+  madmom-infer is more accurate, not less. End-to-end on 3 real songs, every
+  discrete output (bpm/beats/downbeats/segments) was exactly identical
+  between the two backends; raw activations differ by at most 2e-4.
+- A fresh-venv install/import/pytest run (no git madmom involved anywhere)
+  reproduces the exact same pass/skip test outcomes as the pre-swap baseline.
+
 ## [3.0.1] - 2026-07-11
 
 ### Added

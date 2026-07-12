@@ -15,7 +15,7 @@ import pytest
 import torch
 
 # Import the module file directly: `import allin1_infer` pulls in heavy runtime
-# deps (torchaudio, madmom) that these unit tests don't need.
+# deps (torchaudio, madmom_infer) that these unit tests don't need.
 _MODULE_PATH = (
   Path(__file__).parent.parent / 'src' / 'allin1_infer' / 'models' / 'neighborhood_attention.py'
 )

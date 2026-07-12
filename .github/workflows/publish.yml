@@ -28,7 +28,7 @@ jobs:
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install numpy pytest
       - name: Run the neighborhood-attention golden-fixture suite
-        # This test file loads the module directly (no madmom/demucs needed)
+        # This test file loads the module directly (no madmom_infer/demucs needed)
         # and its fixtures are tolerance-based, so it is environment-safe.
         run: pytest tests/test_neighborhood_attention.py -q
 
