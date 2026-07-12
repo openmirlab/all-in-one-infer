@@ -1,7 +1,9 @@
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
-# Note: Using setuptools to support post-install hook for auto-installing madmom
+# Note: setuptools (not hatchling) purely for historical reasons -- version is
+# now read straight from __about__.py via [tool.setuptools.dynamic] below, no
+# setup.py or post-install hook required.
 # Metadata is still defined in pyproject.toml (PEP 621)
 
 [project]
@@ -11,7 +13,7 @@ name = "all-in-one-infer"  # PyPI project name (matches repository name)
 dynamic = ["version"]
 description = "All-In-One Music Structure Analyzer with source separation"
 readme = "README.md"
-requires-python = ">=3.9"  # scipy>=1.13 and madmom require Python>=3.9
+requires-python = ">=3.9"  # scipy>=1.13 and madmom-infer require Python>=3.9
 license = {text = "MIT"}
 # Note: license-files automatically includes LICENSE by default
 authors = [
@@ -51,8 +53,12 @@ dependencies = [
   "omegaconf",
   "huggingface_hub",
   "matplotlib",
-  "scipy>=1.0.0",  # scipy 1.13+ requires Python 3.9+, but madmom requires scipy>=1.13
-  # Note: madmom is auto-installed via setup.py post-install hook (PyPI doesn't allow git dependencies)
+  "scipy>=1.0.0",  # scipy 1.13+ requires Python 3.9+; kept as our floor for
+                   # numerical parity with the original madmom's own scipy>=1.13
+                   # requirement (madmom_infer itself pins no scipy floor)
+  # As of 3.1.0, madmom is replaced by madmom-infer -- a plain PyPI dependency,
+  # no post-install hook or git source needed. See README.md for details.
+  "madmom-infer>=0.1.0",
   # Source separation (demucs-infer brings: torch, torchaudio, julius, lameenc, diffq, einops, openunmix)
   "demucs-infer",
 ]
@@ -92,20 +98,12 @@ packages = {find = {where = ["src"], exclude = ["tests*", "examples*"]}}
 [tool.setuptools.package-dir]
 "" = "src"
 
-# Note: Version is read in setup.py from __about__.py
-# Hatchling configs below are kept for reference but not used with setuptools backend
-# [tool.hatch.version]
-# path = "src/allin1_infer/__about__.py"
+[tool.setuptools.dynamic]
+version = { attr = "allin1_infer.__about__.__version__" }
 
 [tool.uv]
 override-dependencies = [
-  "scipy>=1.13.0",  # madmom requires scipy>=1.13, which requires Python 3.9+
-]
-
-[tool.uv.sources]
-madmom = { git = "https://github.com/CPJKU/madmom" }
-
-[dependency-groups]
-dev = [
-    "madmom",
+  "scipy>=1.13.0",  # historical floor from the original madmom's own scipy>=1.13
+                     # requirement; kept for numerical parity, not enforced by
+                     # madmom_infer itself
 ]
