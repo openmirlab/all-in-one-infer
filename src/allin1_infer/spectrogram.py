@@ -1,6 +1,7 @@
-"""Extracts the madmom log-filtered spectrogram features the model consumes,
-per stem, in two flavors: disk-based (reads stem wavs) and in-memory (reads
-stem arrays directly from demix.separate_in_memory's fast path).
+"""Extracts the madmom_infer log-filtered spectrogram features the model
+consumes, per stem, in two flavors: disk-based (reads stem wavs) and
+in-memory (reads stem arrays directly from demix.separate_in_memory's fast
+path).
 
 Both flavors share `build_spec_processor()`'s exact madmom processing chain
 (frame/STFT/filter/log-spectrogram) so results stay bit-for-bit identical
@@ -9,7 +10,7 @@ purely to skip a stem wav write/read round trip, not to change the math. Each
 stem produces its own spectrogram; the four are stacked as
 (instruments, frames, bins) and cached to disk as one .npy per track.
 
-Reads: madmom.audio.{signal,stft,spectrogram}, madmom.processors
+Reads: madmom_infer.audio.{signal,stft,spectrogram}, madmom_infer.processors
 """
 
 import numpy as np
@@ -17,10 +18,10 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from tqdm import tqdm
 from multiprocessing import Pool
-from madmom.audio.signal import FramedSignalProcessor, Signal
-from madmom.audio.stft import ShortTimeFourierTransformProcessor
-from madmom.processors import SequentialProcessor
-from madmom.audio.spectrogram import FilteredSpectrogramProcessor, LogarithmicSpectrogramProcessor
+from madmom_infer.audio.signal import FramedSignalProcessor, Signal
+from madmom_infer.audio.stft import ShortTimeFourierTransformProcessor
+from madmom_infer.processors import SequentialProcessor
+from madmom_infer.audio.spectrogram import FilteredSpectrogramProcessor, LogarithmicSpectrogramProcessor
 
 STEM_NAMES = ['bass', 'drums', 'other', 'vocals']
 
@@ -108,7 +109,7 @@ def compute_spectrogram_from_stem_arrays(
 ) -> np.ndarray:
   """In-memory counterpart to _extract_spectrogram's per-file Signal() reads.
 
-  `stems` must hold the same int16 mono arrays that madmom's
+  `stems` must hold the same int16 mono arrays that madmom_infer's
   Signal(wav_path, num_channels=1) would read back from on-disk stem wavs
   (see stems.quantize_stem_to_madmom_mono_int16) -- given those, this is
   bit-for-bit identical to the disk-based path.
