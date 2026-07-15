@@ -108,6 +108,9 @@ packages = {find = {where = ["src"], exclude = ["tests*", "examples*"]}}
 [tool.setuptools.package-dir]
 "" = "src"
 
+[tool.setuptools.package-data]
+allin1_infer = ["config/*.toml"]
+
 [tool.setuptools.dynamic]
 version = { attr = "allin1_infer.__about__.__version__" }
 

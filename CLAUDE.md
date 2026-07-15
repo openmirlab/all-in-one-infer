@@ -24,6 +24,14 @@ place to look when a bug could be upstream of this package.
 
 ## Testing philosophy
 
+## Clean API and lifecycle contract
+
+`AllInOneSession` is the explicit lifecycle facade for reusable inference:
+call `load()` before ready-only `infer()`, then `release()` or `close()` to
+free model resources. `config/checkpoints.toml` owns checkpoint URLs and
+provenance; callers may override its path and metadata generically. The legacy
+`analyze()` function remains the lazy, backward-compatible one-shot path.
+
 `pyproject.toml` declares no pytest markers or `addopts` — the whole
 `tests/` directory runs by default with a plain `pytest` invocation. There
 is no built-in `network`/`not network` split like demucs-infer has, even

@@ -1,0 +1,177 @@
+[schema]
+version = 1
+
+[models.harmonix-all]
+model = "harmonix-all"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold0-0vra4ys2.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold0-0vra4ys2.pth"
+sha256 = "0db596dfb0995f41d62f6267d76a9d54c046f1649bd35e1dbeca0c5f9a7b8acd"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold1-3ozjhtsj.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold1-3ozjhtsj.pth"
+sha256 = "607b4864eaabccd4f6951410d5ea6676666ad1cfa6ce2e18bc99f3824b77c3b7"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold2-gmgo0nsy.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold2-gmgo0nsy.pth"
+sha256 = "67c28ec7ca612d365e5fcb152f6530eb53e34c4303940afb30fd17a295c958a4"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold3-i92b7m8p.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold3-i92b7m8p.pth"
+sha256 = "446d05672b2669cdb7d9b8bbbc228a4f3592484335a7995cca89a744e3950ddc"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold4-1bql5qo0.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold4-1bql5qo0.pth"
+sha256 = "96327222ab9b33c005388b788ba602f529aa03cc4dde1c859c011f1004490493"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold5-x4z5zeef.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold5-x4z5zeef.pth"
+sha256 = "c87f162a1090290bcbb863688746784919cf912c56744fb3d81a1a7dba3b114e"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold6-x7t226rq.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold6-x7t226rq.pth"
+sha256 = "13e7e639bf30fcd3fa049ad863088773a4e57b06d7c68581385b3ef625c60688"
+size = 1400571
+
+[[models.harmonix-all.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold7-qwwskhg6.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold7-qwwskhg6.pth"
+sha256 = "b888b7fba95efa3d5a37ca013fe7efe2741621ea9ca335e6b2723e4fd0fade57"
+size = 1400571
+
+[models.harmonix-fold0]
+model = "harmonix-fold0"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold0.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold0-0vra4ys2.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold0-0vra4ys2.pth"
+sha256 = "0db596dfb0995f41d62f6267d76a9d54c046f1649bd35e1dbeca0c5f9a7b8acd"
+size = 1400571
+
+[models.harmonix-fold1]
+model = "harmonix-fold1"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold1.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold1-3ozjhtsj.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold1-3ozjhtsj.pth"
+sha256 = "607b4864eaabccd4f6951410d5ea6676666ad1cfa6ce2e18bc99f3824b77c3b7"
+size = 1400571
+
+[models.harmonix-fold2]
+model = "harmonix-fold2"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold2.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold2-gmgo0nsy.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold2-gmgo0nsy.pth"
+sha256 = "67c28ec7ca612d365e5fcb152f6530eb53e34c4303940afb30fd17a295c958a4"
+size = 1400571
+
+[models.harmonix-fold3]
+model = "harmonix-fold3"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold3.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold3-i92b7m8p.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold3-i92b7m8p.pth"
+sha256 = "446d05672b2669cdb7d9b8bbbc228a4f3592484335a7995cca89a744e3950ddc"
+size = 1400571
+
+[models.harmonix-fold4]
+model = "harmonix-fold4"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold4.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold4-1bql5qo0.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold4-1bql5qo0.pth"
+sha256 = "96327222ab9b33c005388b788ba602f529aa03cc4dde1c859c011f1004490493"
+size = 1400571
+
+[models.harmonix-fold5]
+model = "harmonix-fold5"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold5.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold5-x4z5zeef.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold5-x4z5zeef.pth"
+sha256 = "c87f162a1090290bcbb863688746784919cf912c56744fb3d81a1a7dba3b114e"
+size = 1400571
+
+[models.harmonix-fold6]
+model = "harmonix-fold6"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold6.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold6-x7t226rq.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold6-x7t226rq.pth"
+sha256 = "13e7e639bf30fcd3fa049ad863088773a4e57b06d7c68581385b3ef625c60688"
+size = 1400571
+
+[models.harmonix-fold7]
+model = "harmonix-fold7"
+license = "CC-BY-NC-SA-4.0"
+provenance = "taejunkim/allinone Hugging Face release; All-In-One authors"
+source_revision = "taejunkim/allinone"
+updated_at = "2026-07-15"
+
+[[models.harmonix-fold7.artifacts]]
+kind = "checkpoint"
+name = "harmonix-fold7-qwwskhg6.pth"
+url = "https://huggingface.co/taejunkim/allinone/resolve/main/harmonix-fold7-qwwskhg6.pth"
+sha256 = "b888b7fba95efa3d5a37ca013fe7efe2741621ea9ca335e6b2723e4fd0fade57"
+size = 1400571

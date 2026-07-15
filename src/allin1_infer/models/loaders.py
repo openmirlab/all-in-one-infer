@@ -15,6 +15,8 @@ huggingface_hub (hf_hub_download), omegaconf
 """
 
 import torch
+import hashlib
+from pathlib import Path
 
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
@@ -23,6 +25,7 @@ from huggingface_hub import hf_hub_download
 from .allinone import AllInOne
 from .ensemble import Ensemble
 from ..typings import PathLike
+from ..checkpoints import checkpoint_metadata
 
 NAME_TO_FILE = {
   'harmonix-fold0': 'harmonix-fold0-0vra4ys2.pth',
@@ -49,9 +52,33 @@ ENSEMBLE_MODELS = {
 }
 
 
-def _download_checkpoint(model_name: str, cache_dir: Optional[PathLike] = None) -> str:
+def _download_checkpoint(model_name: str, cache_dir: Optional[PathLike] = None,
+                         *, checkpoint_url: Optional[str] = None,
+                         checkpoint_sha256: Optional[str] = None,
+                         checkpoint_config: Optional[PathLike] = None) -> str:
   filename = NAME_TO_FILE[model_name]
-  return hf_hub_download(repo_id='taejunkim/allinone', filename=filename, cache_dir=cache_dir)
+  metadata = checkpoint_metadata(model_name, path=checkpoint_config)
+  artifact = next(a for a in metadata["artifacts"] if a.get("kind") == "checkpoint")
+  url = checkpoint_url or artifact["url"]
+  # The package-owned URL is the runtime source.  Keep the historical torch
+  # hub/checkpoints default while allowing any host/path through overrides.
+  import urllib.request
+  if cache_dir is None:
+    target_dir = Path(torch.hub.get_dir()) / "checkpoints"
+  else:
+    target_dir = Path(cache_dir)
+  target_dir.mkdir(parents=True, exist_ok=True)
+  path = target_dir / filename
+  if not path.exists():
+    urllib.request.urlretrieve(url, path)
+  path = str(path)
+  expected = (checkpoint_sha256 or artifact.get("sha256") or "").lower()
+  if expected and expected != "0" * 64:
+    digest = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    if digest != expected:
+      Path(path).unlink(missing_ok=True)
+      raise ValueError(f"checkpoint SHA-256 mismatch for {model_name}")
+  return str(path)
 
 
 def _build_model_from_checkpoint(checkpoint_path: str, device) -> AllInOne:
@@ -69,9 +96,12 @@ def load_pretrained_model(
   model_name: Optional[str] = None,
   cache_dir: Optional[PathLike] = None,
   device=None,
+  checkpoint_url: Optional[str] = None,
+  checkpoint_sha256: Optional[str] = None,
+  checkpoint_config: Optional[PathLike] = None,
 ):
   if model_name in ENSEMBLE_MODELS:
-    return load_ensemble_model(model_name, cache_dir, device)
+    return load_ensemble_model(model_name, cache_dir, device, checkpoint_config=checkpoint_config)
 
   model_name = model_name or list(NAME_TO_FILE.keys())[0]
   assert model_name in NAME_TO_FILE, f'Unknown model name: {model_name} (expected one of {list(NAME_TO_FILE.keys())})'
@@ -82,7 +112,10 @@ def load_pretrained_model(
     else:
       device = 'cpu'
 
-  checkpoint_path = _download_checkpoint(model_name, cache_dir)
+  checkpoint_path = _download_checkpoint(model_name, cache_dir,
+                                         checkpoint_url=checkpoint_url,
+                                         checkpoint_sha256=checkpoint_sha256,
+                                         checkpoint_config=checkpoint_config)
   return _build_model_from_checkpoint(checkpoint_path, device)
 
 
@@ -90,6 +123,7 @@ def load_ensemble_model(
   model_name: Optional[str] = None,
   cache_dir: Optional[PathLike] = None,
   device=None,
+  *, checkpoint_config: Optional[PathLike] = None,
 ):
   fold_names = ENSEMBLE_MODELS[model_name]
 
@@ -102,7 +136,7 @@ def load_ensemble_model(
   # regardless of completion order, so ensemble fold order is unchanged.
   with ThreadPoolExecutor(max_workers=len(fold_names)) as executor:
     checkpoint_paths = list(executor.map(
-      lambda name: _download_checkpoint(name, cache_dir),
+      lambda name: _download_checkpoint(name, cache_dir, checkpoint_config=checkpoint_config),
       fold_names,
     ))
 

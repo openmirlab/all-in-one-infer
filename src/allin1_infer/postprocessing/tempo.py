@@ -1,3 +1,11 @@
+"""Estimate tempo from decoded beat times.
+
+This module owns the BPM calculation used by inference results and has no
+training or dataset dependencies.
+
+Reads: numpy
+"""
+
 import numpy as np
 from typing import List
 

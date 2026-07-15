@@ -144,6 +144,7 @@ def analyze(
   compile_model: bool = False,
   demucs_overlap: float = 0.25,
   demucs_fp16: bool = False,
+  _model_override=None,
 ) -> Union[AnalysisResult, List[AnalysisResult]]:
   """
   Analyzes the provided audio files and returns the analysis results.
@@ -319,7 +320,7 @@ def analyze(
       spec_paths = extract_spectrograms(demix_paths, spec_dir, multiprocess)
 
     # Load the model.
-    model = load_pretrained_model(
+    model = _model_override if _model_override is not None else load_pretrained_model(
       model_name=model,
       device=device,
     )

@@ -111,6 +111,13 @@ a breaking import change, hence the major version).
 
 ## [Unreleased]
 
+### Added
+- Added `AllInOneSession`, an independent reusable lifecycle facade with
+  `load`, ready-only `infer`, `release`, `close`, `status`, `cache_info`, and
+  context-manager support. Existing lazy `analyze()` calls remain compatible.
+- Added package-owned `config/checkpoints.toml` and validated metadata helpers
+  with generic config/path/URL/checksum override seams.
+
 ### Changed
 
 - Project renamed: PyPI package `all-in-one-fix` → `all-in-one-infer`,
