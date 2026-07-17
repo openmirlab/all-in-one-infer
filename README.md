@@ -133,7 +133,7 @@ If you use this package for your research, please cite the following papers.
 - **Integrated source separation**: uses [demucs-infer](https://github.com/openmirlab/demucs-infer) with intelligent model caching (~6x faster on repeated use) and automatic GPU memory cleanup
 - **Flexible stems input**: custom separation models via a pluggable provider interface, pre-computed stems from any tool, direct stems input (skip separation entirely), and hybrid workflows mixing all three
 - **Cache management**: `--cache-info` / `--clear-cache` CLI flags and a matching Python API to inspect and free the multi-GB separation-model cache
-- **Reusable lifecycle**: `AllInOneSession` provides explicit `load()`, ready-only `infer()`, `release()`, `close()`, `status`, `cache_info()`, and context-manager support; legacy `analyze()` remains lazy and compatible
+- **Reusable lifecycle**: `AllInOneSession` provides explicit `load()`, ready-only `infer()`, `release()`, `close()`, `status`, `cache_info()`, and context-manager support; mixed-input calls reuse one resident Harmonix + HTDemucs pipeline, while legacy `analyze()` remains lazy and compatible
 - **PyPI-only install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — nothing to compile, nothing to `git+https://` install
 - **100% backward compatible**: same analysis JSON structure, function signatures, model names, and accuracy as upstream All-In-One
 
@@ -506,17 +506,21 @@ Stems Input Options:
 
 ### Reusable model session
 
-Use an explicit session when several tracks share one loaded model. The first
-`load()` downloads checkpoints into the cache; `release()` frees device memory
-without deleting cached files. `config/checkpoints.toml` is package-owned and
-may be replaced through `checkpoint_config` or generic checkpoint overrides.
+Use an explicit session when several mixed-input tracks share one loaded
+pipeline. `load()` prepares the Harmonix structure model and creates one owned
+HTDemucs separator; the separator loads lazily on the first mixed-input call,
+then remains resident for reuse. `release()` frees both components without
+deleting cached files. Direct stems input bypasses Demucs entirely, including
+model loading. `config/checkpoints.toml` is package-owned and may be replaced
+through `checkpoint_config` or generic checkpoint overrides.
 
 ```python
 from allin1_infer import AllInOneSession
 
 with AllInOneSession(model="harmonix-all", device="cuda") as session:
     result = session.infer("song.wav")
-    print(session.status, session.cache_info()["cache_dir"])
+    info = session.cache_info()
+    print(session.status, info["cache_dir"], info["components"])
 ```
 
 `session.infer()` requires a ready session. For one-shot use, keep calling

@@ -71,6 +71,7 @@ def _select_stems(
   demucs_overlap: float,
   demucs_fp16: bool,
   multiprocess: bool,
+  default_demucs_provider: Optional[DemucsProvider] = None,
 ) -> Tuple[List[Path], List[Path]]:
   """Decides HOW to separate `todo_paths` (not used in direct-stems-input
   mode): skip separation entirely, a precomputed-stems dict, a custom
@@ -84,7 +85,7 @@ def _select_stems(
   if skip_separation:
     # Assume stems are already in demix_dir with expected structure
     demix_paths = [demix_dir / 'htdemucs' / path.stem for path in todo_paths]
-    print(f'=> Skipping source separation, using existing stems.')
+    print('=> Skipping source separation, using existing stems.')
   elif stems_dict:
     # Use pre-computed stems from dictionary
     stem_provider = PrecomputedStemProvider(stems_dict)
@@ -96,7 +97,10 @@ def _select_stems(
     # Byproducts must land on disk for the caller to keep, so use the
     # ordinary write/read path (same as the in-memory branch's cache
     # fallback below).
-    demix_paths = demix(todo_paths, demix_dir, device, demucs_overlap, demucs_fp16)
+    if default_demucs_provider is not None:
+      demix_paths = get_stems(todo_paths, demix_dir, default_demucs_provider, device)
+    else:
+      demix_paths = demix(todo_paths, demix_dir, device, demucs_overlap, demucs_fp16)
   else:
     # Default HTDemucs, fresh run, byproducts not requested: skip the
     # stem wav write/read round trip (~0.83s/track) by keeping stem
@@ -107,10 +111,18 @@ def _select_stems(
     # are unaffected.
     cached_paths, stems_dirs, arrays_by_path, sr_by_path = separate_in_memory(
       todo_paths, demix_dir, device, demucs_overlap, demucs_fp16,
+      provider=default_demucs_provider,
     )
     spec_paths_by_path = {}
     if cached_paths:
-      cached_demix_paths = get_stems(cached_paths, demix_dir, None, device, demucs_overlap, demucs_fp16)
+      cached_demix_paths = get_stems(
+        cached_paths,
+        demix_dir,
+        default_demucs_provider,
+        device,
+        demucs_overlap,
+        demucs_fp16,
+      )
       cached_spec_paths = extract_spectrograms(cached_demix_paths, spec_dir, multiprocess)
       spec_paths_by_path.update(zip(cached_paths, cached_spec_paths))
     if arrays_by_path:
@@ -145,6 +157,7 @@ def analyze(
   demucs_overlap: float = 0.25,
   demucs_fp16: bool = False,
   _model_override=None,
+  _default_stem_provider_override: Optional[DemucsProvider] = None,
 ) -> Union[AnalysisResult, List[AnalysisResult]]:
   """
   Analyzes the provided audio files and returns the analysis results.
@@ -278,7 +291,7 @@ def analyze(
 
   print(f'=> Found {len(exist_paths)} tracks already analyzed and {len(todo_paths)} tracks to analyze.')
   if exist_paths:
-    print(f'=> To re-analyze, please use --overwrite option.')
+    print('=> To re-analyze, please use --overwrite option.')
 
   # Load the results for the tracks that are already analyzed.
   results = []
@@ -312,6 +325,7 @@ def analyze(
         todo_paths, demix_dir, spec_dir, device,
         skip_separation, stems_dict, stem_provider, keep_byproducts,
         demucs_overlap, demucs_fp16, multiprocess,
+        default_demucs_provider=_default_stem_provider_override,
       )
 
     # Extract spectrograms for the tracks that are not analyzed yet (the

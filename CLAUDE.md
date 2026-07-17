@@ -28,9 +28,13 @@ place to look when a bug could be upstream of this package.
 
 `AllInOneSession` is the explicit lifecycle facade for reusable inference:
 call `load()` before ready-only `infer()`, then `release()` or `close()` to
-free model resources. `config/checkpoints.toml` owns checkpoint URLs and
-provenance; callers may override its path and metadata generically. The legacy
+free model resources. For mixed-input runs it owns and reuses both parts of
+the default pipeline: the eagerly loaded Harmonix structure model and one
+session-owned HTDemucs separator that loads on first mixed inference;
+direct-stems input does not load Demucs, and the legacy
 `analyze()` function remains the lazy, backward-compatible one-shot path.
+`config/checkpoints.toml` owns checkpoint URLs and provenance; callers may
+override its path and metadata generically.
 
 `pyproject.toml` declares no pytest markers or `addopts` — the whole
 `tests/` directory runs by default with a plain `pytest` invocation. There
@@ -76,6 +80,9 @@ uv run pytest tests/test_neighborhood_attention.py -v
 
 # Just the fast, no-network activation/metadata tests
 uv run pytest tests/test_activation_fps.py -v
+
+# Focused lifecycle/parity checks for session-owned Harmonix + Demucs reuse
+uv run pytest tests/test_clean_api.py -v
 
 # Verify install + CLI wiring after any packaging change
 python -c "import allin1_infer; print(allin1_infer.__version__)"

@@ -27,8 +27,6 @@ demucs-infer 4.2.2's torchaudio>=2.11 fix).
 Reads: demucs_infer (pretrained.get_model, apply.apply_model, audio.save_audio)
 """
 
-import sys
-import subprocess
 import torch
 import torchaudio
 import soundfile as sf
@@ -225,6 +223,10 @@ class DemucsProvider(StemProvider):
             self._model.eval()  # Freeze batch norm, dropout for inference
         return self._model
 
+    @property
+    def is_loaded(self) -> bool:
+        return self._model is not None
+
     def clear_model_cache(self):
         """Clear cached model to free memory."""
         if self._model is not None:
@@ -232,6 +234,10 @@ class DemucsProvider(StemProvider):
             self._model = None
             if self.device == 'cuda' and torch.cuda.is_available():
                 torch.cuda.empty_cache()
+
+    def release(self):
+        """Release the resident separation model without touching checkpoint files."""
+        self.clear_model_cache()
 
     def get_stems(
         self,
@@ -328,6 +334,7 @@ def separate_in_memory(
     device: Union[str, torch.device] = 'cuda',
     demucs_overlap: float = 0.25,
     demucs_fp16: bool = False,
+    provider: Optional[DemucsProvider] = None,
 ):
     """Fresh-run fast path for the default DemucsProvider: separates audio
     directly into in-memory mono stem arrays, skipping the stem wav
@@ -355,7 +362,16 @@ def separate_in_memory(
         (torchaudio.load -> save_audio(..., sr) with no resampling), so a
         mixed-rate batch must carry a rate per file, not one shared value.
     """
-    provider = DemucsProvider(device=device)
+    if provider is None:
+        provider = DemucsProvider(
+            device=device,
+            demucs_overlap=demucs_overlap,
+            demucs_fp16=demucs_fp16,
+        )
+    else:
+        device = provider.device
+        demucs_overlap = provider.demucs_overlap
+        demucs_fp16 = provider.demucs_fp16
     required_stems = [f'{name}.wav' for name in STEM_NAMES]
 
     cached_paths = []

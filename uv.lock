@@ -25,12 +25,14 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "hydra-core" },
     { name = "librosa" },
+    { name = "madmom-infer" },
     { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "matplotlib", version = "3.10.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "soundfile" },
     { name = "torch" },
 ]
 
@@ -45,32 +47,26 @@ natten = [
     { name = "torchaudio" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "madmom" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
-    { name = "demucs-infer" },
+    { name = "demucs-infer", specifier = ">=4.2.2" },
     { name = "huggingface-hub" },
     { name = "hydra-core" },
     { name = "librosa" },
+    { name = "madmom-infer", specifier = ">=0.1.0" },
     { name = "matplotlib" },
     { name = "natten", marker = "extra == 'natten'", specifier = ">=0.17.1,<0.20" },
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "scipy", specifier = ">=1.0.0" },
+    { name = "soundfile", specifier = ">=0.12.1" },
     { name = "torch", specifier = ">=2.0.0" },
     { name = "torch", marker = "extra == 'natten'", specifier = ">=2.0.0,<2.8.0" },
     { name = "torchaudio", marker = "extra == 'natten'", specifier = "<2.8.0" },
 ]
 provides-extras = ["natten", "dev"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "madmom", git = "https://github.com/CPJKU/madmom" }]
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -638,20 +634,21 @@ wheels = [
 
 [[package]]
 name = "demucs-infer"
-version = "4.1.0"
+version = "4.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "einops" },
     { name = "julius" },
-    { name = "openunmix" },
+    { name = "numpy" },
     { name = "pyyaml" },
+    { name = "soundfile" },
     { name = "torch" },
     { name = "torchaudio" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8c/9a/72019a4c2757dc285c7b1464f0297c3a14caec1fdb0b8b31de8e9c1f7f73/demucs_infer-4.1.0.tar.gz", hash = "sha256:c6542de004cfc74479265e8aac8cc6c9155123903bec21e68191c3e50b1e34e7", size = 48404, upload-time = "2025-11-14T03:36:04.82Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/14/627a789ae0414469cd33dab1f99a41c84428533d9e1a66d33097476f0c90/demucs_infer-4.2.2.tar.gz", hash = "sha256:7a2a2fb1c0db57192fed6485f106986f4cd04c475c989e84a8f4022ce19e26b2", size = 69104, upload-time = "2026-07-12T01:00:24.146Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/2b/6a25ffe99750bfa5213859e9e894118fe95ed33cab9596658fe8b6b198d9/demucs_infer-4.1.0-py3-none-any.whl", hash = "sha256:b4ff9216727a62962b5fe53f15df6ead7ebd063ccc21e77d12daf50f0595ec09", size = 64601, upload-time = "2025-11-14T03:36:02.873Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/c3/4004c48a48a9507045c3dc107f51bf0abce5165bd695d10eda94f0a38844/demucs_infer-4.2.2-py3-none-any.whl", hash = "sha256:df07b115690021dcfa6b2a6de1b7b352741111bc46fad31ca83eaaba6afced8b", size = 87489, upload-time = "2026-07-12T01:00:22.941Z" },
 ]
 
 [[package]]
@@ -1268,14 +1265,17 @@ wheels = [
 ]
 
 [[package]]
-name = "madmom"
-version = "0.17.dev0"
-source = { git = "https://github.com/CPJKU/madmom#27f032e8947204902c675e5e341a3faf5dc86dae" }
+name = "madmom-infer"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mido" },
     { name = "numpy" },
     { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a1/e6/151625e3df0ee3b210f5d17da6f7eb7cf7d7dc6289454bc24560baa52f2a/madmom_infer-0.2.0.tar.gz", hash = "sha256:6f45b3fc0d7b5808586da229cef98aa7ea10448cd38d3e69dd078142b3ba729d", size = 66366, upload-time = "2026-07-12T00:31:30.997Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0d/63/4dfb8d7acfd4226d5083a278ff7f97c6fe1cb70fff178e4d7fb854590919/madmom_infer-0.2.0-py3-none-any.whl", hash = "sha256:f4013a7ac2135f2f198d97f9e7840db4fbd993e2922f70b28862394c8f8d28f1", size = 79998, upload-time = "2026-07-12T00:31:29.478Z" },
 ]
 
 [[package]]
@@ -1519,18 +1519,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/58/8f/76d5dc21ac64a49e5498d7f0472c0781dae442dd266a67458baec38288ec/matplotlib-3.10.7-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:15112bcbaef211bd663fa935ec33313b948e214454d949b723998a43357b17b0", size = 8252283, upload-time = "2025-10-09T00:27:54.739Z" },
     { url = "https://files.pythonhosted.org/packages/27/0d/9c5d4c2317feb31d819e38c9f947c942f42ebd4eb935fc6fd3518a11eaa7/matplotlib-3.10.7-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:d2a959c640cdeecdd2ec3136e8ea0441da59bcaf58d67e9c590740addba2cb68", size = 8116733, upload-time = "2025-10-09T00:27:56.406Z" },
     { url = "https://files.pythonhosted.org/packages/9a/cc/3fe688ff1355010937713164caacf9ed443675ac48a997bab6ed23b3f7c0/matplotlib-3.10.7-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:3886e47f64611046bc1db523a09dd0a0a6bed6081e6f90e13806dd1d1d1b5e91", size = 8693919, upload-time = "2025-10-09T00:27:58.41Z" },
-]
-
-[[package]]
-name = "mido"
-version = "1.3.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/23/14/cfda3fe61ce4c0f50a9f707ae02b46cb53211732b2cd4522bf06272848f4/mido-1.3.3.tar.gz", hash = "sha256:1aecb30b7f282404f17e43768cbf74a6a31bf22b3b783bdd117a1ce9d22cb74c", size = 124288, upload-time = "2024-10-25T15:05:21.847Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/28/45deb15c11859d2f10702b32e71de9328a9fa494f989626916db39a9617f/mido-1.3.3-py3-none-any.whl", hash = "sha256:01033c9b10b049e4436fca2762194ca839b09a4334091dd3c34e7f4ae674fd8a", size = 54614, upload-time = "2024-10-25T15:05:20.349Z" },
 ]
 
 [[package]]
@@ -1921,21 +1909,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/09/48/6388f1bb9da707110532cb70ec4d2822858ddfb44f1cdf1233c20a80ea4b/omegaconf-2.3.0.tar.gz", hash = "sha256:d5d4b6d29955cc50ad50c46dc269bcd92c6e00f5f90d23ab5fee7bfca4ba4cc7", size = 3298120, upload-time = "2022-12-08T20:59:22.753Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl", hash = "sha256:7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b", size = 79500, upload-time = "2022-12-08T20:59:19.686Z" },
-]
-
-[[package]]
-name = "openunmix"
-version = "1.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "torch" },
-    { name = "torchaudio" },
-    { name = "tqdm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/42/ef/4ad54e3ecb1e89f7f7bdb4c7b751e43754e892d3c32a8550e5d0882565df/openunmix-1.3.0.tar.gz", hash = "sha256:cc9245ce728700f5d0b72c67f01be4162777e617cdc47f9b035963afac180fc8", size = 45889, upload-time = "2024-04-16T11:10:47.121Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/43/37/320afd9458abb186f09a5183f36e48829df7151821bf887f272a63b2584d/openunmix-1.3.0-py3-none-any.whl", hash = "sha256:e893ae22c5b8001a6107022499c2587b70d5c2e4777cc7c9ed6272b68a69534e", size = 40047, upload-time = "2024-04-16T11:10:45.107Z" },
 ]
 
 [[package]]

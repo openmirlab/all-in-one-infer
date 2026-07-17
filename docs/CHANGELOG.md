@@ -119,6 +119,13 @@ a breaking import change, hence the major version).
   with generic config/path/URL/checksum override seams.
 
 ### Changed
+- `AllInOneSession` now owns and reuses the complete default mixed-input
+  pipeline lifecycle: `load()` prepares Harmonix plus one lazy HTDemucs
+  provider, `infer()` injects that provider into the verified
+  in-memory separation path and the keep-byproducts disk path, `release()` /
+  `close()` free both components, and `cache_info()` reports both lifecycle
+  components. Direct-stems inference never loads Demucs, while legacy lazy
+  `analyze()` behavior and the direct-stems API remain unchanged.
 
 - Project renamed: PyPI package `all-in-one-fix` → `all-in-one-infer`,
   Python import package `allin1fix` → `allin1_infer` (now at
