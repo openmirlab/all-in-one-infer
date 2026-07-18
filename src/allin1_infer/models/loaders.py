@@ -11,7 +11,7 @@ overlap), so model building stays sequential and `executor.map` preserves
 fold order regardless of download completion order.
 
 Reads: .allinone (AllInOne), .ensemble (Ensemble), ..typings (PathLike),
-huggingface_hub (hf_hub_download), omegaconf
+..utils (resolve_device), huggingface_hub (hf_hub_download), omegaconf
 """
 
 import torch
@@ -26,6 +26,7 @@ from .allinone import AllInOne
 from .ensemble import Ensemble
 from ..typings import PathLike
 from ..checkpoints import checkpoint_metadata
+from ..utils import resolve_device
 
 NAME_TO_FILE = {
   'harmonix-fold0': 'harmonix-fold0-0vra4ys2.pth',
@@ -106,11 +107,7 @@ def load_pretrained_model(
   model_name = model_name or list(NAME_TO_FILE.keys())[0]
   assert model_name in NAME_TO_FILE, f'Unknown model name: {model_name} (expected one of {list(NAME_TO_FILE.keys())})'
 
-  if device is None:
-    if torch.cuda.device_count():
-      device = 'cuda'
-    else:
-      device = 'cpu'
+  device = resolve_device(device)
 
   checkpoint_path = _download_checkpoint(model_name, cache_dir,
                                          checkpoint_url=checkpoint_url,
@@ -140,11 +137,7 @@ def load_ensemble_model(
       fold_names,
     ))
 
-  if device is None:
-    if torch.cuda.device_count():
-      device = 'cuda'
-    else:
-      device = 'cpu'
+  device = resolve_device(device)
 
   models = [_build_model_from_checkpoint(path, device) for path in checkpoint_paths]
 

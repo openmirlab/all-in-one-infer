@@ -61,7 +61,7 @@ class AllInOneSession:
         device=self.device,
         **kwargs,
       )
-      if self.device is None:
+      if self.device is None or self.device == "auto":
         self.device = str(next(self._model.parameters()).device)
       self._demucs_provider = DemucsProvider(
         model_name=self.demucs_model,

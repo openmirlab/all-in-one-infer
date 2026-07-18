@@ -35,7 +35,7 @@ from .helpers import (
   rmdir_if_empty,
   save_results,
 )
-from .utils import mkpath, load_result
+from .utils import mkpath, load_result, resolve_device
 from .typings import AllInOneOutput, AnalysisResult, PathLike
 
 
@@ -223,6 +223,12 @@ def analyze(
   Union[AnalysisResult, List[AnalysisResult]]
       Analysis results for the provided audio files.
   """
+
+  # Resolve the "auto" sentinel (or an unset default -- a no-op here, since
+  # this signature's default is already a concrete resolved string) before
+  # anything below inspects `device`, so the TF32 check right below sees the
+  # resolved value too.
+  device = resolve_device(device)
 
   # Handle different input modes
   # TF32 matmul on CUDA: ~25-33% faster forward pass, verified bit-identical

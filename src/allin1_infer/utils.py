@@ -2,9 +2,18 @@
 result loading, compact JSON number arrays)."""
 
 import re
+import torch
 
 from pathlib import Path
 from .typings import PathLike, AnalysisResult
+
+
+def resolve_device(device):
+  """Resolve `None` or the literal string "auto" to cuda-if-available-else-cpu.
+  Any other explicit value (e.g. "cpu", "cuda:0") passes through unchanged."""
+  if device is None or device == 'auto':
+    return 'cuda' if torch.cuda.is_available() else 'cpu'
+  return device
 
 
 def compact_json_number_array(json_str: str):
