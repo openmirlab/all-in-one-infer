@@ -33,6 +33,7 @@ dependencies = [
     { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "soundfile" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "torch" },
 ]
 
@@ -62,6 +63,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "scipy", specifier = ">=1.0.0" },
     { name = "soundfile", specifier = ">=0.12.1" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.0.1" },
     { name = "torch", specifier = ">=2.0.0" },
     { name = "torch", marker = "extra == 'natten'", specifier = ">=2.0.0,<2.8.0" },
     { name = "torchaudio", marker = "extra == 'natten'", specifier = "<2.8.0" },

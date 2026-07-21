@@ -526,6 +526,10 @@ with AllInOneSession(model="harmonix-all", device="cuda") as session:
 `session.infer()` requires a ready session. For one-shot use, keep calling
 `allin1_infer.analyze(...)`; it continues to load lazily with the historical
 signature and output format.
+`release()` permits a later reload, while `close()` is terminal. Device
+requests preserve legacy `None`/`auto` selection and accept explicit `cpu`,
+`cuda`, `cuda:N`, or supported `mps`; malformed or unavailable explicit
+requests raise before loading either Harmonix or Demucs.
 
 ### Basic Usage
 

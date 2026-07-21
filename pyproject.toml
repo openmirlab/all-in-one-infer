@@ -71,6 +71,7 @@ dependencies = [
   # too since this package imports it directly (article 3: no undeclared
   # transitive assumption).
   "soundfile>=0.12.1",
+  "tomli>=2.0.1; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]

@@ -9,7 +9,10 @@ Reads: pathlib, tomllib, package-local config/checkpoints.toml
 
 from pathlib import Path
 from typing import Any, Mapping
-import tomllib
+try:
+  import tomllib
+except ModuleNotFoundError:  # Python 3.10
+  import tomli as tomllib
 
 
 def checkpoint_config_path() -> Path:

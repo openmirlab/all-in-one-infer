@@ -9,10 +9,31 @@ from .typings import PathLike, AnalysisResult
 
 
 def resolve_device(device):
-  """Resolve `None` or the literal string "auto" to cuda-if-available-else-cpu.
-  Any other explicit value (e.g. "cpu", "cuda:0") passes through unchanged."""
+  """Resolve legacy automatic selection and validate explicit devices."""
   if device is None or device == 'auto':
     return 'cuda' if torch.cuda.is_available() else 'cpu'
+  if device == 'cpu':
+    return 'cpu'
+  if not isinstance(device, str):
+    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', 'cuda:N', or 'mps'")
+  if device == 'mps':
+    mps = getattr(torch.backends, 'mps', None)
+    if mps is None or not mps.is_available():
+      raise RuntimeError("MPS requested but not available on this machine.")
+    return 'mps'
+  if device == 'cuda':
+    if not torch.cuda.is_available():
+      raise RuntimeError("CUDA requested but not available on this machine.")
+    return 'cuda'
+  if not device.startswith('cuda:'):
+    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', 'cuda:N', or 'mps'")
+  index_text = device[5:]
+  if not index_text.isdigit():
+    raise ValueError("CUDA device index must be a non-negative integer")
+  if not torch.cuda.is_available():
+    raise RuntimeError("CUDA requested but not available on this machine.")
+  if int(index_text) >= torch.cuda.device_count():
+    raise RuntimeError(f"CUDA device index {index_text} is not available")
   return device
 
 

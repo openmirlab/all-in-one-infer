@@ -35,6 +35,9 @@ direct-stems input does not load Demucs, and the legacy
 `analyze()` function remains the lazy, backward-compatible one-shot path.
 `config/checkpoints.toml` owns checkpoint URLs and provenance; callers may
 override its path and metadata generically.
+`utils.resolve_device()` owns strict explicit validation (`cpu`, `cuda`,
+`cuda:N`, plus supported `mps`) before the Harmonix loader, analysis path, or
+session-owned Demucs provider receives a device.
 
 `pyproject.toml` declares no pytest markers or `addopts` — the whole
 `tests/` directory runs by default with a plain `pytest` invocation. There

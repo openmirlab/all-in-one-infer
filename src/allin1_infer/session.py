@@ -113,7 +113,9 @@ class AllInOneSession:
 
   def cache_info(self) -> dict[str, Any]:
     directory = self.cache_dir or get_model_cache_dir()
-    metadata = checkpoint_metadata(self.model, path=self.checkpoint_config)
+    metadata = checkpoint_metadata(
+      self.model, path=self.checkpoint_config, overrides=self.checkpoint_overrides,
+    )
     return {
       "model": self.model,
       "demucs_model": self.demucs_model,

@@ -76,7 +76,7 @@ def test_session_owns_both_components_and_loads_demucs_lazily(monkeypatch, tmp_p
   )
   monkeypatch.setattr(
     "allin1_infer.session.checkpoint_metadata",
-    lambda model, path=None: {"model": model, "artifacts": []},
+    lambda model, path=None, overrides=None: {"model": model, "artifacts": []},
   )
 
   session = AllInOneSession(model="harmonix-fold0", device="cpu", demucs_model="htdemucs")

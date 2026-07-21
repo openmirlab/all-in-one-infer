@@ -10,6 +10,7 @@ helper all these sites now call through.
 import importlib
 from types import SimpleNamespace
 
+import pytest
 import torch
 
 from allin1_infer.utils import resolve_device
@@ -32,11 +33,26 @@ def test_resolve_device_none_and_auto_agree(monkeypatch):
 
 
 def test_resolve_device_passes_through_explicit_devices(monkeypatch):
-  # Explicit devices must be untouched regardless of what CUDA reports.
   monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+  monkeypatch.setattr(torch.cuda, "device_count", lambda: 1)
   assert resolve_device("cpu") == "cpu"
   assert resolve_device("cuda") == "cuda"
   assert resolve_device("cuda:0") == "cuda:0"
+
+
+def test_resolve_device_rejects_unavailable_or_invalid_explicit_values(monkeypatch):
+  monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+  with pytest.raises(RuntimeError, match="CUDA"):
+    resolve_device("cuda")
+  with pytest.raises(ValueError):
+    resolve_device("cuda:-1")
+  with pytest.raises(ValueError):
+    resolve_device("metal")
+
+  monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+  monkeypatch.setattr(torch.cuda, "device_count", lambda: 1)
+  with pytest.raises(RuntimeError, match="index 1"):
+    resolve_device("cuda:1")
 
 
 # ---------------------------------------------------------------------------
