@@ -80,7 +80,7 @@ requirement), source separation via the sibling
 spectrogram/beat-decoding via the sibling
 [madmom-infer](https://github.com/openmirlab/madmom-infer) package — both
 plain PyPI installs with no git-install step. See
-`docs/CHANGELOG.md` (local-only, not on GitHub) for the full
+`CHANGELOG.md` for the full
 version-by-version history of how this fork got here.
 
 ## Acknowledgments
@@ -137,7 +137,7 @@ If you use this package for your research, please cite the following papers.
 - **PyPI-only install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — nothing to compile, nothing to `git+https://` install
 - **100% backward compatible**: same analysis JSON structure, function signatures, model names, and accuracy as upstream All-In-One
 
-See `docs/CHANGELOG.md` (local-only, not on GitHub) for the detailed, version-by-version history of how these features were added.
+See `CHANGELOG.md` for the detailed, version-by-version history of how these features were added.
 
 ## Scope
 
@@ -1074,11 +1074,12 @@ See [LICENSE](LICENSE) and [NOTICE](NOTICE) for full details and third-party dep
 
 - **Issues / bug reports**: [GitHub Issues](https://github.com/openmirlab/all-in-one-infer/issues)
 - **Migration questions**: see [Migration from All-In-One](#migration-from-all-in-one) above
-- **Version history**: see `docs/CHANGELOG.md` (local-only, not on GitHub)
+- **Version history**: see `CHANGELOG.md`
 - **Upstream research questions**: see the original [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository
 
 ## Documentation
 
-Additional documentation (usage examples, historical training guide,
-changelog) lives in `docs/` — kept locally, not tracked on GitHub, per
-this project's docs/ policy (see CLAUDE.md).
+Additional documentation (usage examples and historical training guide)
+lives in `docs/` — kept locally, not tracked on GitHub, per this project's
+docs/ policy (see CLAUDE.md). Version history lives in the tracked root
+`CHANGELOG.md`.
