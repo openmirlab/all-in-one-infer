@@ -63,7 +63,7 @@ dependencies = [
   # >=4.2.2 for its torchaudio>=2.11/torchcodec fix (which also made
   # soundfile a declared core dep there) -- this package has its own,
   # independent exposure to the same issue (stems.py's own torchaudio.load
-  # call for the user's input file), fixed the same way; see docs/CHANGELOG.md.
+  # call for the user's input file), fixed the same way; see CHANGELOG.md.
   "demucs-infer>=4.2.2",
   # soundfile: wav/flac path for stems.py's own input-audio load (bit-
   # identical to torchaudio there, unlike mp3 -- see stems.py). Already
@@ -99,7 +99,7 @@ Repository = "https://github.com/openmirlab/all-in-one-infer"
 Documentation = "https://github.com/openmirlab/all-in-one-infer#readme"
 "Bug Reports" = "https://github.com/openmirlab/all-in-one-infer/issues"
 "Original All-In-One" = "https://github.com/mir-aidj/all-in-one"
-Changelog = "https://github.com/openmirlab/all-in-one-infer#readme"  # docs/CHANGELOG.md is local-only, not tracked on GitHub
+Changelog = "https://github.com/openmirlab/all-in-one-infer/blob/main/CHANGELOG.md"
 
 # Setuptools configuration (since we're using setuptools.build_meta)
 [tool.setuptools]

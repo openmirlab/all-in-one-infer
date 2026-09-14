@@ -17,7 +17,7 @@ Actively maintained, published to PyPI as `all-in-one-infer`
 (`Development Status :: 5 - Production/Stable` in `pyproject.toml`; version
 is single-sourced from `src/allin1_infer/__about__.py`). Renamed from
 `all-in-one-fix` / `allin1fix` to `all-in-one-infer` / `allin1_infer` as of
-3.0.0 (2026-07) — see [docs/CHANGELOG.md](docs/CHANGELOG.md) for the full
+3.0.0 (2026-07) — see [CHANGELOG.md](CHANGELOG.md) for the full
 history. This package depends on two sibling packages in the same org for
 parts of its pipeline: [demucs-infer](https://github.com/openmirlab/demucs-infer)
 (source separation) and [madmom-infer](https://github.com/openmirlab/madmom-infer)
