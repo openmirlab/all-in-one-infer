@@ -37,7 +37,17 @@ direct-stems input does not load Demucs, and the legacy
 override its path and metadata generically.
 `utils.resolve_device()` owns strict explicit validation (`cpu`, `cuda`,
 `cuda:N`, plus supported `mps`) before the Harmonix loader, analysis path, or
-session-owned Demucs provider receives a device.
+session-owned Demucs provider receives a device. `stems.py`'s legacy direct
+entry points (`DemucsProvider`, `separate_in_memory()`, the module-level
+`get_stems()`, `CustomSeparatorProvider`) route through the same resolver
+too (2026-09, phonon-readiness fix) — they previously hardcoded a literal
+`device='cuda'` default (or, for `CustomSeparatorProvider`, a second inline
+cuda-if-available check) that bypassed `resolve_device()` entirely, so
+calling them directly without an explicit device never validated an
+explicit-but-unavailable request and had no `'auto'` support. `analyze()`
+and `AllInOneSession` were never affected — both already resolved `device`
+once at their own entry point and threaded the concrete resolved string down
+into `stems.py`.
 
 `pyproject.toml` declares no pytest markers or `addopts` — the whole
 `tests/` directory runs by default with a plain `pytest` invocation. There
@@ -69,6 +79,36 @@ Test suite composition (`tests/`), as of this writing:
   collected by pytest but are not reliable CI tests; treat failures here as
   expected/ignorable rather than a regression signal until someone
   deliberately rewrites or removes them.
+
+## The `[natten]` extra's torch ceiling (justified, checked 2026-09)
+
+`pyproject.toml`'s `[natten]` extra pins `natten>=0.17.1,<0.20` and
+`torch>=2.0.0,<2.8.0`. This is a real, confirmed incompatibility, not an
+unjustified ceiling (org constitution art. 3 requires evidence for any
+upper bound):
+
+- `natten` 0.17.x-0.19.x's C++ extension does not compile against
+  torch>=2.8 (`_device_t` was removed from torch's C++ API); natten's own
+  install docs confirm this generation is the one this repo needs
+  (`na1d_av`/`na1d_qk`/`na2d_av`/`na2d_qk` in `src/allin1_infer/models/dinat.py`).
+  natten>=0.20 dropped that functional/RPB API entirely, so it can't run
+  the `harmonix-*` checkpoints even though it does support newer torch.
+  There is currently no natten release that satisfies both constraints at
+  once.
+- Verified 2026-09 against the fleet's `torch==2.13.0` pin: `uv pip install
+  -e ".[natten]"` (no exact torch pin) resolves by silently **downgrading**
+  torch to 2.7.1 (+ matching torchaudio/triton) to satisfy the extra's own
+  ceiling — worth knowing if anyone ever installs this extra into a shared
+  venv. `uv pip install -e ".[natten]" "torch==2.13.0"` (the fleet's actual
+  shape: torch pinned exactly) instead fails **loudly** with a clear
+  unsatisfiable-dependencies error, which is the correct/safe outcome.
+- **Verdict: keep the ceiling.** The core package (no extras) has no torch
+  ceiling and installs/imports cleanly against torch 2.13.0 — confirmed by
+  `uv pip install -e .` plus an import smoke test in an isolated venv. Any
+  phonon provider on the shared torch-2.13.0 venv must not install the
+  `[natten]` extra; the pure-PyTorch neighborhood-attention backend (the
+  default) is what actually runs there, and it's numerically identical to
+  NATTEN's output (golden-fixture tested, `tests/test_neighborhood_attention.py`).
 
 ## Verification commands
 
@@ -120,6 +160,19 @@ the header, not just in a docstring for its own sake.
   because it's a low-traffic internal index, not user-facing like the root
   README.md; fix opportunistically alongside other docs/ edits rather than
   as a standalone change.
+- `docs/RELEASE_SUMMARY.md`, `docs/PACKAGE_STRUCTURE.md`, and
+  `docs/PYPI_PUBLISHING.md` are stale v2.0.0-era planning notes from before
+  the 3.0.0 pure-PyTorch neighborhood-attention rewrite (checked 2026-09,
+  phonon-readiness pass): they describe `natten` as a **required** core
+  dependency (`dependencies = ["natten==0.17.5"]` /
+  `natten>=0.17.5` "flexible: 0.17.5-0.21.0+") and claim compatibility up to
+  natten 0.21.0+, both wrong today — natten is an optional `[natten]` extra
+  pinned to `>=0.17.1,<0.20` (`pyproject.toml`), because natten>=0.20
+  dropped the legacy functional/RPB API this port's `dinat.py` depends on.
+  The root README.md and this file are the accurate, current source; these
+  three are left as historical record rather than rewritten, matching the
+  `docs/README.md` precedent above. Do not use them as install/compat
+  guidance.
 - `tests/test_original_allinone.py` and `tests/test_original_comparison.py`
   are pre-rename debugging scripts, not maintained regression tests (see
   Testing philosophy above). Not removed here because deciding whether to

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `src/allin1_infer/stems.py`'s legacy direct entry points
+  (`DemucsProvider.__init__`, `separate_in_memory()`, the module-level
+  `get_stems()`) hardcoded a literal `device='cuda'` default instead of
+  routing through the shared `utils.resolve_device()`, so calling any of
+  them directly (without going through `analyze()`/`AllInOneSession`, which
+  already resolved device correctly) bypassed the device contract entirely
+  — no `'auto'` sentinel support, no validation, and an unavailable-cuda
+  request would fail with a raw torch error instead of the resolver's clear
+  message. `CustomSeparatorProvider.get_stems()` separately duplicated the
+  resolver's cuda-if-available logic inline instead of reusing it. All four
+  now go through `resolve_device()`.
+
+### Verified
+- Confirmed the `[natten]` extra's `torch<2.8.0` ceiling is still justified
+  against the phonon fleet's `torch==2.13.0` pin: the core package (no
+  extras) installs and imports cleanly against torch 2.13.0 with no
+  changes needed; requesting `[natten]` alongside an exact `torch==2.13.0`
+  pin fails resolution loudly (no natten release supports both torch>=2.8
+  and the legacy functional/RPB API `dinat.py` depends on). See CLAUDE.md's
+  "The `[natten]` extra's torch ceiling" section for the full evidence.
+
 ### Changed
 - Validate explicit runtime devices (`cpu`, `cuda`, `cuda:N`, and supported
   `mps`) before forwarding them through Harmonix loading, analysis, and the

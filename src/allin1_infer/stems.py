@@ -42,6 +42,7 @@ from demucs_infer.audio import save_audio, prevent_clip
 import numpy as np
 
 from .spectrogram import STEM_NAMES
+from .utils import resolve_device
 
 
 class StemSeparator(Protocol):
@@ -200,12 +201,19 @@ class DemucsProvider(StemProvider):
     def __init__(
         self,
         model_name: str = 'htdemucs',
-        device: Union[str, torch.device] = 'cuda',
+        device: Union[str, torch.device] = 'auto',
         demucs_overlap: float = 0.25,
         demucs_fp16: bool = False,
     ):
         self.model_name = model_name
-        self.device = device
+        # Route through the package's single device resolver (see
+        # `allin1_infer.utils.resolve_device`) instead of a hardcoded literal
+        # default -- 'auto' resolves to cuda-if-available/else-cpu exactly
+        # like every other entry point, an explicit unavailable/invalid
+        # device raises rather than silently landing wherever `.to()` would
+        # put it, and a caller who already resolved a concrete device
+        # upstream (e.g. `analyze()`) re-resolves to the same value.
+        self.device = resolve_device(device)
         # EXPERIMENTAL, accuracy-affecting knobs -- defaults reproduce prior
         # behavior exactly (0.25 is demucs' own apply_model default, fp16=False
         # keeps separation in fp32). See profiling notes: non-default overlap
@@ -331,7 +339,7 @@ def quantize_stem_to_madmom_mono_int16(wav: torch.Tensor) -> np.ndarray:
 def separate_in_memory(
     paths: List[Path],
     demix_dir: Path,
-    device: Union[str, torch.device] = 'cuda',
+    device: Union[str, torch.device] = 'auto',
     demucs_overlap: float = 0.25,
     demucs_fp16: bool = False,
     provider: Optional[DemucsProvider] = None,
@@ -368,6 +376,11 @@ def separate_in_memory(
             demucs_overlap=demucs_overlap,
             demucs_fp16=demucs_fp16,
         )
+        # DemucsProvider.__init__ resolves 'auto'/None/etc through the shared
+        # resolver -- carry the concrete resolved value forward so the raw
+        # (possibly unresolved) `device` local below is never handed to
+        # `.to()` directly.
+        device = provider.device
     else:
         device = provider.device
         demucs_overlap = provider.demucs_overlap
@@ -464,7 +477,9 @@ class CustomSeparatorProvider(StemProvider):
     def get_stems(self, identifier: Union[Path, str], output_dir: Path) -> Path:
         """Use custom separator to generate stems."""
         audio_path = Path(identifier)
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # Route through the shared resolver instead of a second, duplicated
+        # cuda-if-available check (single owner: `utils.resolve_device`).
+        device = resolve_device('auto')
         return self.separator_fn.separate(audio_path, output_dir, device)
 
 
@@ -472,7 +487,7 @@ def get_stems(
     paths: List[Path],
     stems_dir: Path,
     stem_provider: Optional[StemProvider] = None,
-    device: Union[str, torch.device] = 'cuda',
+    device: Union[str, torch.device] = 'auto',
     demucs_overlap: float = 0.25,
     demucs_fp16: bool = False,
 ) -> List[Path]:
