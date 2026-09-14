@@ -38,8 +38,8 @@ direct-stems input does not load Demucs, and the legacy
 `analyze()` function remains the lazy, backward-compatible one-shot path.
 `config/checkpoints.toml` owns checkpoint URLs and provenance; callers may
 override its path and metadata generically.
-`utils.resolve_device()` owns strict explicit validation (`cpu`, `cuda`,
-`cuda:N`, plus supported `mps`) before the Harmonix loader, analysis path, or
+`utils.resolve_device()` owns strict explicit validation (`auto`, `cpu`,
+`cuda`, `cuda:N`) before the Harmonix loader, analysis path, or
 session-owned Demucs provider receives a device. `stems.py`'s legacy direct
 entry points (`DemucsProvider`, `separate_in_memory()`, the module-level
 `get_stems()`, `CustomSeparatorProvider`) route through the same resolver

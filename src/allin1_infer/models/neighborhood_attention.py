@@ -6,7 +6,8 @@ installed torch at install time, and NATTEN >=0.20 removed both the legacy
 functional API and relative positional bias (RPB) support — which the
 pretrained all-in-one checkpoints require. This module reimplements the exact
 semantics of NATTEN 0.17.x with plain gather + einsum, so the package installs
-anywhere (CPU, CUDA, MPS, any torch >= 2.0) with no compiled extension.
+on any supported device (CPU, CUDA, any torch >= 2.0) with no compiled
+extension.
 Numerically verified against real NATTEN 0.17.x output by the golden-fixture
 test in tests/test_neighborhood_attention.py -- treat that test as the
 correctness contract for this file; any change here must keep it passing.

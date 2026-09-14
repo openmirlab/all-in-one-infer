@@ -9,8 +9,9 @@ Neighborhood attention backend selection (NA_BACKEND, below): NATTEN is
 optional -- if a compatible version (0.17.x-0.19.x) is installed we use its
 fused kernels (NA_BACKEND='natten'), otherwise we fall back to the
 pure-PyTorch implementation in .neighborhood_attention (NA_BACKEND='torch'),
-which is numerically identical and works on CPU/CUDA/MPS with any torch >=
-2.0, no compiled extension needed. NATTEN >=0.20 removed this functional API
+which is numerically identical and works on any supported device (CPU/CUDA)
+with any torch >= 2.0, no compiled extension needed. NATTEN >=0.20 removed
+this functional API
 and RPB support entirely, so it cannot be used with the pretrained
 checkpoints; its import fails below and the fallback takes over. A broken
 NATTEN install (e.g. 0.17.x compiled against a mismatched torch) can raise

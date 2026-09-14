@@ -15,18 +15,19 @@ def resolve_device(device):
   if device == 'cpu':
     return 'cpu'
   if not isinstance(device, str):
-    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', 'cuda:N', or 'mps'")
-  if device == 'mps':
-    mps = getattr(torch.backends, 'mps', None)
-    if mps is None or not mps.is_available():
-      raise RuntimeError("MPS requested but not available on this machine.")
-    return 'mps'
+    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
+  if device == 'mps' or device.startswith('mps:'):
+    raise ValueError(
+      "Device 'mps' is not supported. Apple MLX/MPS backends are "
+      "permanently out of scope for this project (org canon art. 4b). "
+      "Supported devices: 'auto', 'cpu', 'cuda', 'cuda:N'."
+    )
   if device == 'cuda':
     if not torch.cuda.is_available():
       raise RuntimeError("CUDA requested but not available on this machine.")
     return 'cuda'
   if not device.startswith('cuda:'):
-    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', 'cuda:N', or 'mps'")
+    raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
   index_text = device[5:]
   if not index_text.isdigit():
     raise ValueError("CUDA device index must be a non-negative integer")

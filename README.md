@@ -528,8 +528,10 @@ with AllInOneSession(model="harmonix-all", device="cuda") as session:
 signature and output format.
 `release()` permits a later reload, while `close()` is terminal. Device
 requests preserve legacy `None`/`auto` selection and accept explicit `cpu`,
-`cuda`, `cuda:N`, or supported `mps`; malformed or unavailable explicit
-requests raise before loading either Harmonix or Demucs.
+`cuda`, or `cuda:N`; malformed or unavailable explicit requests raise
+before loading either Harmonix or Demucs. `mps` is rejected outright —
+Apple MLX/MPS backends are permanently out of scope for this project (org
+canon art. 4b).
 
 ### Basic Usage
 
