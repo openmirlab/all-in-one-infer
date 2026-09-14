@@ -99,7 +99,7 @@ Repository = "https://github.com/openmirlab/all-in-one-infer"
 Documentation = "https://github.com/openmirlab/all-in-one-infer#readme"
 "Bug Reports" = "https://github.com/openmirlab/all-in-one-infer/issues"
 "Original All-In-One" = "https://github.com/mir-aidj/all-in-one"
-Changelog = "https://github.com/openmirlab/all-in-one-infer/blob/main/docs/CHANGELOG.md"
+Changelog = "https://github.com/openmirlab/all-in-one-infer#readme"  # docs/CHANGELOG.md is local-only, not tracked on GitHub
 
 # Setuptools configuration (since we're using setuptools.build_meta)
 [tool.setuptools]

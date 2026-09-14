@@ -1,5 +1,8 @@
 # all-in-one-infer
 
+**`docs/`** is local-only by policy (2026-09-14): kept on disk, gitignored,
+never pushed to GitHub. Links below to `docs/*.md` resolve locally only.
+
 Inference-only fork of [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one)
 (music structure analysis: tempo, beats, downbeats, functional segments).
 Training code has been removed; this package only loads pretrained

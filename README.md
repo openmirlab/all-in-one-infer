@@ -80,8 +80,8 @@ requirement), source separation via the sibling
 spectrogram/beat-decoding via the sibling
 [madmom-infer](https://github.com/openmirlab/madmom-infer) package — both
 plain PyPI installs with no git-install step. See
-[CHANGELOG.md](docs/CHANGELOG.md) for the full version-by-version history of
-how this fork got here.
+`docs/CHANGELOG.md` (local-only, not on GitHub) for the full
+version-by-version history of how this fork got here.
 
 ## Acknowledgments
 
@@ -137,7 +137,7 @@ If you use this package for your research, please cite the following papers.
 - **PyPI-only install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — nothing to compile, nothing to `git+https://` install
 - **100% backward compatible**: same analysis JSON structure, function signatures, model names, and accuracy as upstream All-In-One
 
-See [docs/CHANGELOG.md](docs/CHANGELOG.md) for the detailed, version-by-version history of how these features were added.
+See `docs/CHANGELOG.md` (local-only, not on GitHub) for the detailed, version-by-version history of how these features were added.
 
 ## Scope
 
@@ -1010,7 +1010,7 @@ pip install -e .
 - All visualization and sonification features
 
 ## Training
-This package is inference-only; training code has been removed (see [Scope](#scope) above — this is permanent, not a temporary gap). [TRAINING.md](docs/TRAINING.md) is kept as a historical guide. To retrain models, refer to the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository.
+This package is inference-only; training code has been removed (see [Scope](#scope) above — this is permanent, not a temporary gap). `docs/TRAINING.md` (local-only, not on GitHub) is kept as a historical guide. To retrain models, refer to the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository.
 
 ## What This Project Will Never Bundle
 
@@ -1072,15 +1072,11 @@ See [LICENSE](LICENSE) and [NOTICE](NOTICE) for full details and third-party dep
 
 - **Issues / bug reports**: [GitHub Issues](https://github.com/openmirlab/all-in-one-infer/issues)
 - **Migration questions**: see [Migration from All-In-One](#migration-from-all-in-one) above
-- **Version history**: see [docs/CHANGELOG.md](docs/CHANGELOG.md)
+- **Version history**: see `docs/CHANGELOG.md` (local-only, not on GitHub)
 - **Upstream research questions**: see the original [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository
 
 ## Documentation
 
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
-
-- **[USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md)** - Detailed usage examples and code snippets
-- **[TRAINING.md](docs/TRAINING.md)** - Historical training guide (this package is inference-only; see note in the doc)
-- **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history and release notes
-
-For more information, see the [Documentation Index](docs/README.md).
+Additional documentation (usage examples, historical training guide,
+changelog) lives in `docs/` — kept locally, not tracked on GitHub, per
+this project's docs/ policy (see CLAUDE.md).
