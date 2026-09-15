@@ -12,6 +12,8 @@ Reads: madmom_infer.features.downbeats (DBNDownBeatTrackingProcessor), ..typings
 (AllInOneOutput), ..config (Config)
 """
 
+import inspect
+
 import torch
 
 from madmom_infer.features.downbeats import DBNDownBeatTrackingProcessor
@@ -19,15 +21,27 @@ from ..typings import AllInOneOutput
 from ..config import Config
 
 
+def _make_downbeat_processor(cfg: Config):
+  """Construct the decoder with the newest optional Viterbi path available."""
+  kwargs = {
+    'beats_per_bar': [3, 4],
+    'threshold': cfg.best_threshold_downbeat,
+    'fps': cfg.fps,
+  }
+  try:
+    parameters = inspect.signature(DBNDownBeatTrackingProcessor).parameters
+  except (TypeError, ValueError):
+    parameters = {}
+  if 'fast_viterbi' in parameters:
+    kwargs['fast_viterbi'] = True
+  return DBNDownBeatTrackingProcessor(**kwargs)
+
+
 def postprocess_metrical_structure(
   logits: AllInOneOutput,
   cfg: Config,
 ):
-  postprocessor_downbeat = DBNDownBeatTrackingProcessor(
-    beats_per_bar=[3, 4],
-    threshold=cfg.best_threshold_downbeat,
-    fps=cfg.fps,
-  )
+  postprocessor_downbeat = _make_downbeat_processor(cfg)
 
   raw_prob_beats = torch.sigmoid(logits.logits_beat[0])
   raw_prob_downbeats = torch.sigmoid(logits.logits_downbeat[0])

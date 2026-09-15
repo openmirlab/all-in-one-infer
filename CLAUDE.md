@@ -25,6 +25,14 @@ parts of its pipeline: [demucs-infer](https://github.com/openmirlab/demucs-infer
 delegated to, not vendored, so their own CLAUDE.md/accuracy gates are the
 place to look when a bug could be upstream of this package.
 
+The metrical decoder conditionally forwards `fast_viterbi=True` when the
+installed `DBNDownBeatTrackingProcessor` signature explicitly supports it.
+The legacy constructor remains unchanged for the public `madmom-infer` 0.2.0
+compatibility path, so this internal performance adaptation does not require
+new package metadata, a public flag, or a decoder thread-count change. It is an
+internal newer-revision detail and must not be documented as an unpublished
+package release.
+
 ## Testing philosophy
 
 ## Clean API and lifecycle contract
