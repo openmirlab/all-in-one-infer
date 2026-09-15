@@ -33,6 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "The `[natten]` extra's torch ceiling" section for the full evidence.
 
 ### Changed
+- The metrical DBN decoder now opts into `fast_viterbi=True` when the installed
+  `DBNDownBeatTrackingProcessor` signature provides that internal option. The
+  exact legacy constructor is retained for public `madmom-infer` 0.2.0, with
+  no new package metadata, public flag, or decoder thread-count change; this
+  is an internal newer-revision compatibility detail rather than an unpublished
+  package release.
 - Validate explicit runtime devices (`auto`, `cpu`, `cuda`, and `cuda:N`)
   before forwarding them through Harmonix loading, analysis, and the
   session-owned Demucs provider; reject `mps` at the shared boundary.
