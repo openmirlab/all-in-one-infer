@@ -84,9 +84,11 @@ and output fields at the original `atol=rtol=1e-5`. It reports absolute and scal
 errors. No model checkpoint or external audio is needed. The reusable verification workflow
 runs this check on Python 3.9–3.12 before the separate publishing job may run.
 
-The only approved production-file exception is the Python 3.9 annotation fix in
-`checkpoints.py`. The installed module must match final source exactly; removing precisely
-its one new `from __future__ import annotations` import must restore the immutable original
-SHA-256. Every other production file is compared directly to its original hash. The actual
+The two approved production-file exceptions are the Python 3.9 annotation fixes in
+`checkpoints.py` and `session.py`. Each installed module must match final source exactly;
+removing precisely its one new `from __future__ import annotations` import must restore its
+immutable original SHA-256. Every other production file is compared directly to its original hash. The actual
 Python 3.9 preflight failed at `Path | str | None` before this fix; import, custom configuration,
-metadata override, and malformed-configuration checks then passed on that interpreter.
+metadata override, and malformed-configuration checks then passed on that interpreter. That
+checkpoint-only preflight missed the session's evaluated `Optional[str | Path]` annotation;
+the full hosted Python 3.9 run exposed it and now also gates public package/session imports.

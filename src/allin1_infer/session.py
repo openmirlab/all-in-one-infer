@@ -9,6 +9,8 @@ direct-stems workflow remain backward compatible.
 Reads: .analyze, .cache, .checkpoints, .models.loaders, .stems, torch
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any, Mapping, Optional
 

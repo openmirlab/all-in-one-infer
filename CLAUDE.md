@@ -186,9 +186,10 @@ the header, not just in a docstring for its own sake.
 ## Delivery verification
 
 Hatchling reads the version from `src/allin1_infer/__about__.py`; that version file remains
-unchanged. The sole production-file exception is
-`checkpoints.py`: a `from __future__ import annotations` import fixes a reproduced Python 3.9
-`TypeError` while importing evaluated `Path | str | None` annotations. No function body,
+unchanged. The two production-file exceptions are
+`checkpoints.py` and `session.py`: each adds only `from __future__ import annotations` to fix
+reproduced Python 3.9 `TypeError`s from evaluated union annotations. The initial checkpoint-only
+preflight missed the session annotation; the full hosted Python 3.9 suite exposed it. No function body,
 model code, numerical dependency, or supported Python floor changed. Python remains `>=3.9`,
 with classifiers and the workflow matrix covering 3.9–3.12. The contradictory 3.8 classifier
 was removed; no numerical dependency floor or optional NATTEN ceiling changed. `pytest>=8.0`

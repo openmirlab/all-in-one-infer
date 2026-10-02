@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Fix Python 3.9 checkpoint-module import by postponing type-annotation evaluation; the
+- Fix Python 3.9 checkpoint and public session imports by postponing type-annotation evaluation; the
   supported Python minimum and all inference function bodies remain unchanged.
 - Explicit `device='mps'` requests now fail early with a clear `ValueError`.
   Apple MLX backend adoption and Torch MPS devices are out of scope for this

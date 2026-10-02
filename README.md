@@ -1059,7 +1059,7 @@ pytest tests/ -v
 pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m integration
 ```
 
-Builds use hatchling and the existing `__about__.py` version. Checkpoint annotations are
+Builds use hatchling and the existing `__about__.py` version. Checkpoint and session annotations are
 postponed so the declared Python 3.9 minimum can import the package. The verification workflow is
 configured for Python 3.9–3.12 on pull requests and main, and as a prerequisite for release
 publishing. Each version installs compatible CPU Torch/Torchaudio, runs the offline suite,

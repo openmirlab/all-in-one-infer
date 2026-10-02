@@ -32,14 +32,16 @@ def main():
               for name, digest in baseline['source_sha256'].items()}
   installed = {str(path.relative_to(package)): hashlib.sha256(path.read_bytes()).hexdigest()
                for path in package.rglob('*') if path.is_file() and path.suffix in ('.py', '.toml')}
-  # The sole approved production change: postpone annotations for Python 3.9.
-  checkpoint_bytes = (package / 'checkpoints.py').read_bytes()
+  # The two approved production changes: postpone annotations for Python 3.9.
+  annotation_modules = ('checkpoints.py', 'session.py')
   addition = b'from __future__ import annotations\n\n'
-  assert checkpoint_bytes.count(addition) == 1
-  final_source = Path(__file__).resolve().parents[1] / 'src/allin1_infer/checkpoints.py'
-  assert checkpoint_bytes == final_source.read_bytes(), 'Installed checkpoint module differs from final source'
-  installed['checkpoints.py'] = hashlib.sha256(checkpoint_bytes.replace(addition, b'', 1)).hexdigest()
-  assert installed == expected, 'Production files differ beyond the one approved annotation import'
+  for name in annotation_modules:
+    module_bytes = (package / name).read_bytes()
+    assert module_bytes.count(addition) == 1
+    final_source = Path(__file__).resolve().parents[1] / 'src/allin1_infer' / name
+    assert module_bytes == final_source.read_bytes(), f'Installed {name} differs from final source'
+    installed[name] = hashlib.sha256(module_bytes.replace(addition, b'', 1)).hexdigest()
+  assert installed == expected, 'Production files differ beyond the two approved annotation imports'
   assert hashlib.sha256(args.fixture.read_bytes()).hexdigest() == baseline['fixture_sha256'][
     'tests/fixtures/natten_0_17_5_golden.pt']
   assert len(allin1_infer.load_checkpoints()['models']) == 9
@@ -73,8 +75,8 @@ def main():
         fields += 1
   print(json.dumps({
     "package": str(package), "version": allin1_infer.__version__,
-    "torch": torch.__version__, "unchanged_production_files": len(installed) - 1,
-    "annotation_only_exception": "checkpoints.py",
+    "torch": torch.__version__, "unchanged_production_files": len(installed) - len(annotation_modules),
+    "annotation_only_exceptions": annotation_modules,
     "golden_fields": fields, "max_abs": max_abs,
     "max_relative_rms": max_relative_rms,
   }, indent=2))
