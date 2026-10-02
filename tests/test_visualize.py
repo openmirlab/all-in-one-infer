@@ -11,7 +11,6 @@ import pytest
 
 from allin1_infer import visualize
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 

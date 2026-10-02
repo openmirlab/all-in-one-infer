@@ -195,8 +195,11 @@ was removed; no numerical dependency floor or optional NATTEN ceiling changed. `
 is declared in the dev extra, allowing a compatible pytest release on Python 3.9.
 
 `.github/workflows/verify.yml` is reusable via `workflow_call` and also runs on PRs/main
-pushes. It installs CPU Torch and Torchaudio together, asserts matching versions/CPU builds,
-then installs `.[dev]` without requesting dependency upgrades. Each matrix entry runs the
+pushes. It installs CPU Torch and Torchaudio together, then installs `.[dev]` without requesting
+dependency upgrades. It verifies CPU builds, TorchAudio's declared Torch requirement, and
+finite nonzero CPU resampling. TorchAudio 2.11.0 CPU wheels omit dependency metadata; that
+specific release instead requires Torch>=2.11 under its documented stable ABI. Unknown
+releases without a declared Torch requirement fail the gate. Each matrix entry runs the
 full offline suite, lints touched delivery tooling, builds a wheel from the sdist, reinstalls
 that wheel, and exercises public imports/configuration and all NATTEN golden fields from
 outside the checkout. Failed jobs retain dependency/Torch diagnostics and pytest results.

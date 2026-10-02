@@ -1062,8 +1062,11 @@ pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m int
 Builds use hatchling and the existing `__about__.py` version. Checkpoint annotations are
 postponed so the declared Python 3.9 minimum can import the package. The verification workflow is
 configured for Python 3.9–3.12 on pull requests and main, and as a prerequisite for release
-publishing. Each version installs matching CPU Torch/Torchaudio, runs the offline suite,
+publishing. Each version installs compatible CPU Torch/Torchaudio, runs the offline suite,
 builds a wheel from its source archive, and checks the installed package outside the checkout.
+Compatibility checks use TorchAudio's declared Torch requirement; its 2.11.0 CPU wheel omits
+that metadata, so CI enforces the [documented stable-ABI minimum](https://docs.pytorch.org/audio/stable/installation.html)
+of Torch 2.11 for that release. CPU imports and finite, nonzero resampling are also required.
 Source archives include test fixtures and verification tools; wheels contain the runtime and
 checkpoint configuration. See [tools/README.md](tools/README.md) for installed-wheel checks.
 

@@ -11,7 +11,6 @@ import pytest
 
 from allin1_infer.config import HARMONIX_LABELS
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 

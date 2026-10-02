@@ -12,7 +12,6 @@ import pytest
 from allin1_infer import AnalysisResult, sonify
 from allin1_infer.helpers import save_results
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 

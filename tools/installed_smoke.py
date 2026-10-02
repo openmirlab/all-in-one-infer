@@ -10,8 +10,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import torch
 
@@ -71,11 +71,13 @@ def main():
         max_abs = max(max_abs, float(delta.abs().max()))
         max_relative_rms = max(max_relative_rms, float(delta.square().mean().sqrt() / rms))
         fields += 1
-  print(json.dumps(dict(package=str(package), version=allin1_infer.__version__,
-                        torch=torch.__version__, unchanged_production_files=len(installed) - 1,
-                        annotation_only_exception="checkpoints.py",
-                        golden_fields=fields, max_abs=max_abs,
-                        max_relative_rms=max_relative_rms), indent=2))
+  print(json.dumps({
+    "package": str(package), "version": allin1_infer.__version__,
+    "torch": torch.__version__, "unchanged_production_files": len(installed) - 1,
+    "annotation_only_exception": "checkpoints.py",
+    "golden_fields": fields, "max_abs": max_abs,
+    "max_relative_rms": max_relative_rms,
+  }, indent=2))
 
 
 if __name__ == '__main__':

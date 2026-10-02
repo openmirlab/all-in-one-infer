@@ -5,12 +5,11 @@ Reads: tools/reference_diagnostic.py · a fake upstream package in a separate in
 
 import hashlib
 import json
-from pathlib import Path
 import runpy
 import sys
+from pathlib import Path
 
 import pytest
-
 
 TOOL = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'tools/reference_diagnostic.py'))
 

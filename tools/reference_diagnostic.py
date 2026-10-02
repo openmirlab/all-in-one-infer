@@ -10,10 +10,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
-
+from pathlib import Path
 
 CHILD = r'''
 import importlib
@@ -95,7 +94,7 @@ def main(argv=None):
       [str(interpreter), '-B', '-c', CHILD,
        json.dumps({'module': args.module, 'audio': [str(path) for path in audio],
                    'output': str(output)})],
-      cwd=cwd, env=environment, text=True, capture_output=True,
+      cwd=cwd, env=environment, text=True, capture_output=True, check=False,
     )
     if completed.returncode:
       parser.exit(1, 'Reference diagnostic failed:\n' + completed.stdout + completed.stderr)
