@@ -1044,13 +1044,13 @@ that cache).
 
 ## Development
 
-This is a source-code-only package: see [Installation from GitHub](#installation-from-github-development)
-above for an editable install. Dev-only dependencies (`black`, `ruff`) are
+See [Installation from GitHub](#installation-from-github-development)
+for an editable install. Dev-only dependencies (`pytest`, `black`, `ruff`) are
 declared under the `dev` extra in `pyproject.toml`.
 
 ```bash
 # Editable install with dev tooling
-pip install -e ".[dev]"
+pip install -e ".[dev]" build
 
 # Offline contracts and committed NATTEN fixtures (no model downloads)
 pytest tests/ -v
@@ -1058,6 +1058,13 @@ pytest tests/ -v
 # Optional model-backed integration checks; may download checkpoints
 pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m integration
 ```
+
+Builds use hatchling and the existing `__about__.py` version. The verification workflow is
+configured for Python 3.9–3.12 on pull requests and main, and as a prerequisite for release
+publishing. Each version installs matching CPU Torch/Torchaudio, runs the offline suite,
+builds a wheel from its source archive, and checks the installed package outside the checkout.
+Source archives include test fixtures and verification tools; wheels contain the runtime and
+checkpoint configuration. See [tools/README.md](tools/README.md) for installed-wheel checks.
 
 Model-backed tests require an independently provided WAV; missing input fails clearly.
 The upstream comparison diagnostics live in [tools/README.md](tools/README.md), with explicit

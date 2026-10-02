@@ -64,3 +64,22 @@ checkpoint/fixture identity, environment, and baseline outcomes. Before delivery
 setuptools wheel-from-sdist installed successfully. Baseline dependencies came from the
 existing Python 3.11 environment, including an editable sibling madmom-infer checkout;
 that run does not claim independent published-dependency resolution.
+
+## Installed-wheel verification
+
+Build with `python -m build` (wheel from sdist), install the resulting wheel into an
+environment with its dependencies, and run from outside the checkout:
+
+```bash
+cd /tmp
+python /path/to/all-in-one-infer/tools/installed_smoke.py \
+  /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt \
+  /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
+all-in-one-infer --help
+```
+
+This verifies installed module location, every production `.py`/`.toml` byte, checkpoint
+configuration, lazy public session construction/close, and all24 stored NATTEN attention
+and output fields at the original `atol=rtol=1e-5`. It reports absolute and scale-relative
+errors. No model checkpoint or external audio is needed. The reusable verification workflow
+runs this check on Python3.9–3.12 before the separate publishing job may run.

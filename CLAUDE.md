@@ -182,3 +182,43 @@ the header, not just in a docstring for its own sake.
   guidance.
 - Historical unasserted original-package scripts are preserved by git history and the
   provenance record in `tools/README.md`; use the safe reference diagnostic there.
+
+## Delivery verification
+
+Hatchling reads the version from `src/allin1_infer/__about__.py`; that file and all other
+production files remain unchanged by the delivery modernization. Python remains `>=3.9`,
+with classifiers and the workflow matrix covering3.9–3.12. The contradictory3.8 classifier
+was removed; no numerical dependency floor or optional NATTEN ceiling changed. `pytest>=8.0`
+is declared in the dev extra, allowing a compatible pytest release on Python3.9.
+
+`.github/workflows/verify.yml` is reusable via `workflow_call` and also runs on PRs/main
+pushes. It installs CPU Torch and Torchaudio together, asserts matching versions/CPU builds,
+then installs `.[dev]` without requesting dependency upgrades. Each matrix entry runs the
+full offline suite, lints touched delivery tooling, builds a wheel from the sdist, reinstalls
+that wheel, and exercises public imports/configuration and all NATTEN golden fields from
+outside the checkout. Failed jobs retain dependency/Torch diagnostics and pytest results.
+`publish.yml` requires this entire workflow before publishing; its obsolete Torch/setuptools
+build dependencies and unquoted shell constraint were removed. Running local verification
+does not trigger publication.
+
+The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
+only runtime package files/checkpoint configuration plus distribution metadata.
+`tools/installed_smoke.py` verifies every installed `.py`/`.toml` byte against the committed
+pre-edit source hashes and checks all24 NATTEN output fields at the original tolerances.
+It does not require model downloads or claim full pretrained-pipeline accuracy.
+
+```bash
+python -m pip install -e ".[dev]" build
+python -m pytest tests/ -v -ra
+ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py
+python -m build
+python -m pip install --force-reinstall --no-deps dist/*.whl
+# From outside this checkout (substitute its absolute path):
+cd /tmp
+python /path/to/all-in-one-infer/tools/installed_smoke.py /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
+all-in-one-infer --help
+```
+
+Public skills check (2026-10-02): `openmirlab-skills/plugins/mir/CLAUDE.md` retains the same
+`pip install all-in-one-infer`, session, one-shot, and direct-stems guidance. Runtime API and
+user installation commands are unchanged, so no public skills edit is required.

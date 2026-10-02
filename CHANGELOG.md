@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "The `[natten]` extra's torch ceiling" section for the full evidence.
 
 ### Changed
+- Build with hatchling using the existing `__about__.py` version, retain Python>=3.9,
+  remove the contradictory Python3.8 classifier, and declare pytest in the dev extra.
+- Add reusable PR/main and release-prerequisite verification on Python3.9–3.12: matching
+  CPU Torch/Torchaudio, the complete offline suite, wheel-from-sdist builds, and installed
+  package/configuration/NATTEN checks. Source archives now retain verification fixtures/tools.
 - Default tests now run the offline contracts and NATTEN fixtures. Five model-backed tests
   retain their assertions behind explicit `--run-integration --integration-audio` options;
   missing opted-in input fails clearly.
