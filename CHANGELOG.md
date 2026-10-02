@@ -33,6 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "The `[natten]` extra's torch ceiling" section for the full evidence.
 
 ### Changed
+- Default tests now run the offline contracts and NATTEN fixtures. Five model-backed tests
+  retain their assertions behind explicit `--run-integration --integration-audio` options;
+  missing opted-in input fails clearly.
+- Replace unasserted original-package test scripts with a safe opt-in reference diagnostic
+  that uses explicit paths, temporary working/cache directories, and nonzero failures.
+  Historical diagnostic provenance remains documented in `tools/README.md`.
 - The metrical DBN decoder now opts into `fast_viterbi=True` when the installed
   `DBNDownBeatTrackingProcessor` signature provides that internal option. The
   exact legacy constructor is retained for public `madmom-infer` 0.2.0, with

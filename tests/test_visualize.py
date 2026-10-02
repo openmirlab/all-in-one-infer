@@ -7,7 +7,12 @@ path (a {track stem}.pdf in out_dir); MPLBACKEND=Agg is forced in conftest so
 no GUI window is ever opened.
 """
 
+import pytest
+
 from allin1_infer import visualize
+
+
+pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 
 def test_visualize(analysis_result):

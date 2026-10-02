@@ -1052,10 +1052,16 @@ declared under the `dev` extra in `pyproject.toml`.
 # Editable install with dev tooling
 pip install -e ".[dev]"
 
-# Run the test suite (uses the demo tracks under assets/; needs network on
-# first run to download checkpoints)
+# Offline contracts and committed NATTEN fixtures (no model downloads)
 pytest tests/ -v
+
+# Optional model-backed integration checks; may download checkpoints
+pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m integration
 ```
+
+Model-backed tests require an independently provided WAV; missing input fails clearly.
+The upstream comparison diagnostics live in [tools/README.md](tools/README.md), with explicit
+interpreter/input/output paths and no writes to upstream checkouts.
 
 See [CLAUDE.md](CLAUDE.md) for this project's file-header convention,
 testing philosophy, and the exact verification commands for a change here.
