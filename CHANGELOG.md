@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Fix Python 3.9 checkpoint-module import by postponing type-annotation evaluation; the
+  supported Python minimum and all inference function bodies remain unchanged.
 - Explicit `device='mps'` requests now fail early with a clear `ValueError`.
   Apple MLX backend adoption and Torch MPS devices are out of scope for this
   project instead of forming a partially supported runtime path.
@@ -34,8 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Build with hatchling using the existing `__about__.py` version, retain Python>=3.9,
-  remove the contradictory Python3.8 classifier, and declare pytest in the dev extra.
-- Add reusable PR/main and release-prerequisite verification on Python3.9–3.12: matching
+  remove the contradictory Python 3.8 classifier, and declare pytest in the dev extra.
+- Add reusable PR/main and release-prerequisite verification on Python 3.9–3.12: matching
   CPU Torch/Torchaudio, the complete offline suite, wheel-from-sdist builds, and installed
   package/configuration/NATTEN checks. Source archives now retain verification fixtures/tools.
 - Default tests now run the offline contracts and NATTEN fixtures. Five model-backed tests

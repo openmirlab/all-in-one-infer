@@ -78,8 +78,15 @@ python /path/to/all-in-one-infer/tools/installed_smoke.py \
 all-in-one-infer --help
 ```
 
-This verifies installed module location, every production `.py`/`.toml` byte, checkpoint
-configuration, lazy public session construction/close, and all24 stored NATTEN attention
+This verifies installed module location, production `.py`/`.toml` bytes, checkpoint
+configuration, lazy public session construction/close, and all 24 stored NATTEN attention
 and output fields at the original `atol=rtol=1e-5`. It reports absolute and scale-relative
 errors. No model checkpoint or external audio is needed. The reusable verification workflow
-runs this check on Python3.9–3.12 before the separate publishing job may run.
+runs this check on Python 3.9–3.12 before the separate publishing job may run.
+
+The only approved production-file exception is the Python 3.9 annotation fix in
+`checkpoints.py`. The installed module must match final source exactly; removing precisely
+its one new `from __future__ import annotations` import must restore the immutable original
+SHA-256. Every other production file is compared directly to its original hash. The actual
+Python 3.9 preflight failed at `Path | str | None` before this fix; import, custom configuration,
+metadata override, and malformed-configuration checks then passed on that interpreter.

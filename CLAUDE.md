@@ -79,11 +79,11 @@ interpreter/audio/output arguments, temporary working/cache directories, disable
 writes, no package installation or input copying, and nonzero failures. Its reference tree
 preservation and failure behavior are tested with a separate fake upstream interpreter.
 
-The pre-edit offline baseline was 40 passed /2 optional live-NATTEN skips on Python3.11.13,
-Torch/Torchaudio2.7.1, NumPy2.4.6, SciPy1.17.1. Runtime source hashes and numerical fixture
-identity are committed. That environment used editable madmom-infer0.3.0 from a sibling;
+The pre-edit offline baseline was 40 passed / 2 optional live-NATTEN skips on Python 3.11.13,
+Torch/Torchaudio 2.7.1, NumPy 2.4.6, SciPy 1.17.1. Runtime source hashes and numerical fixture
+identity are committed. That environment used editable madmom-infer 0.3.0 from a sibling;
 it does not prove fresh published-dependency resolution. Pre-existing repo-wide ruff debt
-was121 findings (63 runtime,45 tests,13 examples); delivery work lints its touched verification
+was 121 findings (63 runtime, 45 tests, 13 examples); delivery work lints its touched verification
 tooling and does not widen into a production lint cleanup.
 
 ## The `[natten]` extra's torch ceiling (justified, checked 2026-09)
@@ -185,11 +185,14 @@ the header, not just in a docstring for its own sake.
 
 ## Delivery verification
 
-Hatchling reads the version from `src/allin1_infer/__about__.py`; that file and all other
-production files remain unchanged by the delivery modernization. Python remains `>=3.9`,
-with classifiers and the workflow matrix covering3.9–3.12. The contradictory3.8 classifier
+Hatchling reads the version from `src/allin1_infer/__about__.py`; that version file remains
+unchanged. The sole production-file exception is
+`checkpoints.py`: a `from __future__ import annotations` import fixes a reproduced Python 3.9
+`TypeError` while importing evaluated `Path | str | None` annotations. No function body,
+model code, numerical dependency, or supported Python floor changed. Python remains `>=3.9`,
+with classifiers and the workflow matrix covering 3.9–3.12. The contradictory 3.8 classifier
 was removed; no numerical dependency floor or optional NATTEN ceiling changed. `pytest>=8.0`
-is declared in the dev extra, allowing a compatible pytest release on Python3.9.
+is declared in the dev extra, allowing a compatible pytest release on Python 3.9.
 
 `.github/workflows/verify.yml` is reusable via `workflow_call` and also runs on PRs/main
 pushes. It installs CPU Torch and Torchaudio together, asserts matching versions/CPU builds,
@@ -203,14 +206,16 @@ does not trigger publication.
 
 The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
 only runtime package files/checkpoint configuration plus distribution metadata.
-`tools/installed_smoke.py` verifies every installed `.py`/`.toml` byte against the committed
-pre-edit source hashes and checks all24 NATTEN output fields at the original tolerances.
+`tools/installed_smoke.py` verifies untouched installed `.py`/`.toml` bytes against the committed pre-edit hashes.
+For `checkpoints.py`, it verifies final-source byte equality, removes exactly the single
+approved future import, and then requires the original hash. It also checks all 24 NATTEN
+output fields at the original tolerances.
 It does not require model downloads or claim full pretrained-pipeline accuracy.
 
 ```bash
 python -m pip install -e ".[dev]" build
 python -m pytest tests/ -v -ra
-ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py
+ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_checkpoint_config.py tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py
 python -m build
 python -m pip install --force-reinstall --no-deps dist/*.whl
 # From outside this checkout (substitute its absolute path):
