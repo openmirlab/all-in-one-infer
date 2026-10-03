@@ -33,8 +33,6 @@ new package metadata, a public flag, or a decoder thread-count change. It is an
 internal newer-revision detail and must not be documented as an unpublished
 package release.
 
-## Testing philosophy
-
 ## Clean API and lifecycle contract
 
 `AllInOneSession` is the explicit lifecycle facade for reusable inference:
@@ -60,36 +58,33 @@ and `AllInOneSession` were never affected — both already resolved `device`
 once at their own entry point and threaded the concrete resolved string down
 into `stems.py`.
 
-`pyproject.toml` declares no pytest markers or `addopts` — the whole
-`tests/` directory runs by default with a plain `pytest` invocation. There
-is no built-in `network`/`not network` split like demucs-infer has, even
-though several tests do hit the network (checkpoint downloads on first use)
-and read fixed audio assets under `assets/`.
+## Testing philosophy
 
-Test suite composition (`tests/`), as of this writing:
+Plain `pytest tests/ -v` runs all offline contracts, including the committed NATTEN golden
+fixture. Eight existing offline modules cover activation metadata, clean API/lifecycle,
+checkpoint resolution, device forwarding, and metrical compatibility. Optional live-NATTEN
+comparisons skip explicitly when that optional backend is absent; golden fixtures still run.
 
-- **End-to-end pipeline tests** (`test_analyze.py`, `test_sonify.py`,
-  `test_visualize.py`): share one session-scoped `analyze()` fixture
-  (`tests/conftest.py`) that runs a full demucs + harmonix-all ensemble
-  pass on a bundled demo track once per session, then all three modules
-  assert against that shared result. Byproducts go to a pytest tmp dir,
-  never into the repo. These only run from a source checkout (the demo
-  track isn't packaged into the wheel) and need network on first run to
-  populate the model cache.
-- **Golden-fixture correctness test** (`test_neighborhood_attention.py`):
-  the correctness contract for the pure-PyTorch neighborhood-attention
-  reimplementation — verifies it's numerically identical to real NATTEN
-  0.17.x output. Treat this test as load-bearing: any change to
-  `src/allin1_infer/models/neighborhood_attention.py` must keep it passing.
-- **Activation/metadata tests** (`test_activation_fps.py`): fast, no
-  network or model weights required.
-- **`test_original_allinone.py` / `test_original_comparison.py`**:
-  pre-rename, exploratory debugging scripts (they `import allinone` — the
-  *original* upstream package, not this one — and reference hardcoded local
-  asset paths that no longer match this repo's `assets/` layout). They are
-  collected by pytest but are not reliable CI tests; treat failures here as
-  expected/ignorable rather than a regression signal until someone
-  deliberately rewrites or removes them.
+Five model-backed analysis/sonification/visualization tests retain their assertions and are
+marked `integration` and `network`. `tests/conftest.py` deselects them by default. Enable
+with `--run-integration --integration-audio /path/to/music.wav`; missing input is an error,
+not a passing skip. One full CPU Harmonix/Demucs run is shared across these tests, and
+byproducts go to pytest temporary directories. No hardcoded local demo is required.
+
+Three historical `*original*.py` files were unasserted diagnostic scripts, including one
+that copied audio into an upstream checkout. Their hashes and prior source commit are
+recorded in `tests/fixtures/delivery_baseline.json`; `tools/README.md` preserves their intent
+and historical observations. `tools/reference_diagnostic.py` replaces them with explicit
+interpreter/audio/output arguments, temporary working/cache directories, disabled bytecode
+writes, no package installation or input copying, and nonzero failures. Its reference tree
+preservation and failure behavior are tested with a separate fake upstream interpreter.
+
+The pre-edit offline baseline was 40 passed / 2 optional live-NATTEN skips on Python 3.11.13,
+Torch/Torchaudio 2.7.1, NumPy 2.4.6, SciPy 1.17.1. Runtime source hashes and numerical fixture
+identity are committed. That environment used editable madmom-infer 0.3.0 from a sibling;
+it does not prove fresh published-dependency resolution. Pre-existing repo-wide ruff debt
+was 121 findings (63 runtime, 45 tests, 13 examples); delivery work lints its touched verification
+tooling and does not widen into a production lint cleanup.
 
 ## The `[natten]` extra's torch ceiling (justified, checked 2026-09)
 
@@ -124,10 +119,11 @@ upper bound):
 ## Verification commands
 
 ```bash
-# Full suite (no marker filtering exists yet -- expect network calls on
-# first run to populate the model cache, and the two "original_*" scripts
-# above to be unreliable)
-uv run pytest tests/ -v
+# Full offline suite; integration tests are explicitly deselected
+python -m pytest tests/ -v
+
+# Optional full-model integration tests with independent audio (may download weights)
+python -m pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m integration
 
 # Just the load-bearing correctness gate for neighborhood attention
 uv run pytest tests/test_neighborhood_attention.py -v
@@ -184,8 +180,54 @@ the header, not just in a docstring for its own sake.
   three are left as historical record rather than rewritten, matching the
   `docs/README.md` precedent above. Do not use them as install/compat
   guidance.
-- `tests/test_original_allinone.py` and `tests/test_original_comparison.py`
-  are pre-rename debugging scripts, not maintained regression tests (see
-  Testing philosophy above). Not removed here because deciding whether to
-  delete vs. rewrite them as real regression tests is a judgment call
-  outside a docs-conformance pass.
+- Historical unasserted original-package scripts are preserved by git history and the
+  provenance record in `tools/README.md`; use the safe reference diagnostic there.
+
+## Delivery verification
+
+Hatchling reads the version from `src/allin1_infer/__about__.py`; that version file remains
+unchanged. The two production-file exceptions are
+`checkpoints.py` and `session.py`: each adds only `from __future__ import annotations` to fix
+reproduced Python 3.9 `TypeError`s from evaluated union annotations. The initial checkpoint-only
+preflight missed the session annotation; the full hosted Python 3.9 suite exposed it. No function body,
+model code, numerical dependency, or supported Python floor changed. Python remains `>=3.9`,
+with classifiers and the workflow matrix covering 3.9–3.12. The contradictory 3.8 classifier
+was removed; no numerical dependency floor or optional NATTEN ceiling changed. `pytest>=8.0`
+is declared in the dev extra, allowing a compatible pytest release on Python 3.9.
+
+`.github/workflows/verify.yml` is reusable via `workflow_call` and also runs on PRs/main
+pushes. It installs CPU Torch and Torchaudio together, then installs `.[dev]` without requesting
+dependency upgrades. It verifies CPU builds, TorchAudio's declared Torch requirement, and
+finite nonzero CPU resampling. TorchAudio 2.11.0 CPU wheels omit dependency metadata; that
+specific release instead requires Torch>=2.11 under its documented stable ABI. Unknown
+releases without a declared Torch requirement fail the gate. Each matrix entry runs the
+full offline suite, lints touched delivery tooling, builds a wheel from the sdist, reinstalls
+that wheel, and exercises public imports/configuration and all NATTEN golden fields from
+outside the checkout. Failed jobs retain dependency/Torch diagnostics and pytest results.
+`publish.yml` requires this entire workflow before publishing; its obsolete Torch/setuptools
+build dependencies and unquoted shell constraint were removed. Running local verification
+does not trigger publication.
+
+The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
+only runtime package files/checkpoint configuration plus distribution metadata.
+`tools/installed_smoke.py` verifies untouched installed `.py`/`.toml` bytes against the committed pre-edit hashes.
+For `checkpoints.py`, it verifies final-source byte equality, removes exactly the single
+approved future import, and then requires the original hash. It also checks all 24 NATTEN
+output fields at the original tolerances.
+It does not require model downloads or claim full pretrained-pipeline accuracy.
+
+```bash
+python -m pip install -e ".[dev]" build
+python -m pytest tests/ -v -ra
+ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_checkpoint_config.py tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py
+python -m build
+python -m pip install --force-reinstall --no-deps dist/*.whl
+# From outside this checkout (substitute its absolute path):
+cd /tmp
+python /path/to/all-in-one-infer/tools/installed_smoke.py /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
+all-in-one-infer --help
+```
+
+Public skills check (2026-10-02): `openmirlab-skills/plugins/mir/CLAUDE.md` retains the same
+`pip install all-in-one-infer`, session, one-shot, and direct-stems guidance. Runtime API and
+user installation commands are unchanged, so no public skills edit is required.

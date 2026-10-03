@@ -1,0 +1,156 @@
+{
+  "source_commit": "5589ea9d0baa1e43c82ab43047c63ade48db14a8",
+  "python": "3.11.13",
+  "package_file": "/tmp/openmirlab-allinone-delivery/src/allin1_infer/__init__.py",
+  "dependencies": {
+    "torch": {
+      "version": "2.7.1",
+      "requires_python": ">=3.9.0"
+    },
+    "torchaudio": {
+      "version": "2.7.1",
+      "requires_python": null
+    },
+    "numpy": {
+      "version": "2.4.6",
+      "requires_python": ">=3.11"
+    },
+    "scipy": {
+      "version": "1.17.1",
+      "requires_python": ">=3.11"
+    },
+    "pytest": {
+      "version": "9.1.1",
+      "requires_python": ">=3.10"
+    },
+    "madmom-infer": {
+      "version": "0.3.0",
+      "requires_python": ">=3.9"
+    },
+    "demucs-infer": {
+      "version": "4.2.2",
+      "requires_python": ">=3.8"
+    }
+  },
+  "weights": [
+    {
+      "name": "harmonix-fold0-0vra4ys2.pth",
+      "present": true,
+      "sha256": "0db596dfb0995f41d62f6267d76a9d54c046f1649bd35e1dbeca0c5f9a7b8acd",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold1-3ozjhtsj.pth",
+      "present": true,
+      "sha256": "607b4864eaabccd4f6951410d5ea6676666ad1cfa6ce2e18bc99f3824b77c3b7",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold2-gmgo0nsy.pth",
+      "present": true,
+      "sha256": "67c28ec7ca612d365e5fcb152f6530eb53e34c4303940afb30fd17a295c958a4",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold3-i92b7m8p.pth",
+      "present": true,
+      "sha256": "446d05672b2669cdb7d9b8bbbc228a4f3592484335a7995cca89a744e3950ddc",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold4-1bql5qo0.pth",
+      "present": true,
+      "sha256": "96327222ab9b33c005388b788ba602f529aa03cc4dde1c859c011f1004490493",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold5-x4z5zeef.pth",
+      "present": true,
+      "sha256": "c87f162a1090290bcbb863688746784919cf912c56744fb3d81a1a7dba3b114e",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold6-x7t226rq.pth",
+      "present": true,
+      "sha256": "13e7e639bf30fcd3fa049ad863088773a4e57b06d7c68581385b3ef625c60688",
+      "matches_manifest": true
+    },
+    {
+      "name": "harmonix-fold7-qwwskhg6.pth",
+      "present": true,
+      "sha256": "b888b7fba95efa3d5a37ca013fe7efe2741621ea9ca335e6b2723e4fd0fade57",
+      "matches_manifest": true
+    }
+  ],
+  "source_sha256": {
+    "src/allin1_infer/__about__.py": "09ec00c0e882c9e0d400518bd2cbff00084086955ad599749eb545400950cbc4",
+    "src/allin1_infer/__init__.py": "a9132c089feb2b02ec0eb2da3c5ac06d886c2aa34cd0159d3edf858c039aaf02",
+    "src/allin1_infer/analyze.py": "8f2d4271ee9464c987341e63f40c9eeeb0f5bd8183713f06f6998a8c3499df52",
+    "src/allin1_infer/cache.py": "fbc2dc74c2ab7eab1962bde4f0da97610eb01229875421ec20401a135d5d25f1",
+    "src/allin1_infer/checkpoints.py": "4c567e2db33a6cf8f8d48a432b25b6ebadbd3023bef788e1bbb098347e07b887",
+    "src/allin1_infer/cli.py": "ddf8057674a7a132e24db84596cc8780d29ab351f4378a9c98a6e74838683031",
+    "src/allin1_infer/config/checkpoints.toml": "5ea1427404e47ff691255fd902fc07f83bf9bf889bc1b1813d95ad00fb748f4a",
+    "src/allin1_infer/config.py": "9c758a22a9ae3dfe7c4969a52b51aac917daa5325f3b1cdc3ad9bd94828d9b7e",
+    "src/allin1_infer/demix.py": "80bb0f061802897727e61625c0ebcc1b037f6768233b3a14c674d8cd5840ee80",
+    "src/allin1_infer/helpers.py": "d49cf4d2eeefe70596c0eda5891832c9c6a2035cf1f71ab7b89c06cf57460927",
+    "src/allin1_infer/models/__init__.py": "1bce90822546b2453c4bd5a19905a1306f9a4fa906480720c819ddf2234e4f11",
+    "src/allin1_infer/models/allinone.py": "79c8e364040ccfff9d9cf2a79dda45ca1cae7488b37b526872ddf32133a8f9a5",
+    "src/allin1_infer/models/dinat.py": "6c4bc7d369bb34c984927097141489915c3d5ae3fdca634dd23ea35e6ce5ca03",
+    "src/allin1_infer/models/ensemble.py": "a7b30942732e22762298ee4990e962cc95f58253092a8f837670a987fb0ad4ac",
+    "src/allin1_infer/models/loaders.py": "ddb2c76203b8da23386f97aad0766c7bf721d226a9fb5dfecefdc21ed11282d6",
+    "src/allin1_infer/models/neighborhood_attention.py": "a477915f3d5f4f7027c1ee05bb9a7d6da06e8d6f49146c88e9654fe2f05e41e5",
+    "src/allin1_infer/models/utils.py": "558df475a04100d2f484208e871691037ac8d099874a96972c2aa69e5c5158c1",
+    "src/allin1_infer/postprocessing/__init__.py": "a7570dffdc862e9d97dd6c61579242310355f324c049d3eb077a7770b44820bd",
+    "src/allin1_infer/postprocessing/functional.py": "4a8a85a7bf36fc16afa02afb22e305eaa0bb6a6bd0ee28448a638d1eba26db63",
+    "src/allin1_infer/postprocessing/helpers.py": "ad71bf51dd84f96db67145d9f31cfb3583ee046e336c7ed9c883a5e278917707",
+    "src/allin1_infer/postprocessing/metrical.py": "afbd09cf6e36d8e8b814e4fc286c2769172d09a37e31c188854c11de353216c5",
+    "src/allin1_infer/postprocessing/tempo.py": "33d4a4ca8b70c3f173f1da582162de87ed4d31fd9e13041ed6742306347fde48",
+    "src/allin1_infer/session.py": "8f3b4af47a69957d17ad57b447a7d3d2439609438f204397bfd82bd634810a8b",
+    "src/allin1_infer/sonify.py": "ef032b0aceb48a0e6e6e4617b5c82eba2a58f03551233772f68a407068c56e81",
+    "src/allin1_infer/spectrogram.py": "5c9683567867bee0a83e91b0e4c9fba0af74d67a76466a98487a0dccd310dbc7",
+    "src/allin1_infer/stems.py": "197fa09dab0e31cdc2479f9dc8e3bd7bc91b3f680312bab6a320a4d5f88b1866",
+    "src/allin1_infer/stems_input.py": "4f46ae14e5e888ff72bbab7991937c4da2d43cca715160ef8db649e96b3f381c",
+    "src/allin1_infer/typings.py": "56a27d393b6ad4c53514e120b554b0bfd355ec60adb6e1f608052e60d8d60f2c",
+    "src/allin1_infer/utils.py": "3c7d7aeb24ec665057beceedd3be616a4d0d119b65172534ade7fe21043e3800",
+    "src/allin1_infer/visualize.py": "d2b5953ec51f89b8ad17d5faf06ae870e006ceb2c55df3b8228247476b0c4cad"
+  },
+  "fixture_sha256": {
+    "tests/fixtures/natten_0_17_5_golden.pt": "05d81577a6336954e4033672cef708481fa35478ef7457ae0b75d34d1aa0c1c3"
+  },
+  "original_scripts": {
+    "tests/test_original_comparison.py": "5df2a1a1deddc5733c3f6423cdb1d6cfdbaac6098ebcefa7d8803d6acafc6c27",
+    "tests/test_original_allinone.py": "77d55f8b4d0699467f60932fe51bcd6cf6de77501d846cf96049666d57cda626",
+    "tests/test_allin1_original.py": "339606a33955c089f5017687b9e91d7408bb98211517d6c15d5d3d600732aaef"
+  },
+  "verification": {
+    "offline_tests": {
+      "passed": 40,
+      "skipped": 2,
+      "skip_reason": "optional live NATTEN is not installed",
+      "command": "PYTHONPATH=src CUDA_VISIBLE_DEVICES= HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 OMP_NUM_THREADS=1 MPLBACKEND=Agg python -m pytest tests/test_activation_fps.py tests/test_clean_api.py tests/test_device_auto_sentinel.py tests/test_metrical.py tests/test_neighborhood_attention.py tests/test_resolve_device_mps.py tests/test_session_contract.py tests/test_stems_device.py -v"
+    },
+    "collection": {
+      "offline": 42,
+      "model_integration": 5,
+      "unasserted_diagnostics": 3
+    },
+    "packaging": "Setuptools wheel-from-sdist built and installed target imported outside checkout; manifest has9models, public lazy session closes, golden attention matches exactly",
+    "natten_installed_smoke": {
+      "1d_cases": 5,
+      "2d_cases": 3,
+      "max_abs": 0,
+      "max_relative_rms": 0
+    },
+    "preexisting_ruff_findings": {
+      "src": 63,
+      "tests": 45,
+      "examples": 13
+    }
+  },
+  "limitations": [
+    "Existing madmom-infer0.3.0 dependency is an editable sibling checkout; fresh published-dependency isolation not claimed.",
+    "Baseline environment Python3.11 only; hosted matrix not yet run.",
+    "No real full-model E2E run, because delivery changes do not modify production code or numerics.",
+    "Three manual diagnostics were inspected but not executed; one writes into upstream references."
+  ]
+}

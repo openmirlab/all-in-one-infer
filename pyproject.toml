@@ -1,10 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-# Note: setuptools (not hatchling) purely for historical reasons -- version is
-# now read straight from __about__.py via [tool.setuptools.dynamic] below, no
-# setup.py or post-install hook required.
-# Metadata is still defined in pyproject.toml (PEP 621)
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "all-in-one-infer"  # PyPI project name (matches repository name)
@@ -30,7 +26,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -86,6 +81,7 @@ natten = [
 ]
 # Development dependencies
 dev = [
+  "pytest>=8.0",
   "black",
   "ruff",
 ]
@@ -101,19 +97,23 @@ Documentation = "https://github.com/openmirlab/all-in-one-infer#readme"
 "Original All-In-One" = "https://github.com/mir-aidj/all-in-one"
 Changelog = "https://github.com/openmirlab/all-in-one-infer/blob/main/CHANGELOG.md"
 
-# Setuptools configuration (since we're using setuptools.build_meta)
-[tool.setuptools]
-# Use find to automatically discover all packages in src/
-packages = {find = {where = ["src"], exclude = ["tests*", "examples*"]}}
+[tool.hatch.version]
+path = "src/allin1_infer/__about__.py"
 
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.hatch.build.targets.wheel]
+packages = ["src/allin1_infer"]
 
-[tool.setuptools.package-data]
-allin1_infer = ["config/*.toml"]
-
-[tool.setuptools.dynamic]
-version = { attr = "allin1_infer.__about__.__version__" }
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/allin1_infer",
+  "/tests",
+  "/tools",
+  "/README.md",
+  "/CLAUDE.md",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/pyproject.toml",
+]
 
 [tool.uv]
 override-dependencies = [

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Fix Python 3.9 checkpoint and public session imports by postponing type-annotation evaluation; the
+  supported Python minimum and all inference function bodies remain unchanged.
 - Explicit `device='mps'` requests now fail early with a clear `ValueError`.
   Apple MLX backend adoption and Torch MPS devices are out of scope for this
   project instead of forming a partially supported runtime path.
@@ -33,6 +35,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "The `[natten]` extra's torch ceiling" section for the full evidence.
 
 ### Changed
+- Build with hatchling using the existing `__about__.py` version, retain Python>=3.9,
+  remove the contradictory Python 3.8 classifier, and declare pytest in the dev extra.
+- Add reusable PR/main and release-prerequisite verification on Python 3.9–3.12: compatible
+  CPU Torch/Torchaudio, the complete offline suite, wheel-from-sdist builds, and installed
+  package/configuration/NATTEN checks. Source archives now retain verification fixtures/tools.
+- Correct the CI compatibility check to validate declared Torch requirements, with the
+  documented Torch>=2.11 stable-ABI rule for TorchAudio 2.11.0 CPU wheels lacking dependency
+  metadata, and exercise CPU resampling. Resolve touched-tool lint findings from hosted Ruff.
+- Default tests now run the offline contracts and NATTEN fixtures. Five model-backed tests
+  retain their assertions behind explicit `--run-integration --integration-audio` options;
+  missing opted-in input fails clearly.
+- Replace unasserted original-package test scripts with a safe opt-in reference diagnostic
+  that uses explicit paths, temporary working/cache directories, and nonzero failures.
+  Historical diagnostic provenance remains documented in `tools/README.md`.
 - The metrical DBN decoder now opts into `fast_viterbi=True` when the installed
   `DBNDownBeatTrackingProcessor` signature provides that internal option. The
   exact legacy constructor is retained for public `madmom-infer` 0.2.0, with

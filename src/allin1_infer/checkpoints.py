@@ -7,6 +7,8 @@ mapping without naming a particular hosting service.
 Reads: pathlib, tomllib, package-local config/checkpoints.toml
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any, Mapping
 try:

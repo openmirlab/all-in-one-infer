@@ -1044,18 +1044,35 @@ that cache).
 
 ## Development
 
-This is a source-code-only package: see [Installation from GitHub](#installation-from-github-development)
-above for an editable install. Dev-only dependencies (`black`, `ruff`) are
+See [Installation from GitHub](#installation-from-github-development)
+for an editable install. Dev-only dependencies (`pytest`, `black`, `ruff`) are
 declared under the `dev` extra in `pyproject.toml`.
 
 ```bash
 # Editable install with dev tooling
-pip install -e ".[dev]"
+pip install -e ".[dev]" build
 
-# Run the test suite (uses the demo tracks under assets/; needs network on
-# first run to download checkpoints)
+# Offline contracts and committed NATTEN fixtures (no model downloads)
 pytest tests/ -v
+
+# Optional model-backed integration checks; may download checkpoints
+pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m integration
 ```
+
+Builds use hatchling and the existing `__about__.py` version. Checkpoint and session annotations are
+postponed so the declared Python 3.9 minimum can import the package. The verification workflow is
+configured for Python 3.9–3.12 on pull requests and main, and as a prerequisite for release
+publishing. Each version installs compatible CPU Torch/Torchaudio, runs the offline suite,
+builds a wheel from its source archive, and checks the installed package outside the checkout.
+Compatibility checks use TorchAudio's declared Torch requirement; its 2.11.0 CPU wheel omits
+that metadata, so CI enforces the [documented stable-ABI minimum](https://docs.pytorch.org/audio/stable/installation.html)
+of Torch 2.11 for that release. CPU imports and finite, nonzero resampling are also required.
+Source archives include test fixtures and verification tools; wheels contain the runtime and
+checkpoint configuration. See [tools/README.md](tools/README.md) for installed-wheel checks.
+
+Model-backed tests require an independently provided WAV; missing input fails clearly.
+The upstream comparison diagnostics live in [tools/README.md](tools/README.md), with explicit
+interpreter/input/output paths and no writes to upstream checkouts.
 
 See [CLAUDE.md](CLAUDE.md) for this project's file-header convention,
 testing philosophy, and the exact verification commands for a change here.

@@ -1,4 +1,4 @@
-"""End-to-end test of allin1_infer.analyze() on the bundled demo track.
+"""End-to-end test of allin1_infer.analyze() on the caller-provided integration track.
 
 Runs the full pipeline (demucs separation -> madmom_infer spectrograms ->
 harmonix-all ensemble -> DBN postprocessing) via the shared session-scoped
@@ -7,7 +7,11 @@ structure: plausible bpm, non-empty ordered beats/downbeats, and a segment
 list that covers the track with known labels.
 """
 
+import pytest
+
 from allin1_infer.config import HARMONIX_LABELS
+
+pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 
 def test_analyze(analysis_result):

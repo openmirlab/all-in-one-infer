@@ -7,8 +7,12 @@ save_results -> AnalysisResult.from_json round trip, then sonify in-memory
 and sonify-to-disk.
 """
 
+import pytest
+
 from allin1_infer import AnalysisResult, sonify
 from allin1_infer.helpers import save_results
+
+pytestmark = [pytest.mark.integration, pytest.mark.network]
 
 
 def _roundtripped_result(analysis_result, tmp_path):
