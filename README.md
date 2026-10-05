@@ -198,7 +198,7 @@ speed optimization (Linux + CUDA + torch < 2.8 only, compiles at install time):
 
 ```bash
 pip install torch"<2.8"
-pip install "all-in-one-infer[natten]" --no-build-isolation
+pip install "all-in-one-infer[natten] @ git+https://github.com/openmirlab/all-in-one-infer.git" --no-build-isolation
 ```
 
 It is picked up automatically when importable; otherwise the pure-PyTorch
@@ -980,7 +980,7 @@ dependencies = ["demucs", "natten>=0.15.0"]
 
 # Current (3.0.0+) dependencies — NATTEN is no longer required
 dependencies = ["torch>=2.0.0", "demucs-infer", ...]  # pure-PyTorch neighborhood attention
-# Optional fused-kernel backend: pip install "all-in-one-infer[natten]"  (natten>=0.17.1,<0.20)
+# Optional fused-kernel backend: pip install "all-in-one-infer[natten] @ git+https://github.com/openmirlab/all-in-one-infer.git"  (natten>=0.17.1,<0.20)
 ```
 
 ### Installation Methods
