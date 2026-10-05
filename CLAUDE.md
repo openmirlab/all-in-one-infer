@@ -231,3 +231,7 @@ all-in-one-infer --help
 Public skills check (2026-10-02): `openmirlab-skills/plugins/mir/CLAUDE.md` retains the same
 `pip install all-in-one-infer`, session, one-shot, and direct-stems guidance. Runtime API and
 user installation commands are unchanged, so no public skills edit is required.
+
+## Distribution policy (2026-10-05)
+
+Install the current source from `https://github.com/openmirlab/all-in-one-infer`. GitHub release workflows verify and build distributions but do not upload to PyPI. Existing PyPI versions, where any exist, are historical snapshots. Update installation examples to use Git when changing this package.
