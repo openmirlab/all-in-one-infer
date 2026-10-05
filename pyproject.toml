@@ -53,13 +53,13 @@ dependencies = [
                    # requirement (madmom_infer itself pins no scipy floor)
   # As of 3.1.0, madmom is replaced by madmom-infer -- a plain PyPI dependency,
   # no post-install hook or git source needed. See README.md for details.
-  "madmom-infer>=0.1.0",
+  "madmom-infer @ git+https://github.com/openmirlab/madmom-infer.git@a9ed04ec942dd6ec5309df7ce7f3783d1bb42575",
   # Source separation (demucs-infer brings: torch, torchaudio, julius, lameenc, diffq, einops, openunmix).
   # >=4.2.2 for its torchaudio>=2.11/torchcodec fix (which also made
   # soundfile a declared core dep there) -- this package has its own,
   # independent exposure to the same issue (stems.py's own torchaudio.load
   # call for the user's input file), fixed the same way; see CHANGELOG.md.
-  "demucs-infer>=4.2.2",
+  "demucs-infer @ git+https://github.com/openmirlab/demucs-infer.git@ffe0080ef96336a34e3f0ee8ba22ceaa0623a36c",
   # soundfile: wav/flac path for stems.py's own input-audio load (bit-
   # identical to torchaudio there, unlike mp3 -- see stems.py). Already
   # pulled in transitively via demucs-infer>=4.2.2, declared explicitly here
@@ -121,3 +121,6 @@ override-dependencies = [
                      # requirement; kept for numerical parity, not enforced by
                      # madmom_infer itself
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true

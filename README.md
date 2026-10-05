@@ -1,18 +1,20 @@
 # All-In-One-Infer Music Structure Analyzer
 
+> **Current installation:** `pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"`
+> OpenMIRLab no longer publishes new versions to PyPI. Any existing PyPI releases are historical snapshots.
+
 [![Visual Demo](https://img.shields.io/badge/Visual-Demo-8A2BE2)](https://taejun.kim/music-dissector/)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.16425-B31B1B)](http://arxiv.org/abs/2307.16425/)
-[![PyPI](https://img.shields.io/pypi/v/all-in-one-infer)](https://pypi.org/project/all-in-one-infer/)
 
 **An enhanced version of All-In-One with integrated source separation and modern PyTorch compatibility**
 
-Available on PyPI: [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
+Current releases are maintained on [GitHub](https://github.com/openmirlab/all-in-one-infer/releases).
 
 > ## Officially renamed: all-in-one-fix → all-in-one-infer
 >
 > This project has **officially moved** from `all-in-one-fix` to **`all-in-one-infer`** (as of v3.0.0, 2026-07).
 >
-> - **Install:** `pip install all-in-one-infer` (the old `all-in-one-fix` PyPI package will no longer receive updates)
+> - **Install:** `pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"` (the old `all-in-one-fix` PyPI package will no longer receive updates)
 > - **Import:** `import allin1_infer` (formerly `allin1fix`)
 > - **CLI:** `all-in-one-infer` (formerly `allin1fix`)
 >
@@ -68,18 +70,17 @@ modern environments:
    checkpoints from scratch.
 4. **Packaging**: `madmom`, used internally for spectrogram/beat-decoding,
    has never published a PyPI release with a working sdist and required a
-   `pip install git+https://...` step (git installs are also rejected by
-   PyPI metadata rules).
+   source install.
 
 **What this repo reprovides:** the exact same research — model
 architectures, beat/downbeat/tempo algorithms, and structure segmentation
-are all unchanged from upstream — packaged so `pip install all-in-one-infer`
+are all unchanged from upstream — packaged so `pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"`
 just works: pure-PyTorch neighborhood attention (no compiler, no NATTEN
 requirement), source separation via the sibling
 [demucs-infer](https://github.com/openmirlab/demucs-infer) package, and
 spectrogram/beat-decoding via the sibling
 [madmom-infer](https://github.com/openmirlab/madmom-infer) package — both
-plain PyPI installs with no git-install step. See
+pinned Git dependencies installed automatically. See
 `CHANGELOG.md` for the full
 version-by-version history of how this fork got here.
 
@@ -100,7 +101,7 @@ This package also depends on two sibling packages for parts of its
 pipeline, each with its own upstream lineage and Acknowledgments section:
 
 - **[demucs-infer](https://github.com/openmirlab/demucs-infer)** — inference-only source separation, itself built on [Demucs](https://github.com/facebookresearch/demucs) by Alexandre Défossez and Meta AI Research
-- **[madmom-infer](https://github.com/openmirlab/madmom-infer)** — a from-scratch, pure numpy/scipy reimplementation of the `madmom` spectrogram/DBN-decoding surface this project uses, published to PyPI
+- **[madmom-infer](https://github.com/openmirlab/madmom-infer)** — a from-scratch, pure numpy/scipy reimplementation of the `madmom` spectrogram/DBN-decoding surface this project uses
 
 ## Citation
 
@@ -134,7 +135,7 @@ If you use this package for your research, please cite the following papers.
 - **Flexible stems input**: custom separation models via a pluggable provider interface, pre-computed stems from any tool, direct stems input (skip separation entirely), and hybrid workflows mixing all three
 - **Cache management**: `--cache-info` / `--clear-cache` CLI flags and a matching Python API to inspect and free the multi-GB separation-model cache
 - **Reusable lifecycle**: `AllInOneSession` provides explicit `load()`, ready-only `infer()`, `release()`, `close()`, `status`, `cache_info()`, and context-manager support; mixed-input calls reuse one resident Harmonix + HTDemucs pipeline, while legacy `analyze()` remains lazy and compatible
-- **PyPI-only install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — nothing to compile, nothing to `git+https://` install
+- **Git-source install**: as of 3.1.0, `madmom` is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer) — no compiled extension is needed by default
 - **100% backward compatible**: same analysis JSON structure, function signatures, model names, and accuracy as upstream All-In-One
 
 See `CHANGELOG.md` for the detailed, version-by-version history of how these features were added.
@@ -155,24 +156,23 @@ See `CHANGELOG.md` for the detailed, version-by-version history of how these fea
 
 ## Installation
 
-Available on PyPI: [https://pypi.org/project/all-in-one-infer/](https://pypi.org/project/all-in-one-infer/)
+Current releases are maintained on [GitHub](https://github.com/openmirlab/all-in-one-infer/releases).
 
-### Quick Install from PyPI
+### Quick install from GitHub
 
 ```bash
-pip install all-in-one-infer
+pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
 ```
 
 **Or if you prefer UV (faster):**
 ```bash
-uv add all-in-one-infer
+uv add "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
 ```
 
 That's it — no `--no-build-isolation`, no "install torch first", no separate
 git-install step. Since NATTEN is no longer a dependency and, as of 3.1.0,
 madmom is replaced by [madmom-infer](https://github.com/openmirlab/madmom-infer)
-(a plain PyPI package), there is nothing to compile and nothing to fetch from
-git at install time.
+(a pinned Git dependency), there is no separate manual dependency install step.
 
 ### Requirements
 
@@ -187,7 +187,7 @@ For GPU acceleration, install PyTorch with CUDA support:
 ```bash
 # Example: CUDA 12.1
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install all-in-one-infer
+pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
 ```
 
 ### Optional: NATTEN fused kernels
@@ -226,7 +226,7 @@ all-in-one-infer --help
 - Solution: Ensure Python 3.9+ is used
 
 **ImportError: No module named 'madmom_infer'**
-- Cause: `madmom-infer` failed to install as a regular dependency (rare — it's a plain PyPI package with no compiled extensions)
+- Cause: the pinned `madmom-infer` Git dependency could not be fetched or installed
 - Solution: Run `pip install madmom-infer` before using all-in-one-infer
 
 ### Installation from GitHub (Development)
@@ -254,7 +254,7 @@ cd all-in-one-infer
 pip install -e .
 ```
 
-**Note:** All dependencies (including **demucs-infer** and **madmom-infer**) are installed automatically from PyPI — no separate git-install step.
+**Note:** demucs-infer and madmom-infer are installed automatically from pinned Git revisions.
 
 ### (Optional) Install FFmpeg for MP3 support
 
@@ -1002,7 +1002,7 @@ uv pip install -e .
 pip install -e .
 ```
 
-**Note**: The package uses modern `pyproject.toml` metadata (PEP 621 standards). All dependencies (including demucs-infer and, as of 3.1.0, madmom-infer) are installed automatically from PyPI — no GitHub git-install step needed.
+**Note:** The package uses PEP 621 metadata. The pinned Git dependencies for demucs-infer and madmom-infer install automatically.
 
 ### What Stays the Same
 - All analysis results format (JSON structure unchanged)
