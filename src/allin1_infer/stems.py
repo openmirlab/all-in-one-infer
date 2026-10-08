@@ -21,14 +21,17 @@ re-verification against the real on-disk round trip.
 `_run_demucs_separation` loads the user's ORIGINAL input file (whatever
 format they passed in -- wav/flac/mp3/...), not demucs's own output; see
 `_load_input_audio`'s docstring for the wav/flac-via-soundfile,
-mp3-stays-torchaudio-only split this requires (3.1.0, mirroring
-demucs-infer 4.2.2's torchaudio>=2.11 fix).
+lossy-via-ffmpeg split. This package never imports torchaudio (issue #7):
+demucs-infer dropped it at ffe0080, so it is no longer installed
+transitively.
 
-Reads: demucs_infer (pretrained.get_model, apply.apply_model, audio.save_audio)
+Reads: demucs_infer (pretrained.get_model, apply.apply_model,
+audio.AudioFile, audio.save_audio)
 """
 
+import subprocess
+
 import torch
-import torchaudio
 import soundfile as sf
 from pathlib import Path
 from typing import List, Union, Optional, Dict, Callable, Protocol, Tuple
@@ -37,7 +40,7 @@ from abc import ABC, abstractmethod
 # Import demucs-infer for source separation
 from demucs_infer.pretrained import get_model
 from demucs_infer.apply import apply_model
-from demucs_infer.audio import save_audio, prevent_clip
+from demucs_infer.audio import AudioFile, save_audio, prevent_clip
 
 import numpy as np
 
@@ -92,35 +95,34 @@ class StemProvider(ABC):
         pass
 
 
-# Extensions where soundfile's decode is empirically bit-identical to
-# torchaudio's at this call site (verified: torchaudio==2.7.1+cu126 vs
-# soundfile==0.13.1 -- PCM16/24/32 wav + FLAC, mono/stereo synthetic
-# fixtures, plus the two real multi-minute stereo wav assets under
-# assets/ -- np.array_equal exact on every file; see docs/CHANGELOG.md's
-# 3.1.0 entry and demucs-infer's matching 4.2.2 fix). mp3 (and anything
-# else) is deliberately excluded: the same check measured mp3 decode to
-# differ by up to ~2.4e-6 per sample between torchaudio (ffmpeg-backed)
-# and soundfile (libmpg123-backed) -- consistent with demucs-infer's own
-# ~7e-7 finding on a different mp3 file -- so lossy formats never
-# silently switch decoders here.
+# Extensions decoded via soundfile. Verified bit-identical to the previous
+# torchaudio==2.7.1 decode (soundfile==0.13.1 -- PCM16/24/32 wav + FLAC,
+# mono/stereo synthetic fixtures, plus the two real multi-minute stereo wav
+# assets under assets/ -- np.array_equal exact on every file; see
+# CHANGELOG.md's 3.1.0 entry). Everything else (mp3 in particular) goes
+# through ffmpeg instead: soundfile's mp3 decoder (libmpg123) measured up to
+# ~2.4e-6 per sample away from the ffmpeg-backed decode, and the README's
+# "Concerning MP3 Files" section documents decoder-dependent offsets, so
+# lossy formats never silently switch to soundfile. (demucs-infer's own
+# Separator does fall back to soundfile for mp3; this package deliberately
+# does not.)
 _LOSSLESS_SOUNDFILE_EXTS = {'.wav', '.flac'}
 
 
 def _load_input_audio(audio_path: Union[Path, str]) -> Tuple[torch.Tensor, int]:
     """Load the user's ORIGINAL input audio file (arbitrary format --
-    wav/flac/mp3/whatever librosa/torchaudio can decode -- NOT demucs's own
-    stem output) into a [channels, samples] float32 tensor, matching
-    torchaudio.load's convention.
+    wav/flac/mp3/whatever ffmpeg can decode -- NOT demucs's own stem output)
+    into a [channels, samples] float32 tensor at the file's native sample
+    rate and channel count.
 
-    wav/flac go through soundfile first (bit-identical to torchaudio here,
-    see `_LOSSLESS_SOUNDFILE_EXTS`), so a fresh install keeps working on
-    torchaudio>=2.11 without the separate torchcodec package. Every other
-    format -- mp3 in particular, since it's a documented, first-class input
-    format for this package (see README's "Concerning MP3 Files") -- stays
-    on torchaudio only: soundfile's mp3 decode is not proven to match it, so
-    it must never be a silent fallback. If torchaudio itself can't decode
-    (torchaudio>=2.11 without torchcodec), a clear actionable error is
-    raised instead.
+    wav/flac go through soundfile (see `_LOSSLESS_SOUNDFILE_EXTS`), so they
+    need no external executable. Every other format goes through
+    demucs-infer's `AudioFile` (the ffprobe/ffmpeg executables). That path
+    was measured bit-exact against the torchaudio==2.7.1 ffmpeg-backend
+    decode it replaces (ffmpeg 6.1.1; mp3/ogg/m4a, mono and stereo,
+    22.05/44.1/48 kHz), so existing mp3 results don't change. If ffmpeg is
+    missing or can't decode the file, a clear actionable error is raised
+    instead of falling back to another decoder.
     """
     path = Path(audio_path)
     if path.suffix.lower() in _LOSSLESS_SOUNDFILE_EXTS:
@@ -128,17 +130,23 @@ def _load_input_audio(audio_path: Union[Path, str]) -> Tuple[torch.Tensor, int]:
         return torch.from_numpy(data.T).contiguous(), sr
 
     try:
-        return torchaudio.load(str(path))
-    except Exception as err:
-        raise RuntimeError(
-            f"Failed to load '{path}' via torchaudio: {err}. torchaudio>=2.11 "
-            "dropped its bundled decoders (mp3 included) in favor of the "
-            "separate torchcodec package. This format is not silently routed "
-            "through soundfile instead (its mp3 decode isn't proven "
-            "bit-identical to torchaudio's) -- install torchcodec "
-            "(`pip install torchcodec`), or convert the file to wav/flac, "
-            "which this package decodes via soundfile without torchcodec."
-        ) from err
+        audio_file = AudioFile(path)
+        wav = audio_file.read(streams=0)
+        return wav, audio_file.samplerate()
+    except FileNotFoundError as err:
+        reason = (
+            f"the ffmpeg/ffprobe executables were not found ({err}). "
+            "Install FFmpeg so both are on PATH"
+        )
+    except (subprocess.CalledProcessError, KeyError, IndexError, ValueError) as err:
+        reason = f"ffmpeg could not decode it ({type(err).__name__}: {err})"
+    raise RuntimeError(
+        f"Failed to load '{path}': {reason}. Formats other than wav/flac "
+        "(mp3 included) are decoded only via ffmpeg -- never silently via "
+        "soundfile, whose decode differs -- so either make ffmpeg available "
+        "or convert the file to wav/flac, which this package decodes via "
+        "soundfile without ffmpeg."
+    )
 
 
 def _run_demucs_separation(
@@ -326,8 +334,8 @@ def quantize_stem_to_madmom_mono_int16(wav: torch.Tensor) -> np.ndarray:
     (clip mode, bit depth) this needs to be re-verified against it.
     """
     wav = prevent_clip(wav, mode='rescale')
-    # PCM_S16 quantization -- matches torchaudio's soundfile backend exactly
-    # (round-half-to-even via torch.round, then clamp to int16 range).
+    # PCM_S16 quantization -- matches demucs_infer.audio.save_audio's wav16
+    # writer exactly (round-half-to-even of x * 2**15, then clamp to int16).
     quantized = (wav.clamp(-1, 1) * 32768).round().clamp(-32768, 32767).to(torch.int16)
     arr = quantized.cpu().numpy().T  # [samples, channels], scipy.io.wavfile's convention
     # madmom's remix() to mono for integer dtypes: mean over the channel axis
@@ -367,7 +375,7 @@ def separate_in_memory(
     sr_by_path : Dict[Path, int]
         For the freshly-separated paths only: each track's native sample
         rate. Per-track because the disk path preserves each file's own rate
-        (torchaudio.load -> save_audio(..., sr) with no resampling), so a
+        (_load_input_audio -> save_audio(..., sr) with no resampling), so a
         mixed-rate batch must carry a rate per file, not one shared value.
     """
     if provider is None:

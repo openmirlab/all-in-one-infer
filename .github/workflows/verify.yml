@@ -27,45 +27,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install compatible CPU Torch and project dependencies
+      - name: Install CPU Torch and project dependencies (no TorchAudio)
         run: |
           python -m pip install --upgrade pip
-          python -m pip install 'torch>=2.0.0' torchaudio --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install 'torch>=2.0.0' --index-url https://download.pytorch.org/whl/cpu
           python -m pip install '.[dev]' build packaging
           python - <<'PY'
-          from importlib.metadata import requires
-          from packaging.requirements import Requirement
-          from packaging.version import Version
+          import importlib.util
           import torch
-          import torchaudio
           assert torch.version.cuda is None, torch.__version__
-          assert torchaudio.__version__.endswith('+cpu'), torchaudio.__version__
-          torch_version = Version(torch.__version__)
-          audio_version = Version(torchaudio.__version__)
-          declared = [Requirement(item) for item in requires('torchaudio') or []]
-          torch_requirements = [item for item in declared if item.name == 'torch'
-                                and (item.marker is None or item.marker.evaluate())]
-          if torch_requirements:
-              for requirement in torch_requirements:
-                  assert torch_version in requirement.specifier, (torch_version, requirement)
-              print('Declared Torch requirements:', [str(item) for item in torch_requirements])
-          else:
-              # 2.11.0 CPU wheels declare no Torch dependency; stable ABI supports >=2.11.
-              # https://docs.pytorch.org/audio/stable/installation.html
-              assert audio_version.base_version == '2.11.0', audio_version
-              assert torch_version >= Version('2.11'), torch_version
-              print('Documented TorchAudio 2.11.0 stable ABI: Torch >=2.11')
-          audio = torch.sin(torch.arange(1600, dtype=torch.float32) * 0.03)
-          resampled = torchaudio.functional.resample(audio, 16000, 8000)
-          assert resampled.device.type == 'cpu'
-          assert resampled.shape == (800,)
-          assert torch.isfinite(resampled).all() and resampled.square().mean() > 0
-          print('CPU builds:', torch.__version__, torchaudio.__version__)
+          # Issue #7: the package must install and run without TorchAudio, so the
+          # suite runs in exactly that environment.
+          assert importlib.util.find_spec('torchaudio') is None, 'torchaudio was installed'
+          print('CPU Torch without TorchAudio:', torch.__version__)
           PY
+      - name: Install FFmpeg for lossy input decoding tests
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - name: Lint delivery verification tooling
         run: >-
           ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_checkpoint_config.py
-          tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py
+          tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py tests/test_torchaudio_free.py
       - name: Run all offline contracts and golden fixtures
         run: python -m pytest tests/ -v -ra --junitxml=pytest-results.xml
       - name: Build wheel from sdist

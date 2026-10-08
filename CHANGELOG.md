@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- `import allin1_infer` no longer fails with `ModuleNotFoundError: No module
+  named 'torchaudio'` on a fresh install (issue #7). `stems.py` imported
+  torchaudio at module top level, but the base install never declared it; it
+  only arrived transitively via demucs-infer, which dropped it at `ffe0080`.
+  The package no longer uses torchaudio at all: WAV/FLAC input is decoded via
+  `soundfile` as before, and MP3/other formats via demucs-infer's
+  ffmpeg-backed `AudioFile` (bit-identical to the previous torchaudio 2.7.1
+  decode on mp3/ogg/m4a, mono/stereo, 22.05/44.1/48 kHz). Lossy formats still
+  never fall back to `soundfile`; a missing FFmpeg raises a clear error. The
+  `[natten]` extra's `torchaudio<2.8.0` pin is removed, since nothing pairs
+  with it any more. CI now installs Torch without TorchAudio and asserts that
+  it is absent.
 - Fix Python 3.9 checkpoint and public session imports by postponing type-annotation evaluation; the
   supported Python minimum and all inference function bodies remain unchanged.
 - Explicit `device='mps'` requests now fail early with a clear `ValueError`.

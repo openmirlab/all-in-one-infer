@@ -41,7 +41,14 @@ def main():
     final_source = Path(__file__).resolve().parents[1] / 'src/allin1_infer' / name
     assert module_bytes == final_source.read_bytes(), f'Installed {name} differs from final source'
     installed[name] = hashlib.sha256(module_bytes.replace(addition, b'', 1)).hexdigest()
-  assert installed == expected, 'Production files differ beyond the two approved annotation imports'
+  # Approved post-baseline rewrites: installed bytes must equal the final source exactly.
+  # stems.py: TorchAudio-free input loading (issue #7).
+  for name in ('stems.py',):
+    module_bytes = (package / name).read_bytes()
+    final_source = Path(__file__).resolve().parents[1] / 'src/allin1_infer' / name
+    assert module_bytes == final_source.read_bytes(), f'Installed {name} differs from final source'
+    installed[name] = expected[name]
+  assert installed == expected, 'Production files differ beyond the approved changes'
   assert hashlib.sha256(args.fixture.read_bytes()).hexdigest() == baseline['fixture_sha256'][
     'tests/fixtures/natten_0_17_5_golden.pt']
   assert len(allin1_infer.load_checkpoints()['models']) == 9

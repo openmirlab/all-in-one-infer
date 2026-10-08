@@ -103,7 +103,8 @@ upper bound):
   once.
 - Verified 2026-09 against the fleet's `torch==2.13.0` pin: `uv pip install
   -e ".[natten]"` (no exact torch pin) resolves by silently **downgrading**
-  torch to 2.7.1 (+ matching torchaudio/triton) to satisfy the extra's own
+  torch to 2.7.1 (+ matching triton; the extra pinned torchaudio too until
+  issue #7 removed it) to satisfy the extra's own
   ceiling — worth knowing if anyone ever installs this extra into a shared
   venv. `uv pip install -e ".[natten]" "torch==2.13.0"` (the fleet's actual
   shape: torch pinned exactly) instead fails **loudly** with a clear
@@ -196,11 +197,10 @@ was removed; no numerical dependency floor or optional NATTEN ceiling changed. `
 is declared in the dev extra, allowing a compatible pytest release on Python 3.9.
 
 `.github/workflows/verify.yml` is reusable via `workflow_call` and also runs on PRs/main
-pushes. It installs CPU Torch and Torchaudio together, then installs `.[dev]` without requesting
-dependency upgrades. It verifies CPU builds, TorchAudio's declared Torch requirement, and
-finite nonzero CPU resampling. TorchAudio 2.11.0 CPU wheels omit dependency metadata; that
-specific release instead requires Torch>=2.11 under its documented stable ABI. Unknown
-releases without a declared Torch requirement fail the gate. Each matrix entry runs the
+pushes. It installs CPU Torch only, then installs `.[dev]` without requesting dependency upgrades,
+and asserts that TorchAudio is absent: the package must import and run without it (issue
+#7), so the suite runs in exactly that environment. FFmpeg is installed for the lossy-input
+decoding tests. Each matrix entry runs the
 full offline suite, lints touched delivery tooling, builds a wheel from the sdist, reinstalls
 that wheel, and exercises public imports/configuration and all NATTEN golden fields from
 outside the checkout. Failed jobs retain dependency/Torch diagnostics and pytest results.
@@ -211,6 +211,7 @@ does not trigger publication.
 The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
 only runtime package files/checkpoint configuration plus distribution metadata.
 `tools/installed_smoke.py` verifies untouched installed `.py`/`.toml` bytes against the committed pre-edit hashes.
+Approved later rewrites (currently `stems.py`, issue #7) must instead equal the final source bytes.
 For `checkpoints.py`, it verifies final-source byte equality, removes exactly the single
 approved future import, and then requires the original hash. It also checks all 24 NATTEN
 output fields at the original tolerances.

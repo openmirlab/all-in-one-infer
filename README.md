@@ -943,11 +943,12 @@ where the conventional tolerance is just 70ms.
 Hence, I advise standardizing inputs to the WAV format for all data processing, 
 ensuring straightforward decoding.
 
-> **Note (3.1.0+)**: WAV and FLAC inputs are decoded via `soundfile` (bit-
-> identical to `torchaudio`, no extra install needed). MP3 (and other lossy
-> formats) still decode via `torchaudio`, which requires the separate
-> `torchcodec` package on `torchaudio>=2.11` (`pip install torchcodec`) —
-> if it's missing, loading an MP3 raises a clear error telling you to
+> **Note**: this package does not use `torchaudio` or `torchcodec`. WAV and
+> FLAC inputs are decoded via `soundfile` (no extra install needed). MP3 and
+> other formats are decoded via the `ffmpeg`/`ffprobe` executables, which
+> must be on your `PATH` (the result is bit-identical to the previous
+> `torchaudio` decode). Lossy formats never fall back to another decoder: if
+> FFmpeg is missing, loading an MP3 raises a clear error telling you to
 > install it or convert the file to WAV/FLAC first.
 
 
