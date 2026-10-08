@@ -91,7 +91,8 @@ tooling and does not widen into a production lint cleanup.
 Neighborhood attention runs only on the pure-PyTorch implementation in
 `src/allin1_infer/models/neighborhood_attention.py`, numerically identical to
 NATTEN 0.17.5 (`tests/test_neighborhood_attention.py` against the committed
-`tests/fixtures/natten_0_17_5_golden.pt`). The former optional `[natten]`
+`tests/fixtures/neighborhood_attention_golden.pt`, recorded from a real NATTEN 0.17.5
+install; named `natten_0_17_5_golden.pt` before 2026-10). The former optional `[natten]`
 fused-kernel extra and `dinat.py`'s import-time backend selection were removed
 because no natten release fits this package:
 
@@ -214,7 +215,7 @@ python -m build
 python -m pip install --force-reinstall --no-deps dist/*.whl
 # From outside this checkout (substitute its absolute path):
 cd /tmp
-python /path/to/all-in-one-infer/tools/installed_smoke.py /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
+python /path/to/all-in-one-infer/tools/installed_smoke.py /path/to/all-in-one-infer/tests/fixtures/neighborhood_attention_golden.pt /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
 all-in-one-infer --help
 ```
 

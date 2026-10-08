@@ -1,7 +1,7 @@
-"""Tests for the pure-PyTorch neighborhood attention fallback.
+"""Tests for the pure-PyTorch neighborhood attention implementation.
 
 Verifies numerical parity with NATTEN 0.17.5 against golden fixtures recorded
-from a real natten 0.17.5 install (tests/fixtures/natten_0_17_5_golden.pt).
+from a real natten 0.17.5 install (tests/fixtures/neighborhood_attention_golden.pt).
 NATTEN itself is no longer a dependency, so these fixtures are the reference.
 """
 
@@ -20,7 +20,7 @@ _spec = importlib.util.spec_from_file_location('neighborhood_attention', _MODULE
 na = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(na)
 
-_FIXTURE_PATH = Path(__file__).parent / 'fixtures' / 'natten_0_17_5_golden.pt'
+_FIXTURE_PATH = Path(__file__).parent / 'fixtures' / 'neighborhood_attention_golden.pt'
 
 
 @pytest.fixture(scope='module')

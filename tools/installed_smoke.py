@@ -51,7 +51,7 @@ def main():
     installed[name] = expected[name]
   assert installed == expected, 'Production files differ beyond the approved changes'
   assert hashlib.sha256(args.fixture.read_bytes()).hexdigest() == baseline['fixture_sha256'][
-    'tests/fixtures/natten_0_17_5_golden.pt']
+    'tests/fixtures/neighborhood_attention_golden.pt']
   assert len(allin1_infer.load_checkpoints()['models']) == 9
   session = allin1_infer.AllInOneSession(device='cpu')
   assert session.status == 'new'

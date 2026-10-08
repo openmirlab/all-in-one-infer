@@ -73,7 +73,7 @@ environment with its dependencies, and run from outside the checkout:
 ```bash
 cd /tmp
 python /path/to/all-in-one-infer/tools/installed_smoke.py \
-  /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt \
+  /path/to/all-in-one-infer/tests/fixtures/neighborhood_attention_golden.pt \
   /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
 all-in-one-infer --help
 ```

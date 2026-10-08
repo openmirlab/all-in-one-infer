@@ -56,7 +56,7 @@ jobs:
           python -m pip install --force-reinstall --no-deps dist/*.whl
           cd "$RUNNER_TEMP"
           python "$GITHUB_WORKSPACE/tools/installed_smoke.py" \
-            "$GITHUB_WORKSPACE/tests/fixtures/natten_0_17_5_golden.pt" \
+            "$GITHUB_WORKSPACE/tests/fixtures/neighborhood_attention_golden.pt" \
             "$GITHUB_WORKSPACE/tests/fixtures/delivery_baseline.json"
           all-in-one-infer --help
       - name: Capture failure diagnostics
