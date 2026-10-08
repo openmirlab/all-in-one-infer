@@ -7,8 +7,7 @@ Inference-only fork of [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-
 (music structure analysis: tempo, beats, downbeats, functional segments).
 Training code has been removed; this package only loads pretrained
 `harmonix-*` checkpoints and runs inference. See README.md's
-["Why This Exists"](README.md#why-this-exists) and
-["Scope"](README.md#scope) for the full rationale — this file covers
+introduction and ["Scope"](README.md#scope) for the full rationale — this file covers
 conventions and verification, not the "why".
 
 ## Status
@@ -105,6 +104,20 @@ because no natten release fits this package:
   resolution when torch was pinned exactly.
 - natten>=0.20 dropped the functional/RPB API (`na1d_av`/`na1d_qk`/
   `na2d_av`/`na2d_qk` with `rpb`) that the `harmonix-*` checkpoints need.
+
+GPU impact, measured 2026-10-08 (RTX 4090, torch 2.7.1+cu126, natten 0.17.5
+built from source, `harmonix-all` with all 264 attention layers swapped between
+backends, the three `assets/` tracks, fixed spectrograms):
+
+- Final results are identical on every track: bpm, beats, downbeats, segments.
+- Accuracy against a CPU float64 reference (where both backends agree to ~1e-14):
+  pure PyTorch stays within ~2e-6 under strict fp32 and ~1e-3–2e-3 under the TF32
+  matmul `analyze()` enables on CUDA; NATTEN's GPU kernels are off by ~3e-3–8e-3
+  either way. The pure-PyTorch backend is the more accurate one.
+- Speed is the only cost: per ensemble forward pass, NATTEN was 1.5x faster under
+  strict fp32 and 1.6–1.9x faster under TF32 (e.g. 446 ms vs 232 ms for a 4.5-min
+  track), i.e. roughly 0.1–0.2 s per track on top of source separation. On CPU the
+  pure-PyTorch backend is far faster (issue #1).
 
 Do not reintroduce NATTEN as a runtime backend; the golden fixture is the
 reference for any change to `neighborhood_attention.py`.
