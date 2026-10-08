@@ -29,6 +29,7 @@ Reads: demucs_infer (pretrained.get_model, apply.apply_model,
 audio.AudioFile, audio.save_audio)
 """
 
+import random
 import subprocess
 
 import torch
@@ -149,6 +150,24 @@ def _load_input_audio(audio_path: Union[Path, str]) -> Tuple[torch.Tensor, int]:
     )
 
 
+# demucs_infer.apply.apply_model's "shift trick" (shifts=1 by default) offsets
+# the mix by up to 0.5 s chosen with the stdlib `random` module, so unseeded
+# runs of the same file differ slightly (observed: the same track's bpm
+# alternating between 120 and 122). Seeding it for each separation makes
+# results reproducible; each run is still one ordinary draw of the shift,
+# as upstream intends. The caller's global random state is restored after.
+_DEMUCS_SHIFT_SEED = 0
+
+
+def _apply_model_seeded(model, wav_batch, **kwargs) -> torch.Tensor:
+    state = random.getstate()
+    random.seed(_DEMUCS_SHIFT_SEED)
+    try:
+        return apply_model(model, wav_batch, **kwargs)
+    finally:
+        random.setstate(state)
+
+
 def _run_demucs_separation(
     model,
     audio_path: Union[Path, str],
@@ -183,12 +202,12 @@ def _run_demucs_separation(
     with torch.no_grad():
         if fp16 and 'cuda' in str(device):
             with torch.autocast('cuda', dtype=torch.float16):
-                sources = apply_model(
+                sources = _apply_model_seeded(
                     model, wav_batch, device=device,
                     progress=bool(progress_callback), overlap=overlap,
                 )
         else:
-            sources = apply_model(
+            sources = _apply_model_seeded(
                 model, wav_batch, device=device,
                 progress=bool(progress_callback), overlap=overlap,
             )

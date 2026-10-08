@@ -42,9 +42,13 @@ def main():
     assert module_bytes == final_source.read_bytes(), f'Installed {name} differs from final source'
     installed[name] = hashlib.sha256(module_bytes.replace(addition, b'', 1)).hexdigest()
   # Approved post-baseline rewrites: installed bytes must equal the final source exactly.
-  # stems.py: TorchAudio-free input loading (issue #7). NATTEN removed from
-  # models/dinat.py and models/neighborhood_attention.py.
-  for name in ('stems.py', 'models/dinat.py', 'models/neighborhood_attention.py'):
+  # stems.py: TorchAudio-free input loading (issue #7) and seeded Demucs shift.
+  # models/dinat.py, models/neighborhood_attention.py: NATTEN removed.
+  # models/ensemble.py, analyze.py: folds registered as an nn.ModuleList.
+  # models/loaders.py: unused huggingface_hub import removed.
+  approved = ('stems.py', 'models/dinat.py', 'models/neighborhood_attention.py',
+              'models/ensemble.py', 'analyze.py', 'models/loaders.py')
+  for name in approved:
     module_bytes = (package / name).read_bytes()
     final_source = Path(__file__).resolve().parents[1] / 'src/allin1_infer' / name
     assert module_bytes == final_source.read_bytes(), f'Installed {name} differs from final source'

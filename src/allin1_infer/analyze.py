@@ -349,11 +349,12 @@ def analyze(
       # EXPERIMENTAL: ~57s one-time compile cost, ~38% faster steady-state
       # forward -- only pays off across many tracks in one process, not a
       # single-track run. Compile each ensemble fold individually rather than
-      # the Ensemble wrapper itself: Ensemble.forward() loops over `.models`
+      # the Ensemble wrapper itself: Ensemble.forward() loops over its folds
       # in plain Python, so compiling the wrapper would just re-trace that
-      # loop instead of the actual per-fold computation.
+      # loop instead of the actual per-fold computation. The compiled
+      # callables go in fold_callables; the fold modules stay untouched.
       if isinstance(model, Ensemble):
-        model.models = [_wrap_compiled_fold(torch.compile(m, mode='reduce-overhead')) for m in model.models]
+        model.fold_callables = [_wrap_compiled_fold(torch.compile(m, mode='reduce-overhead')) for m in model.models]
       else:
         model = torch.compile(model, mode='reduce-overhead')
 

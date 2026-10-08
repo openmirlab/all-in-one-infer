@@ -46,7 +46,7 @@ jobs:
       - name: Lint delivery verification tooling
         run: >-
           ruff check tools tests/conftest.py tests/test_reference_diagnostic.py tests/test_checkpoint_config.py
-          tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py tests/test_torchaudio_free.py
+          tests/test_analyze.py tests/test_sonify.py tests/test_visualize.py tests/test_torchaudio_free.py tests/test_ensemble_and_seeding.py
       - name: Run all offline contracts and golden fixtures
         run: python -m pytest tests/ -v -ra --junitxml=pytest-results.xml
       - name: Build wheel from sdist

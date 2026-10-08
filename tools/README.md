@@ -85,8 +85,8 @@ errors. No model checkpoint or external audio is needed. The reusable verificati
 runs this check on Python 3.9–3.12 before the separate publishing job may run.
 
 The approved production-file exceptions are the Python 3.9 annotation fixes in
-`checkpoints.py` and `session.py`, plus later rewrites of `stems.py` (TorchAudio-free input
-loading, issue #7) and `models/dinat.py` / `models/neighborhood_attention.py` (NATTEN removal).
+`checkpoints.py` and `session.py`, plus later rewrites listed in `installed_smoke.py` (`stems.py`,
+`analyze.py`, and `models/{dinat,neighborhood_attention,ensemble,loaders}.py`).
 Each installed exception must match final source exactly. For the two annotation fixes,
 removing precisely the one new `from __future__ import annotations` import must also restore
 the immutable original SHA-256. Every other production file is compared directly to its original hash. The actual
