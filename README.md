@@ -186,7 +186,7 @@ For GPU acceleration, install PyTorch with CUDA support:
 
 ```bash
 # Example: CUDA 12.1
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch --index-url https://download.pytorch.org/whl/cu121
 pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
 ```
 
