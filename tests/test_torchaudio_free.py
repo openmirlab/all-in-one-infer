@@ -127,7 +127,7 @@ def test_mp3_decode_matches_torchaudio_ffmpeg_backend_when_available(tmp_path):
   path = _encode_mp3(tmp_path, 2, 44100)
   try:
     expected, expected_sr = torchaudio.load(str(path))
-  except Exception as err:  # torchaudio>=2.11 without torchcodec cannot decode
+  except (ImportError, OSError, RuntimeError) as err:  # torchaudio>=2.11 without torchcodec
     pytest.skip(f'torchaudio cannot decode mp3 here: {err}')
   wav, sr = stems._load_input_audio(path)
   assert sr == expected_sr
