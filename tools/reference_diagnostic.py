@@ -23,9 +23,19 @@ import sys
 request = json.loads(sys.argv[1])
 package = importlib.import_module(request['module'])
 output = Path(request['output']).resolve()
+
+
+def is_checkout(directory):
+    # A real repository has .git/HEAD; a worktree or submodule has a .git file.
+    # An empty .git directory (e.g. a sandbox's read-only mount point in /tmp)
+    # is not a checkout.
+    marker = directory / '.git'
+    return marker.is_file() or (marker / 'HEAD').is_file()
+
+
 for source in (Path(package.__file__).resolve(), Path(sys.executable).absolute()):
     for directory in source.parents:
-        if (directory / '.git').exists() and output.is_relative_to(directory):
+        if is_checkout(directory) and output.is_relative_to(directory):
             raise RuntimeError('Output must be outside the reference checkout: ' + str(directory))
 reports = []
 for index, audio in enumerate(request['audio']):
