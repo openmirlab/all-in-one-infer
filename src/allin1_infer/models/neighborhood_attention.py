@@ -23,8 +23,8 @@ The model dims in this project are tiny (kernel 5, heads 2, head_dim 12), so
 the O(kernel_size) memory overhead of materializing gathered neighbors is
 negligible compared to NATTEN's fused kernels' target workloads.
 
-Reads: torch (only stdlib + torch; no other same-repo modules). Selected as
-the fallback backend by .dinat when NATTEN is absent/incompatible.
+Reads: torch (only stdlib + torch; no other same-repo modules). Used by .dinat
+for all neighborhood attention (NATTEN is no longer a dependency).
 """
 
 import functools

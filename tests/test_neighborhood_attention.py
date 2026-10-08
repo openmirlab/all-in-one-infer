@@ -1,21 +1,18 @@
-"""Tests for the pure-PyTorch neighborhood attention fallback.
+"""Tests for the pure-PyTorch neighborhood attention implementation.
 
-Verifies numerical parity with NATTEN 0.17.5 two ways:
-  1. Against golden fixtures recorded from a real natten 0.17.5 install
-     (tests/fixtures/natten_0_17_5_golden.pt) — runs everywhere, no natten needed.
-  2. Against a live natten install, if one is importable — extra safety net
-     for environments that still have natten.
+Verifies numerical parity with NATTEN 0.17.5 against golden fixtures recorded
+from a real natten 0.17.5 install (tests/fixtures/neighborhood_attention_golden.pt).
+NATTEN itself is no longer a dependency, so these fixtures are the reference.
 """
 
 import importlib.util
-import itertools
 from pathlib import Path
 
 import pytest
 import torch
 
 # Import the module file directly: `import allin1_infer` pulls in heavy runtime
-# deps (torchaudio, madmom_infer) that these unit tests don't need.
+# deps (demucs_infer, madmom_infer) that these unit tests don't need.
 _MODULE_PATH = (
   Path(__file__).parent.parent / 'src' / 'allin1_infer' / 'models' / 'neighborhood_attention.py'
 )
@@ -23,13 +20,7 @@ _spec = importlib.util.spec_from_file_location('neighborhood_attention', _MODULE
 na = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(na)
 
-_FIXTURE_PATH = Path(__file__).parent / 'fixtures' / 'natten_0_17_5_golden.pt'
-
-try:
-  from natten.functional import na1d_qk as ref_na1d_qk  # noqa: F401
-  HAS_NATTEN = True
-except Exception:
-  HAS_NATTEN = False
+_FIXTURE_PATH = Path(__file__).parent / 'fixtures' / 'neighborhood_attention_golden.pt'
 
 
 @pytest.fixture(scope='module')
@@ -80,35 +71,3 @@ def test_unsupported_natten_features_raise():
     na.na1d_qk(q, q, 5, 1, is_causal=True)
   with pytest.raises(NotImplementedError):
     na.na1d_av(torch.randn(1, 2, 20, 5), q, 5, 1, additional_values=q)
-
-
-@pytest.mark.skipif(not HAS_NATTEN, reason='natten not installed')
-def test_live_parity_1d():
-  from natten.functional import na1d_av as ref_av, na1d_qk as ref_qk
-  torch.manual_seed(0)
-  for k, d in itertools.product([3, 5, 7], [1, 2, 4, 8]):
-    T = max(k * d, 60)
-    q = torch.randn(2, 2, T, 12, dtype=torch.float64)
-    key = torch.randn(2, 2, T, 12, dtype=torch.float64)
-    v = torch.randn(2, 2, T, 12, dtype=torch.float64)
-    rpb = torch.randn(2, 2 * k - 1, dtype=torch.float64)
-    attn_ref = ref_qk(q, key, k, d, rpb=rpb)
-    torch.testing.assert_close(na.na1d_qk(q, key, k, d, rpb=rpb), attn_ref)
-    probs = torch.softmax(attn_ref, -1)
-    torch.testing.assert_close(na.na1d_av(probs, v, k, d), ref_av(probs, v, k, d))
-
-
-@pytest.mark.skipif(not HAS_NATTEN, reason='natten not installed')
-def test_live_parity_2d():
-  from natten.functional import na2d_av as ref_av, na2d_qk as ref_qk
-  torch.manual_seed(0)
-  for k, d in itertools.product([3, 5], [1, 2]):
-    X, Y = k * d + 1, 40
-    q = torch.randn(2, 2, X, Y, 12, dtype=torch.float64)
-    key = torch.randn(2, 2, X, Y, 12, dtype=torch.float64)
-    v = torch.randn(2, 2, X, Y, 12, dtype=torch.float64)
-    rpb = torch.randn(2, 2 * k - 1, 2 * k - 1, dtype=torch.float64)
-    attn_ref = ref_qk(q, key, k, d, rpb=rpb)
-    torch.testing.assert_close(na.na2d_qk(q, key, k, d, rpb=rpb), attn_ref)
-    probs = torch.softmax(attn_ref, -1)
-    torch.testing.assert_close(na.na2d_av(probs, v, k, d), ref_av(probs, v, k, d))

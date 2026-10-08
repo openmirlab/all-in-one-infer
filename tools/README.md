@@ -73,7 +73,7 @@ environment with its dependencies, and run from outside the checkout:
 ```bash
 cd /tmp
 python /path/to/all-in-one-infer/tools/installed_smoke.py \
-  /path/to/all-in-one-infer/tests/fixtures/natten_0_17_5_golden.pt \
+  /path/to/all-in-one-infer/tests/fixtures/neighborhood_attention_golden.pt \
   /path/to/all-in-one-infer/tests/fixtures/delivery_baseline.json
 all-in-one-infer --help
 ```
@@ -84,10 +84,12 @@ and output fields at the original `atol=rtol=1e-5`. It reports absolute and scal
 errors. No model checkpoint or external audio is needed. The reusable verification workflow
 runs this check on Python 3.9–3.12 before the separate publishing job may run.
 
-The two approved production-file exceptions are the Python 3.9 annotation fixes in
-`checkpoints.py` and `session.py`. Each installed module must match final source exactly;
-removing precisely its one new `from __future__ import annotations` import must restore its
-immutable original SHA-256. Every other production file is compared directly to its original hash. The actual
+The approved production-file exceptions are the Python 3.9 annotation fixes in
+`checkpoints.py` and `session.py`, plus later rewrites of `stems.py` (TorchAudio-free input
+loading, issue #7) and `models/dinat.py` / `models/neighborhood_attention.py` (NATTEN removal).
+Each installed exception must match final source exactly. For the two annotation fixes,
+removing precisely the one new `from __future__ import annotations` import must also restore
+the immutable original SHA-256. Every other production file is compared directly to its original hash. The actual
 Python 3.9 preflight failed at `Path | str | None` before this fix; import, custom configuration,
 metadata override, and malformed-configuration checks then passed on that interpreter. That
 checkpoint-only preflight missed the session's evaluated `Optional[str | Path]` annotation;

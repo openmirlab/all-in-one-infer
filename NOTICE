@@ -16,21 +16,29 @@ This package integrates code from multiple open-source projects under the MIT Li
    - Copyright: (c) Meta Platforms, Inc. and affiliates
    - Version: v4.1.0a2
    - Description: Source separation models (HTDemucs)
-   - Usage: Integrated in src/allin1_infer/separation/ for stem-based analysis
+   - Usage: Used through the demucs-infer package for stem-based analysis
 
 3. Integration and Modifications
    - Copyright: (c) 2025 Bo-Yu Chen
    - License: MIT License
-   - Description: Package integration, NATTEN upgrade (0.15.0→0.17.5),
-                  model caching, GPU memory management, modern UV-style packaging
-                  (with pip compatibility), and enhanced workflows
+   - Description: Package integration, pure-PyTorch neighborhood attention
+                  replacing NATTEN, model caching, GPU memory management,
+                  modern UV-style packaging (with pip compatibility), and
+                  enhanced workflows
 
 All original copyright notices and license terms are preserved in the LICENSE file.
 
 For detailed information about what was integrated and modified, see:
-- docs/INTEGRATION.md - Integration details
-- docs/IMPROVEMENTS.md - Enhancement documentation
 - README.md - Project overview and acknowledgments
+- CHANGELOG.md - Release history
+
+Reference Implementations
+=========================
+
+- NATTEN (https://github.com/SHI-Labs/NATTEN) - MIT license
+  src/allin1_infer/models/neighborhood_attention.py reimplements the semantics of
+  NATTEN 0.17.x's legacy functional API in plain PyTorch, verified against output
+  recorded from NATTEN 0.17.5. NATTEN is not a dependency of this package.
 
 Third-Party Dependencies
 ========================
@@ -39,7 +47,9 @@ This package also depends on several third-party libraries:
 - PyTorch - BSD-style license
 - NumPy - BSD license
 - librosa - ISC license
-- NATTEN (0.17.5) - MIT license
+- demucs-infer (https://github.com/openmirlab/demucs-infer) - MIT license
+- madmom-infer (https://github.com/openmirlab/madmom-infer) - BSD-2-Clause license
+  (fork of madmom, https://github.com/CPJKU/madmom)
 - And others listed in pyproject.toml
 
 See each dependency's license file for full terms.

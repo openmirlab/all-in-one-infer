@@ -11,7 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- NATTEN support. The optional `[natten]` extra (`natten>=0.17.1,<0.20`,
+  `torch<2.8.0`) and `models/dinat.py`'s import-time backend selection are
+  gone; neighborhood attention always uses the pure-PyTorch implementation,
+  which was already the default and is numerically identical to NATTEN 0.17.5
+  (golden-fixture tested). No compatible natten release supports torch>=2.8
+  with the functional/RPB API the checkpoints need. The live-NATTEN parity
+  tests that only ran with natten installed were removed; the golden fixture
+  tests remain.
+
 ### Fixed
+- `import allin1_infer` no longer fails with `ModuleNotFoundError: No module
+  named 'torchaudio'` on a fresh install (issue #7). `stems.py` imported
+  torchaudio at module top level, but the base install never declared it; it
+  only arrived transitively via demucs-infer, which dropped it at `ffe0080`.
+  The package no longer uses torchaudio at all: WAV/FLAC input is decoded via
+  `soundfile` as before, and MP3/other formats via demucs-infer's
+  ffmpeg-backed `AudioFile` (bit-identical to the previous torchaudio 2.7.1
+  decode on mp3/ogg/m4a, mono/stereo, 22.05/44.1/48 kHz). Lossy formats still
+  never fall back to `soundfile`; a missing FFmpeg raises a clear error. The
+  `[natten]` extra's `torchaudio<2.8.0` pin is removed, since nothing pairs
+  with it any more. CI now installs Torch without TorchAudio and asserts that
+  it is absent.
 - Fix Python 3.9 checkpoint and public session imports by postponing type-annotation evaluation; the
   supported Python minimum and all inference function bodies remain unchanged.
 - Explicit `device='mps'` requests now fail early with a clear `ValueError`.
