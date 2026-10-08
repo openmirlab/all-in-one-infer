@@ -1,9 +1,5 @@
 # Changelog
 
-## Unreleased — distribution policy
-
-- Stop publishing new versions to PyPI; GitHub source is the maintained installation channel. GitHub release CI continues to run verification and build checks.
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -11,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Stop publishing new versions to PyPI; GitHub source is the maintained
+  installation channel. GitHub release CI continues to run verification and
+  build checks.
+- Demucs separation is now reproducible: the random time shift of Demucs'
+  shift trick (up to 0.5 s, drawn from the stdlib `random` module) is seeded
+  for each separation, so repeated runs of the same file give identical
+  results (previously the same track's bpm could alternate between e.g. 120
+  and 122). Each run is still one ordinary draw of the shift; the caller's
+  global `random` state is restored afterwards.
+- `Ensemble` keeps its folds in an `nn.ModuleList`, so `.to()`, `.eval()` and
+  `.modules()` on an ensemble now reach every fold. `compile_model=True`
+  installs its compiled wrappers in `Ensemble.fold_callables` instead of
+  replacing `Ensemble.models`.
+
 ### Removed
+- The unused `huggingface_hub` dependency. Checkpoints are fetched from the
+  URLs in `config/checkpoints.toml` with urllib; `hf_hub_download` was
+  imported but never called.
 - NATTEN support. The optional `[natten]` extra (`natten>=0.17.1,<0.20`,
   `torch<2.8.0`) and `models/dinat.py`'s import-time backend selection are
   gone; neighborhood attention always uses the pure-PyTorch implementation,

@@ -1,17 +1,20 @@
-"""Downloads and builds pretrained AllInOne models (single fold or ensemble)
-from the `taejunkim/allinone` Hugging Face Hub repo.
+"""Downloads and builds pretrained AllInOne models (single fold or ensemble).
+
+Checkpoints are fetched from the URLs in config/checkpoints.toml (by default
+the `taejunkim/allinone` Hugging Face repo) with urllib, cached in torch
+hub's `checkpoints` directory, and SHA-256 verified.
 
 Each checkpoint embeds its own `Config` (restored via `OmegaConf.create`), so
 the model architecture is reconstructed from the checkpoint itself rather
 than from any config the caller passes in. For `harmonix-all`, the 8 fold
-checkpoints are downloaded concurrently with a ThreadPoolExecutor -- but only
-the download step, deliberately: `torch.load` + state_dict construction was
+checkpoints are fetched and verified concurrently with a ThreadPoolExecutor --
+but only that step, deliberately: `torch.load` + state_dict construction was
 measured to regress under threading (GIL/CUDA-context contention outweighs
 overlap), so model building stays sequential and `executor.map` preserves
 fold order regardless of download completion order.
 
 Reads: .allinone (AllInOne), .ensemble (Ensemble), ..typings (PathLike),
-..utils (resolve_device), huggingface_hub (hf_hub_download), omegaconf
+..utils (resolve_device), ..checkpoints (checkpoint_metadata), omegaconf
 """
 
 import torch
@@ -21,7 +24,6 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from omegaconf import OmegaConf
-from huggingface_hub import hf_hub_download
 from .allinone import AllInOne
 from .ensemble import Ensemble
 from ..typings import PathLike
@@ -124,8 +126,8 @@ def load_ensemble_model(
 ):
   fold_names = ENSEMBLE_MODELS[model_name]
 
-  # Only hf_hub_download benefits from threading here: it's dominated by local
-  # cache-resolution I/O (~0.2s/file even fully cached) that releases the GIL.
+  # Only the fetch + SHA-256 step benefits from threading here: file I/O and
+  # hashlib both release the GIL.
   # torch.load + state_dict construction do NOT benefit -- measured empirically,
   # threading those actually regresses wall-clock time (GIL/CUDA-context
   # contention across 8 threads outweighs any overlap). So only the download

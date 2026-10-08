@@ -12,7 +12,8 @@ conventions and verification, not the "why".
 
 ## Status
 
-Actively maintained, published to PyPI as `all-in-one-infer`
+Actively maintained and installed from GitHub source (no new PyPI releases;
+see "Distribution policy" below), as `all-in-one-infer`
 (`Development Status :: 5 - Production/Stable` in `pyproject.toml`; version
 is single-sourced from `src/allin1_infer/__about__.py`). Renamed from
 `all-in-one-fix` / `allin1fix` to `all-in-one-infer` / `allin1_infer` as of
@@ -63,7 +64,8 @@ Plain `pytest tests/ -v` runs all offline contracts, including the committed NAT
 fixture. Offline modules cover activation metadata, clean API/lifecycle, checkpoint
 resolution, device forwarding, metrical compatibility, and TorchAudio-free import and input
 loading (`tests/test_torchaudio_free.py`; its mp3 tests need `ffmpeg`/`ffprobe` on PATH and
-skip without them). NATTEN is not a
+skip without them), and ensemble fold registration plus reproducible Demucs shifts
+(`tests/test_ensemble_and_seeding.py`). NATTEN is not a
 dependency, so its committed golden fixture is the only neighborhood-attention reference.
 
 Five model-backed analysis/sonification/visualization tests retain their assertions and are
@@ -215,8 +217,8 @@ does not trigger publication.
 The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
 only runtime package files/checkpoint configuration plus distribution metadata.
 `tools/installed_smoke.py` verifies untouched installed `.py`/`.toml` bytes against the committed pre-edit hashes.
-Approved later rewrites (`stems.py` for issue #7; `models/dinat.py` and
-`models/neighborhood_attention.py` for the NATTEN removal) must instead equal the final source bytes.
+Approved later rewrites (listed in `installed_smoke.py`: `stems.py`, `analyze.py`, and
+`models/{dinat,neighborhood_attention,ensemble,loaders}.py`) must instead equal the final source bytes.
 For `checkpoints.py`, it verifies final-source byte equality, removes exactly the single
 approved future import, and then requires the original hash. It also checks all 24 NATTEN
 output fields at the original tolerances.

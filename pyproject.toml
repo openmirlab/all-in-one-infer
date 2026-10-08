@@ -44,7 +44,6 @@ dependencies = [
   "torch>=2.0.0",
   "hydra-core",
   "omegaconf",
-  "huggingface_hub",
   "matplotlib",
   "scipy>=1.0.0",  # scipy 1.13+ requires Python 3.9+; kept as our floor for
                    # numerical parity with the original madmom's own scipy>=1.13
