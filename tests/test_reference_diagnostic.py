@@ -19,6 +19,7 @@ def _reference(tmp_path, fail=False):
   package = root / 'allin1'
   package.mkdir(parents=True)
   (root / '.git').mkdir()
+  (root / '.git' / 'HEAD').write_text('ref: refs/heads/main\n')
   (package / '__init__.py').write_text('''
 import os
 from pathlib import Path
@@ -103,3 +104,25 @@ def test_reference_failure_does_not_create_success_report(tmp_path):
     TOOL['main'](['--reference-python', str(interpreter), '--output', str(output), str(audio)])
   assert error.value.code == 1
   assert not output.exists()
+
+
+@pytest.mark.parametrize('marker', ['empty_dir', 'worktree_file'])
+def test_reference_diagnostic_checkout_detection(tmp_path, marker):
+  """An empty .git directory above the output (e.g. a sandbox's mount point in
+  /tmp) is not a checkout; a worktree's .git file is."""
+  reference, interpreter = _reference(tmp_path)
+  audio = tmp_path / 'input.wav'
+  audio.write_bytes(b'read-only audio')
+  if marker == 'empty_dir':
+    (tmp_path / '.git').mkdir()
+    output = tmp_path / 'observations.json'
+    TOOL['main'](['--reference-python', str(interpreter), '--output', str(output), str(audio)])
+    assert json.loads(output.read_text())['observations'][0]['beats'] == 2
+  else:
+    (reference / '.git' / 'HEAD').unlink()
+    (reference / '.git').rmdir()
+    (reference / '.git').write_text('gitdir: /elsewhere/.git/worktrees/reference\n')
+    with pytest.raises(SystemExit) as error:
+      TOOL['main'](['--reference-python', str(interpreter), '--output', str(reference / 'r.json'),
+                    str(audio)])
+    assert error.value.code == 1
