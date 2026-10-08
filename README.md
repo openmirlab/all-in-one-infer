@@ -244,6 +244,10 @@ pip install -e .
 
 ### (Optional) Install FFmpeg for MP3 support
 
+WAV and FLAC input need nothing extra. MP3 and other formats are decoded by the
+`ffmpeg`/`ffprobe` executables, which must be on your `PATH`; without them,
+loading such a file raises an error (see [Concerning MP3 Files](#concerning-mp3-files)).
+
 For Ubuntu:
 
 ```shell
@@ -1048,11 +1052,10 @@ pytest tests/ -v --run-integration --integration-audio /path/to/music.wav -m int
 Builds use hatchling and the existing `__about__.py` version. Checkpoint and session annotations are
 postponed so the declared Python 3.9 minimum can import the package. The verification workflow is
 configured for Python 3.9–3.12 on pull requests and main, and as a prerequisite for release
-publishing. Each version installs compatible CPU Torch/Torchaudio, runs the offline suite,
-builds a wheel from its source archive, and checks the installed package outside the checkout.
-Compatibility checks use TorchAudio's declared Torch requirement; its 2.11.0 CPU wheel omits
-that metadata, so CI enforces the [documented stable-ABI minimum](https://docs.pytorch.org/audio/stable/installation.html)
-of Torch 2.11 for that release. CPU imports and finite, nonzero resampling are also required.
+publishing. Each version installs CPU Torch without TorchAudio (and asserts that TorchAudio is
+absent, since the package must not need it), installs FFmpeg for the lossy-input tests, runs the
+offline suite, builds a wheel from its source archive, and checks the installed package outside
+the checkout.
 Source archives include test fixtures and verification tools; wheels contain the runtime and
 checkpoint configuration. See [tools/README.md](tools/README.md) for installed-wheel checks.
 

@@ -61,8 +61,10 @@ into `stems.py`.
 ## Testing philosophy
 
 Plain `pytest tests/ -v` runs all offline contracts, including the committed NATTEN golden
-fixture. Eight existing offline modules cover activation metadata, clean API/lifecycle,
-checkpoint resolution, device forwarding, and metrical compatibility. NATTEN is not a
+fixture. Offline modules cover activation metadata, clean API/lifecycle, checkpoint
+resolution, device forwarding, metrical compatibility, and TorchAudio-free import and input
+loading (`tests/test_torchaudio_free.py`; its mp3 tests need `ffmpeg`/`ffprobe` on PATH and
+skip without them). NATTEN is not a
 dependency, so its committed golden fixture is the only neighborhood-attention reference.
 
 Five model-backed analysis/sonification/visualization tests retain their assertions and are
