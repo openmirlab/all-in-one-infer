@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- NATTEN support. The optional `[natten]` extra (`natten>=0.17.1,<0.20`,
+  `torch<2.8.0`) and `models/dinat.py`'s import-time backend selection are
+  gone; neighborhood attention always uses the pure-PyTorch implementation,
+  which was already the default and is numerically identical to NATTEN 0.17.5
+  (golden-fixture tested). No compatible natten release supports torch>=2.8
+  with the functional/RPB API the checkpoints need. The live-NATTEN parity
+  tests that only ran with natten installed were removed; the golden fixture
+  tests remain.
+
 ### Fixed
 - `import allin1_infer` no longer fails with `ModuleNotFoundError: No module
   named 'torchaudio'` on a fresh install (issue #7). `stems.py` imported

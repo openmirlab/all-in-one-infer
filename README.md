@@ -130,7 +130,7 @@ If you use this package for your research, please cite the following papers.
 ## Features
 
 - **Modern PyTorch support**: compatible with PyTorch 2.0 through 2.7+ and CUDA 11.7-12.8, no compiled extensions required by default
-- **Pure-PyTorch neighborhood attention**: numerically identical to NATTEN 0.17.5 (golden-fixture tested); optional `[natten]` extra for NATTEN's fused-kernel backend as a speed optimization
+- **Pure-PyTorch neighborhood attention**: numerically identical to NATTEN 0.17.5 (golden-fixture tested); NATTEN itself is not used
 - **Integrated source separation**: uses [demucs-infer](https://github.com/openmirlab/demucs-infer) with intelligent model caching (~6x faster on repeated use) and automatic GPU memory cleanup
 - **Flexible stems input**: custom separation models via a pluggable provider interface, pre-computed stems from any tool, direct stems input (skip separation entirely), and hybrid workflows mixing all three
 - **Cache management**: `--cache-info` / `--clear-cache` CLI flags and a matching Python API to inspect and free the multi-GB separation-model cache
@@ -152,7 +152,7 @@ See `CHANGELOG.md` for the detailed, version-by-version history of how these fea
 **Out of scope, forever:**
 - **Training.** This package is inference-only; training code has been removed and will not return. To retrain models, use the upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one) repository directly (see [Training](#training) below).
 - **Reimplementing demucs-infer or madmom-infer's internals here.** Source separation and spectrogram/beat-decoding are deliberately delegated to those sibling packages rather than vendored, so accuracy and maintenance responsibility stay with the package that owns them.
-- **A NATTEN-required install path.** Pure-PyTorch neighborhood attention is the default and will remain so; NATTEN stays an optional, non-default speed extra.
+- **NATTEN in any form.** Pure-PyTorch neighborhood attention is the only backend. NATTEN's compatible releases (0.17.x-0.19.x) build only against torch < 2.8, and newer ones dropped the API the checkpoints need, so the former optional `[natten]` extra was removed.
 
 ## Installation
 
@@ -189,20 +189,6 @@ For GPU acceleration, install PyTorch with CUDA support:
 pip install torch --index-url https://download.pytorch.org/whl/cu121
 pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
 ```
-
-### Optional: NATTEN fused kernels
-
-Neighborhood attention runs on a built-in pure-PyTorch implementation that is
-numerically identical to NATTEN. If you want NATTEN's fused CUDA kernels as a
-speed optimization (Linux + CUDA + torch < 2.8 only, compiles at install time):
-
-```bash
-pip install torch"<2.8"
-pip install "all-in-one-infer[natten] @ git+https://github.com/openmirlab/all-in-one-infer.git" --no-build-isolation
-```
-
-It is picked up automatically when importable; otherwise the pure-PyTorch
-backend is used. Results are identical either way.
 
 ### Verify Installation
 
@@ -439,7 +425,7 @@ count = allin1_infer.clear_model_cache()  # Actually delete
 All-In-One-Infer includes several technical enhancements over the original:
 
 - **Modern PyTorch Support**: Compatible with PyTorch 2.x and CUDA 12.x
-- **Pure-PyTorch Neighborhood Attention**: NATTEN is no longer required — a numerically identical pure-PyTorch implementation ships by default; NATTEN 0.17.x can optionally be installed via the `[natten]` extra as a faster fused-kernel backend
+- **Pure-PyTorch Neighborhood Attention**: NATTEN is no longer used — a numerically identical pure-PyTorch implementation is the only backend
 - **Source Separation**: Uses demucs-infer package with model caching and GPU cleanup
 - **Memory Optimization**: Automatic GPU memory cleanup prevents OOM errors on batch processing
 - **Performance**: 6x faster on repeated use with intelligent model caching
@@ -979,9 +965,8 @@ all-in-one-infer track.wav -o ./results
 # Old dependencies (All-In-One - original)
 dependencies = ["demucs", "natten>=0.15.0"]
 
-# Current (3.0.0+) dependencies — NATTEN is no longer required
+# Current dependencies — NATTEN is not used
 dependencies = ["torch>=2.0.0", "demucs-infer", ...]  # pure-PyTorch neighborhood attention
-# Optional fused-kernel backend: pip install "all-in-one-infer[natten] @ git+https://github.com/openmirlab/all-in-one-infer.git"  (natten>=0.17.1,<0.20)
 ```
 
 ### Installation Methods

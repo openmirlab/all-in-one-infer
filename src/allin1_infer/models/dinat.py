@@ -1,24 +1,18 @@
 """DiNAT (Dilated Neighborhood Attention) layers, 1D (per-instrument time
-axis) and 2D (cross-instrument), plus the NATTEN backend-selection shim.
+axis) and 2D (cross-instrument).
 
 This is a modification of:
   https://github.com/huggingface/transformers/blob/main/src/transformers/models/dinat/modeling_dinat.py
   so that it can provide both 1D and 2D attention.
 
-Neighborhood attention backend selection (NA_BACKEND, below): NATTEN is
-optional -- if a compatible version (0.17.x-0.19.x) is installed we use its
-fused kernels (NA_BACKEND='natten'), otherwise we fall back to the
-pure-PyTorch implementation in .neighborhood_attention (NA_BACKEND='torch'),
-which is numerically identical and works on any supported device (CPU/CUDA)
-with any torch >= 2.0, no compiled extension needed. NATTEN >=0.20 removed
-this functional API
-and RPB support entirely, so it cannot be used with the pretrained
-checkpoints; its import fails below and the fallback takes over. A broken
-NATTEN install (e.g. 0.17.x compiled against a mismatched torch) can raise
-non-ImportError exceptions at import time, hence the broad `except Exception`.
+Neighborhood attention comes from the pure-PyTorch implementation in
+.neighborhood_attention, numerically identical to NATTEN 0.17.x's legacy
+functional API (golden-fixture tested) and usable on any supported device
+with any torch >= 2.0. NATTEN itself is no longer used: 0.17.x-0.19.x only
+build against torch < 2.8, and >= 0.20 removed the functional/RPB API the
+pretrained checkpoints need.
 
-Reads: ..config (Config), .utils, .neighborhood_attention (fallback backend),
-natten (optional fused-kernel backend)
+Reads: ..config (Config), .utils, .neighborhood_attention
 """
 
 import math
@@ -26,24 +20,7 @@ import torch
 from abc import ABC,  abstractmethod
 from typing import Callable, Optional, Tuple
 
-try:
-    # NATTEN 0.17.x-0.18.x short names
-    from natten.functional import na1d_av, na1d_qk, na2d_av, na2d_qk
-    NA_BACKEND = 'natten'
-except Exception:
-    try:
-        # NATTEN 0.19.x long names
-        from natten.functional import (
-            natten1dav as na1d_av,
-            natten1dqkrpb as na1d_qk,
-            natten2dav as na2d_av,
-            natten2dqkrpb as na2d_qk,
-        )
-        NA_BACKEND = 'natten'
-    except Exception:
-        from .neighborhood_attention import na1d_av, na1d_qk, na2d_av, na2d_qk
-        NA_BACKEND = 'torch'
-
+from .neighborhood_attention import na1d_av, na1d_qk, na2d_av, na2d_qk
 
 from ..config import Config
 from .utils import *

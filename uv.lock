@@ -44,10 +44,6 @@ dev = [
     { name = "pytest", version = "9.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "ruff" },
 ]
-natten = [
-    { name = "natten" },
-    { name = "torch" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -58,7 +54,6 @@ requires-dist = [
     { name = "librosa" },
     { name = "madmom-infer", git = "https://github.com/openmirlab/madmom-infer.git?rev=a9ed04ec942dd6ec5309df7ce7f3783d1bb42575" },
     { name = "matplotlib" },
-    { name = "natten", marker = "extra == 'natten'", specifier = ">=0.17.1,<0.20" },
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
@@ -67,9 +62,8 @@ requires-dist = [
     { name = "soundfile", specifier = ">=0.12.1" },
     { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.0.1" },
     { name = "torch", specifier = ">=2.0.0" },
-    { name = "torch", marker = "extra == 'natten'", specifier = ">=2.0.0,<2.8.0" },
 ]
-provides-extras = ["dev", "natten"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -1634,16 +1628,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
-
-[[package]]
-name = "natten"
-version = "0.17.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-    { name = "torch" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/b5/5beafec5f0bb9612a16dde317bb56ea9754b7160f2b179e602e0ff1744d5/natten-0.17.5.tar.gz", hash = "sha256:adb23ad0905ce8e51ceb597df46383bc51bc1e1be54260ce4f85076d103ae3c5", size = 10856638, upload-time = "2025-03-17T22:41:40.808Z" }
 
 [[package]]
 name = "networkx"

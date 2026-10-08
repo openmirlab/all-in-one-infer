@@ -62,8 +62,8 @@ into `stems.py`.
 
 Plain `pytest tests/ -v` runs all offline contracts, including the committed NATTEN golden
 fixture. Eight existing offline modules cover activation metadata, clean API/lifecycle,
-checkpoint resolution, device forwarding, and metrical compatibility. Optional live-NATTEN
-comparisons skip explicitly when that optional backend is absent; golden fixtures still run.
+checkpoint resolution, device forwarding, and metrical compatibility. NATTEN is not a
+dependency, so its committed golden fixture is the only neighborhood-attention reference.
 
 Five model-backed analysis/sonification/visualization tests retain their assertions and are
 marked `integration` and `network`. `tests/conftest.py` deselects them by default. Enable
@@ -86,36 +86,25 @@ it does not prove fresh published-dependency resolution. Pre-existing repo-wide 
 was 121 findings (63 runtime, 45 tests, 13 examples); delivery work lints its touched verification
 tooling and does not widen into a production lint cleanup.
 
-## The `[natten]` extra's torch ceiling (justified, checked 2026-09)
+## NATTEN removed (2026-10)
 
-`pyproject.toml`'s `[natten]` extra pins `natten>=0.17.1,<0.20` and
-`torch>=2.0.0,<2.8.0`. This is a real, confirmed incompatibility, not an
-unjustified ceiling (org constitution art. 3 requires evidence for any
-upper bound):
+Neighborhood attention runs only on the pure-PyTorch implementation in
+`src/allin1_infer/models/neighborhood_attention.py`, numerically identical to
+NATTEN 0.17.5 (`tests/test_neighborhood_attention.py` against the committed
+`tests/fixtures/natten_0_17_5_golden.pt`). The former optional `[natten]`
+fused-kernel extra and `dinat.py`'s import-time backend selection were removed
+because no natten release fits this package:
 
-- `natten` 0.17.x-0.19.x's C++ extension does not compile against
-  torch>=2.8 (`_device_t` was removed from torch's C++ API); natten's own
-  install docs confirm this generation is the one this repo needs
-  (`na1d_av`/`na1d_qk`/`na2d_av`/`na2d_qk` in `src/allin1_infer/models/dinat.py`).
-  natten>=0.20 dropped that functional/RPB API entirely, so it can't run
-  the `harmonix-*` checkpoints even though it does support newer torch.
-  There is currently no natten release that satisfies both constraints at
-  once.
-- Verified 2026-09 against the fleet's `torch==2.13.0` pin: `uv pip install
-  -e ".[natten]"` (no exact torch pin) resolves by silently **downgrading**
-  torch to 2.7.1 (+ matching triton; the extra pinned torchaudio too until
-  issue #7 removed it) to satisfy the extra's own
-  ceiling — worth knowing if anyone ever installs this extra into a shared
-  venv. `uv pip install -e ".[natten]" "torch==2.13.0"` (the fleet's actual
-  shape: torch pinned exactly) instead fails **loudly** with a clear
-  unsatisfiable-dependencies error, which is the correct/safe outcome.
-- **Verdict: keep the ceiling.** The core package (no extras) has no torch
-  ceiling and installs/imports cleanly against torch 2.13.0 — confirmed by
-  `uv pip install -e .` plus an import smoke test in an isolated venv. Any
-  phonon provider on the shared torch-2.13.0 venv must not install the
-  `[natten]` extra; the pure-PyTorch neighborhood-attention backend (the
-  default) is what actually runs there, and it's numerically identical to
-  NATTEN's output (golden-fixture tested, `tests/test_neighborhood_attention.py`).
+- `natten` 0.17.x-0.19.x's C++ extension does not compile against torch>=2.8
+  (`_device_t` was removed from torch's C++ API), so the extra had to cap
+  torch at `<2.8.0`. Checked 2026-09 against the fleet's `torch==2.13.0` pin:
+  installing the extra either silently downgraded torch to 2.7.1 or failed
+  resolution when torch was pinned exactly.
+- natten>=0.20 dropped the functional/RPB API (`na1d_av`/`na1d_qk`/
+  `na2d_av`/`na2d_qk` with `rpb`) that the `harmonix-*` checkpoints need.
+
+Do not reintroduce NATTEN as a runtime backend; the golden fixture is the
+reference for any change to `neighborhood_attention.py`.
 
 ## Verification commands
 
@@ -174,9 +163,8 @@ the header, not just in a docstring for its own sake.
   phonon-readiness pass): they describe `natten` as a **required** core
   dependency (`dependencies = ["natten==0.17.5"]` /
   `natten>=0.17.5` "flexible: 0.17.5-0.21.0+") and claim compatibility up to
-  natten 0.21.0+, both wrong today — natten is an optional `[natten]` extra
-  pinned to `>=0.17.1,<0.20` (`pyproject.toml`), because natten>=0.20
-  dropped the legacy functional/RPB API this port's `dinat.py` depends on.
+  natten 0.21.0+, both wrong today — natten is not used at all (see "NATTEN
+  removed" above).
   The root README.md and this file are the accurate, current source; these
   three are left as historical record rather than rewritten, matching the
   `docs/README.md` precedent above. Do not use them as install/compat
@@ -211,7 +199,8 @@ does not trigger publication.
 The sdist includes tests, golden fixtures, tools, and maintainer docs; the wheel includes
 only runtime package files/checkpoint configuration plus distribution metadata.
 `tools/installed_smoke.py` verifies untouched installed `.py`/`.toml` bytes against the committed pre-edit hashes.
-Approved later rewrites (currently `stems.py`, issue #7) must instead equal the final source bytes.
+Approved later rewrites (`stems.py` for issue #7; `models/dinat.py` and
+`models/neighborhood_attention.py` for the NATTEN removal) must instead equal the final source bytes.
 For `checkpoints.py`, it verifies final-source byte equality, removes exactly the single
 approved future import, and then requires the original hash. It also checks all 24 NATTEN
 output fields at the original tolerances.
