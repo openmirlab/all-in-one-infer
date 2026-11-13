@@ -4,11 +4,12 @@
 never pushed to GitHub. Links below to `docs/*.md` resolve locally only.
 
 Inference-only fork of [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one)
-(music structure analysis: tempo, beats, downbeats, functional segments).
-Training code has been removed; this package only loads pretrained
-`harmonix-*` checkpoints and runs inference. See README.md's
-introduction and ["Scope"](README.md#scope) for the full rationale — this file covers
-conventions and verification, not the "why".
+by Taejun Kim and Juhan Nam (music structure analysis: tempo, beats, downbeats,
+functional segments). It replaces compiled NATTEN with a verified pure-PyTorch
+implementation and delegates separation/beat decoding to sibling packages.
+Original structure checkpoints are hosted at `taejunkim/allinone` on Hugging Face
+under CC-BY-NC-SA-4.0; package code is MIT. Training code has been removed;
+this package only loads pretrained `harmonix-*` checkpoints and runs inference.
 
 ## Status
 
