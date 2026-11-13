@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Align README with the organization sequence, move original-author credit and
+  citation before features, and make the separate checkpoint license visible.
 - Stop publishing new versions to PyPI; GitHub source is the maintained
   installation channel. GitHub release CI continues to run verification and
   build checks.

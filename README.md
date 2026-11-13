@@ -1,26 +1,69 @@
 # All-In-One-Infer
 
-[![Visual Demo](https://img.shields.io/badge/Visual-Demo-8A2BE2)](https://taejun.kim/music-dissector/)
-[![arXiv](https://img.shields.io/badge/arXiv-2307.16425-B31B1B)](http://arxiv.org/abs/2307.16425/)
-
 Music structure analysis that installs with one command on modern PyTorch. Given an audio
 file, it predicts **tempo (BPM), beats, downbeats, and functional segments** (intro, verse,
 chorus, bridge, outro, …) using the unchanged models and algorithms of
 [All-In-One](https://github.com/mir-aidj/all-in-one) by Taejun Kim and Juhan Nam.
 
-```bash
-pip install "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.git"
-```
+[![Visual Demo](https://img.shields.io/badge/Visual-Demo-8A2BE2)](https://taejun.kim/music-dissector/)
+[![arXiv](https://img.shields.io/badge/arXiv-2307.16425-B31B1B)](http://arxiv.org/abs/2307.16425/)
 
-This inference-only fork repackages the original so it installs cleanly: a pure-PyTorch
-neighborhood attention replaces the compiled NATTEN extension, and source separation and
-spectrogram/beat decoding come from the sibling packages
+
+## Why this exists
+
+The original research code depends on compiled NATTEN and a larger setup. This inference-only
+fork repackages it for current PyTorch: a pure-PyTorch neighborhood attention replaces NATTEN,
+while source separation and spectrogram/beat decoding come from the sibling packages
 [demucs-infer](https://github.com/openmirlab/demucs-infer) and
 [madmom-infer](https://github.com/openmirlab/madmom-infer). Results, model names, and the
 JSON format match upstream. Formerly published as `all-in-one-fix`; see
 [Migrating](#migrating).
 
-## Installation
+## Acknowledgments
+
+- **Original model and research:** [All-In-One](https://github.com/mir-aidj/all-in-one) by [Taejun Kim](https://taejun.kim/) and Juhan Nam (KAIST).
+- **Checkpoint host:** the authors' [taejunkim/allinone](https://huggingface.co/taejunkim/allinone) repository on Hugging Face; the structure weights are marked CC-BY-NC-SA-4.0 in this package's checkpoint manifest.
+- **Separation and beat decoding:** [Demucs](https://github.com/facebookresearch/demucs) by Alexandre Défossez / Meta AI and [madmom-infer](https://github.com/openmirlab/madmom-infer). This repository contributes packaging and tooling, not the research models.
+
+## Citation
+
+Cite the original All-In-One work; cite Demucs when using its source separation path:
+
+```bibtex
+@inproceedings{taejun2023allinone,
+  title={All-In-One Metrical And Functional Structure Analysis With Neighborhood Attentions on Demixed Audio},
+  author={Kim, Taejun and Nam, Juhan},
+  booktitle={IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
+  year={2023}
+}
+@inproceedings{defossez2021hybrid,
+  title={Hybrid Spectrogram and Waveform Source Separation},
+  author={Défossez, Alexandre},
+  booktitle={Proceedings of the ISMIR 2021 Workshop on Music Source Separation},
+  year={2021}
+}
+```
+
+## Features
+
+- Predict tempo, beats, downbeats, and functional segments from a song or supplied stems.
+- Reusable `AllInOneSession`, one-shot `analyze()`, CLI JSON, visualization, and sonification.
+- Verified pretrained checkpoints and pure-PyTorch neighborhood attention.
+
+## Scope
+
+Inference on the pretrained `harmonix-*` models, stem handling around it, visualization,
+sonification, and research outputs. Permanently out of scope:
+
+- **Training.** Use upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one).
+- **Reimplementing the sibling packages.** Separation stays in demucs-infer and
+  spectrogram/beat decoding in madmom-infer.
+- **NATTEN.** Its releases that provide the API these checkpoints need build only against
+  torch < 2.8. The pure-PyTorch replacement reproduces NATTEN 0.17.5's output on recorded
+  fixtures and is the only backend.
+
+
+## Install
 
 Install from GitHub; new versions are no longer published to PyPI.
 
@@ -38,7 +81,7 @@ uv add "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.gi
   `PATH` (`sudo apt install ffmpeg` or `brew install ffmpeg`); see [MP3 input](#mp3-input).
 - **Check the install:** `all-in-one-infer --help`.
 
-## Quick start
+## Quick Start
 
 ```shell
 all-in-one-infer song1.wav song2.mp3        # writes ./struct/song1.json, ./struct/song2.json
@@ -228,19 +271,12 @@ ffmpeg -i song.mp3 song.wav
 Function signatures, model names, result fields, and the JSON format are unchanged. The
 package needs neither NATTEN nor the old `demucs` package.
 
-## Scope
+## What this project will NEVER bundle
 
-Inference on the pretrained `harmonix-*` models, stem handling around it, visualization,
-sonification, and research outputs. Permanently out of scope:
-
-- **Training.** Use upstream [mir-aidj/all-in-one](https://github.com/mir-aidj/all-in-one).
-- **Reimplementing the sibling packages.** Separation stays in demucs-infer and
-  spectrogram/beat decoding in madmom-infer.
-- **NATTEN.** Its releases that provide the API these checkpoints need build only against
-  torch < 2.8. The pure-PyTorch replacement reproduces NATTEN 0.17.5's output on recorded
-  fixtures and is the only backend.
-- **Bundled or altered weights.** No checkpoint is committed to git or shipped in a
-  package; all are downloaded from their original hosts, unmodified.
+The package never ships pretrained checkpoint bytes, training pipelines, or the compiled
+NATTEN extension. The original checkpoints are downloaded unmodified from their author host;
+the [checkpoint manifest](src/allin1_infer/config/checkpoints.toml) records their provenance
+and separate CC-BY-NC-SA-4.0 license. Demucs weights and their terms belong to demucs-infer.
 
 ## Development
 
@@ -257,30 +293,13 @@ conventions and verification commands; [tools/README.md](tools/README.md) covers
 installed-wheel and upstream-comparison checks; [CHANGELOG.md](CHANGELOG.md) holds the
 history.
 
-## Credits and citation
-
-All credit for the models, algorithms, and pretrained weights belongs to
-[All-In-One](https://github.com/mir-aidj/all-in-one) by [Taejun Kim](https://taejun.kim/) and
-Juhan Nam (KAIST). Source separation uses [Demucs](https://github.com/facebookresearch/demucs)
-by Alexandre Défossez / Meta AI through demucs-infer. This repository contributes the
-packaging and tooling.
-
-```bibtex
-@inproceedings{taejun2023allinone,
-  title={All-In-One Metrical And Functional Structure Analysis With Neighborhood Attentions on Demixed Audio},
-  author={Kim, Taejun and Nam, Juhan},
-  booktitle={IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
-  year={2023}
-}
-@inproceedings{defossez2021hybrid,
-  title={Hybrid Spectrogram and Waveform Source Separation},
-  author={Défossez, Alexandre},
-  booktitle={Proceedings of the ISMIR 2021 Workshop on Music Source Separation},
-  year={2021}
-}
-```
-
 ## License
 
-MIT, like All-In-One and Demucs. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Report issues at
-[GitHub Issues](https://github.com/openmirlab/all-in-one-infer/issues).
+Package code is MIT, like All-In-One and Demucs. Checkpoint weights have separate
+CC-BY-NC-SA-4.0 terms; see the [manifest](src/allin1_infer/config/checkpoints.toml),
+[LICENSE](LICENSE), and [NOTICE](NOTICE).
+
+## Support
+
+Report package bugs at [GitHub Issues](https://github.com/openmirlab/all-in-one-infer/issues).
+Research and model questions belong with [the original All-In-One project](https://github.com/mir-aidj/all-in-one).
