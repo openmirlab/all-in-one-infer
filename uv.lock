@@ -47,7 +47,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
-    { name = "demucs-infer", git = "https://github.com/openmirlab/demucs-infer.git?rev=ffe0080ef96336a34e3f0ee8ba22ceaa0623a36c" },
+    { name = "demucs-infer", specifier = ">=4.4.0" },
     { name = "hydra-core" },
     { name = "librosa" },
     { name = "madmom-infer", git = "https://github.com/openmirlab/madmom-infer.git?rev=a9ed04ec942dd6ec5309df7ce7f3783d1bb42575" },
@@ -615,7 +615,7 @@ wheels = [
 [[package]]
 name = "demucs-infer"
 version = "4.4.0"
-source = { git = "https://github.com/openmirlab/demucs-infer.git?rev=ffe0080ef96336a34e3f0ee8ba22ceaa0623a36c#ffe0080ef96336a34e3f0ee8ba22ceaa0623a36c" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "einops" },
     { name = "julius" },
@@ -625,6 +625,10 @@ dependencies = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "torch" },
     { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9c/ae/dcb7b86cfcf5602431494bd8506a23b08737df100070a3fd8722e6278192/demucs_infer-4.4.0.tar.gz", hash = "sha256:6531384bb1276f9e37f7a59798a8a8fbb8ae9c76e7e60a0e1f40b22f76347b1a", size = 94459, upload-time = "2026-10-05T01:41:43.835Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/f8/95fb05e0bf18bda49189535bde5d1a40900a60374ce0642673c2a22e997a/demucs_infer-4.4.0-py3-none-any.whl", hash = "sha256:ba34e159817e4664345b1619775826c0612f1eccb1c20ae059049dcb27852059", size = 106128, upload-time = "2026-10-05T01:41:42.404Z" },
 ]
 
 [[package]]

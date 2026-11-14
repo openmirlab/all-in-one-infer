@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Replace the direct Git dependency on `demucs-infer@ffe0080` with the
+  equivalent published `demucs-infer>=4.4.0`. The separate unpublished
+  `madmom-infer` source dependency remains until full-output parity or a
+  maintained release is available.
 - Align README with the organization sequence, move original-author credit and
   citation before features, and make the separate checkpoint license visible.
 - Stop publishing new versions to PyPI; GitHub source is the maintained

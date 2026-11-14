@@ -26,6 +26,11 @@ parts of its pipeline: [demucs-infer](https://github.com/openmirlab/demucs-infer
 delegated to, not vendored, so their own CLAUDE.md/accuracy gates are the
 place to look when a bug could be upstream of this package.
 
+Demucs source revision `ffe0080` is the published `demucs-infer` 4.4.0 tag,
+so the core dependency uses the PyPI floor `>=4.4.0`. Madmom still uses the
+pinned unpublished 0.3.0 source; do not replace it with the historical 0.2.0
+package without real-input parity verification.
+
 The metrical decoder conditionally forwards `fast_viterbi=True` when the
 installed `DBNDownBeatTrackingProcessor` signature explicitly supports it.
 The legacy constructor remains unchanged for the public `madmom-infer` 0.2.0

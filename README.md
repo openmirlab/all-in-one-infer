@@ -74,7 +74,8 @@ uv add "all-in-one-infer @ git+https://github.com/openmirlab/all-in-one-infer.gi
 ```
 
 - **Requirements:** Python 3.9+, PyTorch 2.0+ (no upper bound), Linux/macOS/Windows.
-  demucs-infer and madmom-infer install automatically from pinned Git revisions.
+  demucs-infer installs from PyPI 4.4.0 or newer; madmom-infer currently installs
+  from a pinned Git revision until its required 0.3.0 behavior is published.
 - **GPU:** install a CUDA build of PyTorch first, e.g.
   `pip install torch --index-url https://download.pytorch.org/whl/cu121`.
 - **MP3 and other non-WAV/FLAC input** needs the `ffmpeg`/`ffprobe` executables on your

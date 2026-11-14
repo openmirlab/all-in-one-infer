@@ -51,12 +51,12 @@ dependencies = [
   # As of 3.1.0, madmom is replaced by madmom-infer -- a plain PyPI dependency,
   # no post-install hook or git source needed. See README.md for details.
   "madmom-infer @ git+https://github.com/openmirlab/madmom-infer.git@a9ed04ec942dd6ec5309df7ce7f3783d1bb42575",
-  # Source separation. Pinned at ffe0080, which removed demucs-infer's
+  # Source separation. PyPI 4.4.0 tags ffe0080, which removed demucs-infer's
   # torchaudio dependency, so torchaudio is no longer installed
   # transitively. This package never imports torchaudio either (issue #7):
   # stems.py decodes wav/flac via soundfile and other formats via
   # demucs-infer's ffmpeg-backed AudioFile.
-  "demucs-infer @ git+https://github.com/openmirlab/demucs-infer.git@ffe0080ef96336a34e3f0ee8ba22ceaa0623a36c",
+  "demucs-infer>=4.4.0",
   # soundfile: wav/flac path for stems.py's own input-audio load (see
   # stems.py's _LOSSLESS_SOUNDFILE_EXTS). Already pulled in transitively via
   # demucs-infer, declared explicitly here
